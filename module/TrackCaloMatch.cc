@@ -205,7 +205,7 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
   TrackSeed *tpc_seed = nullptr;
   TrkrCluster *trkrCluster = nullptr;
 
-  bool have_match_in_this_event = false;
+  int num_matched_pair = 0;
   for (auto &iter : *trackMap)
   {
     track = iter.second;
@@ -306,13 +306,13 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
     if(is_match)
     {
       trackMap_new->insert(iter.second);
-      have_match_in_this_event = true;
+      num_matched_pair++;
     }
   }
 
   //Set up the event display writer
   std::ofstream outFile;
-  if (have_match_in_this_event && m_write_evt_display)
+  if (num_matched_pair>=2 && m_write_evt_display)
   {
 
     PHNodeIterator nodeIter(topNode);
@@ -507,7 +507,7 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
 
 void TrackCaloMatch::event_file_start(std::ofstream &jason_file_header, std::string date, int runid, int evtid)
 {
-    jason_file_header << "{\n    \"EVENT\": {\n        \"runid\": " << runid << ", \n        \"evtid\": " << evtid << ", \n        \"time\": 0, \n        \"type\": \"Collision\", \n        \"s_nn\": 0, \n        \"B\": 3.0,\n        \"pv\": [0,0,0],\n        \"runstats\": [\"sPHENIX Internal\",        \n\"200 GeV pp\",        \n\"" << date << ", Run " << runid << "\",        \n\"EMCAL-TPC Matched Tracks\"]  \n    },\n" << std::endl;
+    jason_file_header << "{\n    \"EVENT\": {\n        \"runid\": " << runid << ", \n        \"evtid\": " << evtid << ", \n        \"time\": 0, \n        \"type\": \"Collision\", \n        \"s_nn\": 0, \n        \"B\": 3.0,\n        \"pv\": [0,0,0],\n        \"runstats\": [\"sPHENIX Internal\",        \n        \"200 GeV pp\",        \n        \"" << date << ", Run " << runid << "\",        \n        \"Event #" << evtid << "\"]  \n    },\n" << std::endl;
 
     jason_file_header << "    \"META\": {\n       \"HITS\": {\n          \"INNERTRACKER\": {\n              \"type\": \"3D\",\n              \"options\": {\n              \"size\": 6.0,\n              \"color\": 16711680\n              } \n          },\n" << std::endl;
     jason_file_header << "          \"TRACKHITS\": {\n              \"type\": \"3D\",\n              \"options\": {\n              \"size\": 2.0,\n              \"transparent\": 0.6,\n              \"color\": 16777215\n              } \n          },\n" << std::endl;
