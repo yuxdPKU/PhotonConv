@@ -81,6 +81,15 @@ class TrackCaloMatch : public SubsysReco
   void setIHcalRadius(float r) {m_ihcal_radius_user = r;}
   void setOHcalRadius(float r) {m_ohcal_radius_user = r;}
 
+  void setRawClusContEMName(std::string name) {m_RawClusCont_EM_name = name;}
+  void setRawClusContHADName(std::string name) {m_RawClusCont_HAD_name = name;}
+
+  void setTrackPtLowCut(float pt) {m_track_pt_low_cut = pt;}
+  void setEmcalELowCut(float e) {m_emcal_e_low_cut = e;}
+  void setnTpcClusters(int n) {m_ntpc_low_cut = n;}
+  void setdphicut(float a) {m_dphi_cut = a;};
+  void setdzcut(float a) {m_dz_cut = a;};
+
  private:
    int m_runNumber = 0;
    int m_evtNumber = 0;
@@ -109,10 +118,18 @@ class TrackCaloMatch : public SubsysReco
    std::string m_trackMapName = "SvtxTrackMap";
    std::string m_trackMapName_new = "MySvtxTrackMap";
 
+   std::string m_RawClusCont_EM_name = "TOPOCLUSTER_EMCAL";
+   std::string m_RawClusCont_HAD_name = "TOPOCLUSTER_HCAL";
+
    bool m_write_evt_display;
    std::string m_evt_display_path;
    std::string m_run_date;
 
+   float m_track_pt_low_cut = 1.5;
+   float m_emcal_e_low_cut = 1;
+   int m_ntpc_low_cut = 22;
+   float m_dphi_cut = 0.1;
+   float m_dz_cut = 20;
 };
 
 #endif

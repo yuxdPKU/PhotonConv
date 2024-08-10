@@ -11,6 +11,16 @@
 
 #include <fun4all/SubsysReco.h>
 
+#include <globalvertex/GlobalVertexMap.h>
+#include <globalvertex/SvtxVertexMap.h>
+#include <ffarawobjects/Gl1Packet.h>
+#include <trackbase_historic/SvtxTrackMap.h>
+#include <calobase/RawClusterContainer.h>
+#include <calobase/TowerInfoContainer.h>
+#include <trackbase/TrkrHitSetContainer.h>
+#include <trackbase/TrkrClusterContainer.h>
+#include <calobase/RawTowerGeomContainer.h>
+
 #include <string>
 #include <vector>
 
@@ -52,6 +62,12 @@ class TrackToCalo : public SubsysReco
   void setIHcalRadius(float r) {m_ihcal_radius_user = r;}
   void setOHcalRadius(float r) {m_ohcal_radius_user = r;}
 
+  void setRawClusContEMName(std::string name) {m_RawClusCont_EM_name = name;}
+  void setRawClusContHADName(std::string name) {m_RawClusCont_HAD_name = name;}
+
+  void setTrackPtLowCut(float pt) {m_track_pt_low_cut = pt;}
+  void setEmcalELowCut(float e) {m_emcal_e_low_cut = e;}
+
  private:
    int cnt = 0;
    bool m_use_emcal_radius = false;
@@ -63,6 +79,9 @@ class TrackToCalo : public SubsysReco
    std::string _outfilename;
    TFile *_outfile = nullptr;
    TTree *_tree = nullptr;
+
+   std::string m_RawClusCont_EM_name = "TOPOCLUSTER_EMCAL";
+   std::string m_RawClusCont_HAD_name = "TOPOCLUSTER_HCAL";
 
    std::vector<float> _vertex_x;
    std::vector<float> _vertex_y;
@@ -148,6 +167,25 @@ class TrackToCalo : public SubsysReco
 
    std::vector<int> _ntracks;
 
+   GlobalVertexMap *vertexmap = nullptr;
+   SvtxVertexMap *vertexMap = nullptr;
+   Gl1Packet *gl1Packet = nullptr;
+   SvtxTrackMap *trackMap = nullptr;
+   ActsGeometry *acts_Geometry = nullptr;
+   RawClusterContainer *clustersEM = nullptr;
+   RawClusterContainer *clustersHAD = nullptr;
+   RawClusterContainer *EMCAL_RawClusters = nullptr;
+   TowerInfoContainer *EMCAL_Container = nullptr;
+   TowerInfoContainer *IHCAL_Container = nullptr;
+   TowerInfoContainer *OHCAL_Container = nullptr;
+   TrkrHitSetContainer *trkrHitSet = nullptr;
+   TrkrClusterContainer *trkrContainer = nullptr;
+   RawTowerGeomContainer *EMCalGeo = nullptr;
+   RawTowerGeomContainer *IHCalGeo = nullptr;
+   RawTowerGeomContainer *OHCalGeo = nullptr;
+
+   float m_track_pt_low_cut = 0.5;
+   float m_emcal_e_low_cut = 0.2;
 };
 
 #endif // TRACKTOCALO_H

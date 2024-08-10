@@ -16,6 +16,7 @@
 #include <calobase/TowerInfoDefs.h>
 
 #include <ffarawobjects/Gl1Packet.h>
+#include <ffaobjects/EventHeaderv1.h>
 
 #include <fun4all/Fun4AllReturnCodes.h>
 
@@ -173,13 +174,24 @@ int TrackToCalo::process_event(PHCompositeNode *topNode)
   cnt++;
   ResetTreeVectors();
 
+  PHNodeIterator nodeIter(topNode);
+  PHNode* evtNode = dynamic_cast<PHNode*>(nodeIter.findFirst("EventHeader"));
+  if (evtNode)
+  {
+    EventHeaderv1* evtHeader = findNode::getClass<EventHeaderv1>(topNode, "EventHeader");
+    std::cout<<"runNumber = "<<evtHeader->get_RunNumber()<<" , m_evtNumber = "<<evtHeader->get_EvtSequence()<<std::endl;
+  }
+
   bool has_vertex = false;
   GlobalVertex *mbd_vtx = nullptr;
 
   CLHEP::Hep3Vector vertex(0., 0., 0.);
 
-  GlobalVertexMap *vertexmap = findNode::getClass<GlobalVertexMap>(topNode, "GlobalVertexMap");
-  if(vertexmap)
+  if(!vertexmap)
+  {
+    vertexmap = findNode::getClass<GlobalVertexMap>(topNode, "GlobalVertexMap");
+  }
+  else
   {
     if(!vertexmap->empty())
     {
@@ -202,14 +214,18 @@ int TrackToCalo::process_event(PHCompositeNode *topNode)
   }
   else
   {
+    _mbd_x.push_back(NAN);
+    _mbd_y.push_back(NAN);
     _mbd_z.push_back(NAN);
   }
 
   SvtxVertex *svtx_vtx = nullptr;
 
-  SvtxVertexMap *vertexMap = findNode::getClass<SvtxVertexMap>(topNode, "SvtxVertexMap");
-
-  if(vertexMap)
+  if(!vertexMap)
+  {
+    vertexMap = findNode::getClass<SvtxVertexMap>(topNode, "SvtxVertexMap");
+  }
+  else
   {
     if(!vertexMap->empty())
     {
@@ -226,9 +242,12 @@ int TrackToCalo::process_event(PHCompositeNode *topNode)
     }
   }
 
-  Gl1Packet *gl1Packet = findNode::getClass<Gl1Packet>(topNode, "GL1Packet");
-
-  if(gl1Packet)
+  if(!gl1Packet)
+  {
+    gl1Packet = findNode::getClass<Gl1Packet>(topNode, "GL1Packet");
+    std::cout << "gl1Packet not found" << std::endl;
+  }
+  else
   {
     auto scaled_vector = gl1Packet->getScaledVector();
     for(int i = 0; i < 32; i++)
@@ -239,27 +258,27 @@ int TrackToCalo::process_event(PHCompositeNode *topNode)
       }
     }
   }
-  else
-  {
-    std::cout << "gl1Packet not found" << std::endl;
-  }
-
-  SvtxTrackMap *trackMap = findNode::getClass<SvtxTrackMap>(topNode, "SvtxTrackMap");
 
   if(!trackMap)
   {
-    std::cout << "trackMap not found! Aborting!" << std::endl;
-    return Fun4AllReturnCodes::ABORTEVENT;
+    trackMap = findNode::getClass<SvtxTrackMap>(topNode, "SvtxTrackMap");
+    if(!trackMap)
+    {
+      std::cout << "trackMap not found! Aborting!" << std::endl;
+      return Fun4AllReturnCodes::ABORTEVENT;
+    }
   }
 
   _ntracks.push_back(trackMap->size());
 
-  ActsGeometry *acts_Geometry = findNode::getClass<ActsGeometry>(topNode, "ActsGeometry");
   if (!acts_Geometry)
   {
-    std::cout << "ActsTrackingGeometry not on node tree. Exiting." << std::endl;
-
-    return Fun4AllReturnCodes::ABORTEVENT;
+    acts_Geometry = findNode::getClass<ActsGeometry>(topNode, "ActsGeometry");
+    if (!acts_Geometry)
+    {
+      std::cout << "ActsTrackingGeometry not on node tree. Exiting." << std::endl;
+      return Fun4AllReturnCodes::ABORTEVENT;
+    }
   }
 
   //TrackSeedContainer *seedContainer = findNode::getClass<TrackSeedContainer>(topNode, "SiliconTrackSeedContainer");
@@ -270,60 +289,81 @@ int TrackToCalo::process_event(PHCompositeNode *topNode)
   //  return Fun4AllReturnCodes::ABORTEVENT;
   //}
 
-  RawClusterContainer *clustersEM = findNode::getClass<RawClusterContainer>(topNode, "TOPOCLUSTER_EMCAL");
-  RawClusterContainer *clustersHAD = findNode::getClass<RawClusterContainer>(topNode, "TOPOCLUSTER_HCAL");
-
-  if ( !clustersEM ) {
-    std::cout << "ParticleFlowReco_x::process_event : FATAL ERROR, cannot find cluster container TOPOCLUSTER_EMCAL" << std::endl;
-    return Fun4AllReturnCodes::ABORTEVENT;
-  }
-  if ( !clustersHAD ) {
-    std::cout << "ParticleFlowReco_x::process_event : FATAL ERROR, cannot find cluster container TOPOCLUSTER_HCAL" << std::endl;
-    return Fun4AllReturnCodes::ABORTEVENT;
-  }
-
-  RawClusterContainer *EMCAL_RawClusters = findNode::getClass<RawClusterContainer>(topNode, "CLUSTERINFO_POS_COR_CEMC");
-
-  if(!EMCAL_RawClusters)
+  if ( !clustersEM )
   {
-    std::cout << "EMCAL_RawClusters not found! Aborting!" << std::endl;
-    return Fun4AllReturnCodes::ABORTEVENT;
+    clustersEM = findNode::getClass<RawClusterContainer>(topNode, m_RawClusCont_EM_name);
+    if (!clustersEM)
+    {
+      std::cout << "TrackToCalo::process_event : FATAL ERROR, cannot find cluster container " << m_RawClusCont_EM_name << std::endl;
+      return Fun4AllReturnCodes::ABORTEVENT;
+    }
+  }
+  if ( !clustersHAD )
+  {
+    clustersHAD = findNode::getClass<RawClusterContainer>(topNode, m_RawClusCont_HAD_name);
+    if (!clustersHAD)
+    {
+      std::cout << "TrackToCalo::process_event : FATAL ERROR, cannot find cluster container " << m_RawClusCont_HAD_name << std::endl;
+      return Fun4AllReturnCodes::ABORTEVENT;
+    }
   }
 
-  TowerInfoContainer *EMCAL_Container = findNode::getClass<TowerInfoContainer>(topNode, "TOWERINFO_CALIB_CEMC");
-  TowerInfoContainer *IHCAL_Container = findNode::getClass<TowerInfoContainer>(topNode, "TOWERINFO_CALIB_HCALIN");
-  TowerInfoContainer *OHCAL_Container = findNode::getClass<TowerInfoContainer>(topNode, "TOWERINFO_CALIB_HCALOUT");
+  //if(!EMCAL_RawClusters)
+  //{
+  //  EMCAL_RawClusters = findNode::getClass<RawClusterContainer>(topNode, "CLUSTERINFO_POS_COR_CEMC");
+  //  if(!EMCAL_RawClusters)
+  //  {
+  //    std::cout << "EMCAL_RawClusters not found! Aborting!" << std::endl;
+  //    return Fun4AllReturnCodes::ABORTEVENT;
+  //  }
+  //}
 
   if(!EMCAL_Container)
   {
-    std::cout << "EMCAL_Container not found! Aborting!" << std::endl;
-    return Fun4AllReturnCodes::ABORTEVENT;
+    EMCAL_Container = findNode::getClass<TowerInfoContainer>(topNode, "TOWERINFO_CALIB_CEMC");
+    if(!EMCAL_Container)
+    {
+      std::cout << "EMCAL_Container not found! Aborting!" << std::endl;
+      return Fun4AllReturnCodes::ABORTEVENT;
+    }
   }
   if(!IHCAL_Container)
   {
-    std::cout << "IHCAL_Container not found! Aborting!" << std::endl;
-    return Fun4AllReturnCodes::ABORTEVENT;
+    IHCAL_Container = findNode::getClass<TowerInfoContainer>(topNode, "TOWERINFO_CALIB_HCALIN");
+    if(!IHCAL_Container)
+    {
+      std::cout << "IHCAL_Container not found! Aborting!" << std::endl;
+      return Fun4AllReturnCodes::ABORTEVENT;
+    }
   }
   if(!OHCAL_Container)
   {
-    std::cout << "OHCAL_Container not found! Aborting!" << std::endl;
-    return Fun4AllReturnCodes::ABORTEVENT;
+    OHCAL_Container = findNode::getClass<TowerInfoContainer>(topNode, "TOWERINFO_CALIB_HCALOUT");
+    if(!OHCAL_Container)
+    {
+      std::cout << "OHCAL_Container not found! Aborting!" << std::endl;
+      return Fun4AllReturnCodes::ABORTEVENT;
+    }
   }
 
-  TrkrHitSetContainer *trkrHitSet = findNode::getClass<TrkrHitSetContainer>(topNode, "TRKR_HITSET");
-
-  if(!trkrHitSet)
-  {
-    std::cout << "trkrHitSet not found! Aborting!" << std::endl;
-    return Fun4AllReturnCodes::ABORTEVENT;
-  }
-
-  TrkrClusterContainer *trkrContainer = findNode::getClass<TrkrClusterContainer>(topNode, "TRKR_CLUSTER");
+  //if(!trkrHitSet)
+  //{
+  //  trkrHitSet = findNode::getClass<TrkrHitSetContainer>(topNode, "TRKR_HITSET");
+  //  if(!trkrHitSet)
+  //  {
+  //    std::cout << "trkrHitSet not found! Aborting!" << std::endl;
+  //    return Fun4AllReturnCodes::ABORTEVENT;
+  //  }
+  //}
 
   if(!trkrContainer)
   {
-    std::cout << "trkrContainer not found! Aborting!" << std::endl;
-    return Fun4AllReturnCodes::ABORTEVENT;
+    trkrContainer = findNode::getClass<TrkrClusterContainer>(topNode, "TRKR_CLUSTER");
+    if(!trkrContainer)
+    {
+      std::cout << "trkrContainer not found! Aborting!" << std::endl;
+      return Fun4AllReturnCodes::ABORTEVENT;
+    }
   }
 
   TrkrClusterContainer::HitSetKeyList tpcHits = trkrContainer->getHitSetKeys(TrkrDefs::TrkrId::tpcId);
@@ -413,8 +453,7 @@ int TrackToCalo::process_event(PHCompositeNode *topNode)
       }
     }
   }
-*/
-/*
+
   for(TrkrClusterContainer::ConstIterator cIter = cluster_range.first; cIter != cluster_range.second; ++cIter)
   {
     auto cluster_key = cIter->first;
@@ -427,7 +466,6 @@ int TrackToCalo::process_event(PHCompositeNode *topNode)
     {
       std::cout << "Silicon cluster: " << TrkrDefs::getTrkrId(cluster_key) << std::endl;
     }
-
   }
 */
 
@@ -452,28 +490,34 @@ int TrackToCalo::process_event(PHCompositeNode *topNode)
   }
   */
 
-  RawTowerGeomContainer *EMCalGeo = findNode::getClass<RawTowerGeomContainer>(topNode, "TOWERGEOM_CEMC");
-
   if(!EMCalGeo)
   {
-    std::cout << "EMCalGeo not found! Aborting!" << std::endl;
-    return Fun4AllReturnCodes::ABORTEVENT;
+    EMCalGeo = findNode::getClass<RawTowerGeomContainer>(topNode, "TOWERGEOM_CEMC");
+    if(!EMCalGeo)
+    {
+      std::cout << "EMCalGeo not found! Aborting!" << std::endl;
+      return Fun4AllReturnCodes::ABORTEVENT;
+    }
   }
-
-  RawTowerGeomContainer *IHCalGeo = findNode::getClass<RawTowerGeomContainer>(topNode, "TOWERGEOM_HCALIN");
 
   if(!IHCalGeo)
   {
-    std::cout << "IHCalGeo not found! Aborting!" << std::endl;
-    return Fun4AllReturnCodes::ABORTEVENT;
+    IHCalGeo = findNode::getClass<RawTowerGeomContainer>(topNode, "TOWERGEOM_HCALIN");
+    if(!IHCalGeo)
+    {
+      std::cout << "IHCalGeo not found! Aborting!" << std::endl;
+      return Fun4AllReturnCodes::ABORTEVENT;
+    }
   }
-
-  RawTowerGeomContainer *OHCalGeo = findNode::getClass<RawTowerGeomContainer>(topNode, "TOWERGEOM_HCALOUT");
 
   if(!OHCalGeo)
   {
-    std::cout << "OHCalGeo not found! Aborting!" << std::endl;
-    return Fun4AllReturnCodes::ABORTEVENT;
+    OHCalGeo = findNode::getClass<RawTowerGeomContainer>(topNode, "TOWERGEOM_HCALOUT");
+    if(!OHCalGeo)
+    {
+      std::cout << "OHCalGeo not found! Aborting!" << std::endl;
+      return Fun4AllReturnCodes::ABORTEVENT;
+    }
   }
 
   double caloRadiusEMCal;
@@ -505,9 +549,7 @@ int TrackToCalo::process_event(PHCompositeNode *topNode)
   }
 
   SvtxTrackState *thisState = nullptr;
-
   SvtxTrack *track = nullptr;
-
   TrackSeed *seed = nullptr;
   TrackSeed *tpc_seed = nullptr;
   TrkrCluster *trkrCluster = nullptr;
@@ -519,8 +561,9 @@ int TrackToCalo::process_event(PHCompositeNode *topNode)
     track = iter.second;
 
     if(!track) continue;
+std::cout<<"trackid = "<<(track->get_id())<<" , px = "<<track->get_px()<<" , py = "<<track->get_py()<<" , pz = "<<track->get_pz()<<std::endl;
 
-    if(track->get_pt() < 0.5) continue;
+    if(track->get_pt() < m_track_pt_low_cut) continue;
 
     seed = track->get_silicon_seed();
 
@@ -983,7 +1026,7 @@ int TrackToCalo::process_event(PHCompositeNode *topNode)
   for (clusIter_EMC = begin_end_EMC.first; clusIter_EMC != begin_end_EMC.second; ++clusIter_EMC)
   {
     cluster = clusIter_EMC->second;
-    if(cluster->get_energy() < 0.2) continue;
+    if(cluster->get_energy() < m_emcal_e_low_cut) continue;
 
     _emcal_id.push_back(clusIter_EMC->first);
     _emcal_e.push_back(cluster->get_energy());
