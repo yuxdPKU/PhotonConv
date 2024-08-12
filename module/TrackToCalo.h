@@ -83,6 +83,9 @@ class TrackToCalo : public SubsysReco
    std::string m_RawClusCont_EM_name = "TOPOCLUSTER_EMCAL";
    std::string m_RawClusCont_HAD_name = "TOPOCLUSTER_HCAL";
 
+   std::vector<int> _vertex_id;
+   std::vector<int> _vertex_crossing;
+   std::vector<int> _vertex_ntracks;
    std::vector<float> _vertex_x;
    std::vector<float> _vertex_y;
    std::vector<float> _vertex_z;
@@ -93,9 +96,12 @@ class TrackToCalo : public SubsysReco
    std::vector<int> _track_bc;
    std::vector<float> _track_phi;
    std::vector<float> _track_eta;
-   std::vector<float> _track_x;
-   std::vector<float> _track_y;
-   std::vector<float> _track_z;
+   std::vector<float> _track_pcax;
+   std::vector<float> _track_pcay;
+   std::vector<float> _track_pcaz;
+   std::vector<float> _track_vx;
+   std::vector<float> _track_vy;
+   std::vector<float> _track_vz;
    std::vector<float> _track_quality;
    std::vector<float> _track_dcaxy;
    std::vector<float> _track_dcaz;
@@ -140,6 +146,9 @@ class TrackToCalo : public SubsysReco
    std::vector<float> _emcal_y;
    std::vector<float> _emcal_z;
    std::vector<float> _emcal_e;
+   std::vector<float> _emcal_ecore;
+   std::vector<float> _emcal_chi2;
+   std::vector<float> _emcal_prob;
    std::vector<int> _emcal_tower_cluster_id;
    std::vector<float> _emcal_tower_e;
    std::vector<float> _emcal_tower_phi;
@@ -186,6 +195,7 @@ class TrackToCalo : public SubsysReco
 
    float m_track_pt_low_cut = 0.5;
    float m_emcal_e_low_cut = 0.2;
+   float m_vx, m_vy, m_vz;
 };
 
 #endif // TRACKTOCALO_H

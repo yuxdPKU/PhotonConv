@@ -84,6 +84,9 @@ int TrackToCalo::Init(PHCompositeNode *topNode)
   _outfile = new TFile(_outfilename.c_str(), "RECREATE");
   delete _tree;
   _tree = new TTree("tree", "A tree with track/calo info");
+  _tree->Branch("_vertex_id", &_vertex_id);
+  _tree->Branch("_vertex_corssing", &_vertex_crossing);
+  _tree->Branch("_vertex_ntracks", &_vertex_ntracks);
   _tree->Branch("_vertex_x", &_vertex_x);
   _tree->Branch("_vertex_y", &_vertex_y);
   _tree->Branch("_vertex_z", &_vertex_z);
@@ -94,9 +97,12 @@ int TrackToCalo::Init(PHCompositeNode *topNode)
   _tree->Branch("_track_bc", &_track_bc);
   _tree->Branch("_track_phi", &_track_phi);
   _tree->Branch("_track_eta", &_track_eta);
-  _tree->Branch("_track_x", &_track_x);
-  _tree->Branch("_track_y", &_track_y);
-  _tree->Branch("_track_z", &_track_z);
+  _tree->Branch("_track_pcax", &_track_pcax);
+  _tree->Branch("_track_pcay", &_track_pcay);
+  _tree->Branch("_track_pcaz", &_track_pcaz);
+  _tree->Branch("_track_vx", &_track_vx);
+  _tree->Branch("_track_vy", &_track_vy);
+  _tree->Branch("_track_vz", &_track_vz);
   _tree->Branch("_track_quality", &_track_quality);
   _tree->Branch("_track_dcaxy", &_track_dcaxy);
   _tree->Branch("_track_dcaz", &_track_dcaz);
@@ -139,6 +145,9 @@ int TrackToCalo::Init(PHCompositeNode *topNode)
   _tree->Branch("_emcal_y", &_emcal_y);
   _tree->Branch("_emcal_z", &_emcal_z);
   _tree->Branch("_emcal_e", &_emcal_e);
+  _tree->Branch("_emcal_ecore", &_emcal_ecore);
+  _tree->Branch("_emcal_chi2", &_emcal_chi2);
+  _tree->Branch("_emcal_prob", &_emcal_prob);
   _tree->Branch("_emcal_tower_cluster_id", &_emcal_tower_cluster_id);
   _tree->Branch("_emcal_tower_e", &_emcal_tower_e);
   _tree->Branch("_emcal_tower_phi", &_emcal_tower_phi);
@@ -219,7 +228,7 @@ int TrackToCalo::process_event(PHCompositeNode *topNode)
     _mbd_z.push_back(NAN);
   }
 
-  SvtxVertex *svtx_vtx = nullptr;
+  //SvtxVertex *svtx_vtx = nullptr;
 
   if(!vertexMap)
   {
@@ -229,16 +238,27 @@ int TrackToCalo::process_event(PHCompositeNode *topNode)
   {
     if(!vertexMap->empty())
     {
-      svtx_vtx = vertexMap->begin()->second;
-      if(svtx_vtx)
+      //svtx_vtx = vertexMap->begin()->second;
+      //if(svtx_vtx)
+      //{
+      //  vertex.setX(svtx_vtx->get_x());
+      //  vertex.setY(svtx_vtx->get_y());
+      //  vertex.setZ(svtx_vtx->get_z());
+      //  _vertex_x.push_back(svtx_vtx->get_x());
+      //  _vertex_y.push_back(svtx_vtx->get_y());
+      //  _vertex_z.push_back(svtx_vtx->get_z());
+      //}
+
+      for (const auto& [key, svtx_vtx] : *vertexMap)
       {
-        vertex.setX(svtx_vtx->get_x());
-        vertex.setY(svtx_vtx->get_y());
-        vertex.setZ(svtx_vtx->get_z());
+        _vertex_id.push_back(svtx_vtx->get_id());
+        _vertex_crossing.push_back(svtx_vtx->get_beam_crossing());
+        _vertex_ntracks.push_back(svtx_vtx->size_tracks());
         _vertex_x.push_back(svtx_vtx->get_x());
         _vertex_y.push_back(svtx_vtx->get_y());
         _vertex_z.push_back(svtx_vtx->get_z());
       }
+
     }
   }
 
@@ -554,14 +574,13 @@ int TrackToCalo::process_event(PHCompositeNode *topNode)
   TrackSeed *tpc_seed = nullptr;
   TrkrCluster *trkrCluster = nullptr;
 
-  Acts::Vector3 acts_vertex(vertex.x(), vertex.y(), vertex.z());
+  //Acts::Vector3 acts_vertex(vertex.x(), vertex.y(), vertex.z());
 
   for (auto &iter : *trackMap)
   {
     track = iter.second;
 
     if(!track) continue;
-std::cout<<"trackid = "<<(track->get_id())<<" , px = "<<track->get_px()<<" , py = "<<track->get_py()<<" , pz = "<<track->get_pz()<<std::endl;
 
     if(track->get_pt() < m_track_pt_low_cut) continue;
 
@@ -725,9 +744,39 @@ std::cout<<"trackid = "<<(track->get_id())<<" , px = "<<track->get_px()<<" , py 
       _track_z_ohc.push_back(thisState->get_z());
     }
 
+    unsigned int m_vertexid = track->get_vertex_id();
+    bool track_have_vertex = false;
+    if (vertexMap)
+    {
+      auto vertexit = vertexMap->find(m_vertexid);
+      if (vertexit != vertexMap->end())
+      {
+        auto svtxvertex = vertexit->second;
+        m_vx = svtxvertex->get_x();
+        m_vy = svtxvertex->get_y();
+        m_vz = svtxvertex->get_z();
+        track_have_vertex = true;
+      }
+    }
+
+    if (track_have_vertex)
+    {
+      _track_vx.push_back(m_vx);
+      _track_vy.push_back(m_vy);
+      _track_vz.push_back(m_vz);
+    }
+    else
+    {
+      _track_vx.push_back(NAN);
+      _track_vy.push_back(NAN);
+      _track_vz.push_back(NAN);
+    }
+
     _track_id.push_back(track->get_id());
     _track_quality.push_back(track->get_quality());
-    auto dcapair = TrackAnalysisUtils::get_dca(track, acts_vertex);
+    //auto dcapair = TrackAnalysisUtils::get_dca(track, acts_vertex);
+    Acts::Vector3 zero = Acts::Vector3::Zero();
+    auto dcapair = TrackAnalysisUtils::get_dca(track, zero);
     _track_dcaxy.push_back(dcapair.first.first);
     _track_dcaz.push_back(dcapair.second.first);
     _track_nc_tpc.push_back(n_tpc_clusters);
@@ -738,9 +787,9 @@ std::cout<<"trackid = "<<(track->get_id())<<" , px = "<<track->get_px()<<" , py 
     _track_pz.push_back(track->get_pz());
     _track_phi.push_back(track->get_phi());
     _track_eta.push_back(track->get_eta());
-    _track_x.push_back(track->get_x());
-    _track_y.push_back(track->get_y());
-    _track_z.push_back(track->get_z());
+    _track_pcax.push_back(track->get_x());
+    _track_pcay.push_back(track->get_y());
+    _track_pcaz.push_back(track->get_z());
 
   }
 
@@ -1035,6 +1084,12 @@ std::cout<<"trackid = "<<(track->get_id())<<" , px = "<<track->get_px()<<" , py 
     _emcal_x.push_back(cluster->get_x());
     _emcal_y.push_back(cluster->get_y());
     _emcal_z.push_back(cluster->get_z());
+    _emcal_ecore.push_back(cluster->get_ecore());
+    _emcal_chi2.push_back(cluster->get_chi2());
+    _emcal_prob.push_back(cluster->get_prob());
+//std::cout<<"cluster->get_ecore() = "<<cluster->get_ecore()<<std::endl;
+//std::cout<<"cluster->get_chi2() = "<<cluster->get_chi2()<<std::endl;
+//std::cout<<"cluster->get_prob() = "<<cluster->get_prob()<<std::endl;
 
     RawCluster::TowerConstRange towers = cluster->get_towers();
     RawCluster::TowerConstIterator toweriter;
@@ -1185,6 +1240,9 @@ int TrackToCalo::End(PHCompositeNode *topNode)
 
 void TrackToCalo::ResetTreeVectors()
 {
+  _vertex_id.clear();
+  _vertex_crossing.clear();
+  _vertex_ntracks.clear();
   _vertex_x.clear();
   _vertex_y.clear();
   _vertex_z.clear();
@@ -1195,9 +1253,12 @@ void TrackToCalo::ResetTreeVectors()
   _track_bc.clear();
   _track_phi.clear();
   _track_eta.clear();
-  _track_x.clear();
-  _track_y.clear();
-  _track_z.clear();
+  _track_pcax.clear();
+  _track_pcay.clear();
+  _track_pcaz.clear();
+  _track_vx.clear();
+  _track_vy.clear();
+  _track_vz.clear();
   _track_quality.clear();
   _track_dcaxy.clear();
   _track_dcaz.clear();
@@ -1218,6 +1279,11 @@ void TrackToCalo::ResetTreeVectors()
   _track_x_emc.clear();
   _track_y_emc.clear();
   _track_z_emc.clear();
+  _track_phi_ihc.clear();
+  _track_eta_ihc.clear();
+  _track_x_ihc.clear();
+  _track_y_ihc.clear();
+  _track_z_ihc.clear();
   _track_phi_ohc.clear();
   _track_eta_ohc.clear();
   _track_x_ohc.clear();
@@ -1235,6 +1301,9 @@ void TrackToCalo::ResetTreeVectors()
   _emcal_y.clear();
   _emcal_z.clear();
   _emcal_e.clear();
+  _emcal_ecore.clear();
+  _emcal_prob.clear();
+  _emcal_chi2.clear();
   _emcal_tower_cluster_id.clear();
   _emcal_tower_e.clear();
   _emcal_tower_phi.clear();
@@ -1252,7 +1321,6 @@ void TrackToCalo::ResetTreeVectors()
   _hcal_tower_phi.clear();
   _hcal_tower_eta.clear();
   _hcal_tower_status.clear();
-
   _mbd_x.clear();
   _mbd_y.clear();
   _mbd_z.clear();
