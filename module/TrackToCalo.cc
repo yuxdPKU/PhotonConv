@@ -1087,9 +1087,13 @@ int TrackToCalo::process_event(PHCompositeNode *topNode)
     _emcal_ecore.push_back(cluster->get_ecore());
     _emcal_chi2.push_back(cluster->get_chi2());
     _emcal_prob.push_back(cluster->get_prob());
-//std::cout<<"cluster->get_ecore() = "<<cluster->get_ecore()<<std::endl;
-//std::cout<<"cluster->get_chi2() = "<<cluster->get_chi2()<<std::endl;
-//std::cout<<"cluster->get_prob() = "<<cluster->get_prob()<<std::endl;
+//std::cout<<" cluster->get_e() = "<<cluster->get_energy();
+//std::cout<<" cluster->get_x() = "<<cluster->get_x();
+//std::cout<<" cluster->get_y() = "<<cluster->get_y();
+//std::cout<<" cluster->get_z() = "<<cluster->get_z();
+//std::cout<<" cluster->get_ecore() = "<<cluster->get_ecore();
+//std::cout<<" cluster->get_chi2() = "<<cluster->get_chi2();
+//std::cout<<" cluster->get_prob() = "<<cluster->get_prob()<<std::endl;
 
     RawCluster::TowerConstRange towers = cluster->get_towers();
     RawCluster::TowerConstIterator toweriter;
