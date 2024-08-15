@@ -7,162 +7,12 @@ void EvtDisplayAligned(int runnumber)
 {
   gStyle->SetOptStat(0);
 
-  TString inputfile = Form("./46730/final_46730_ana.root");
+  TString inputfile = Form("./%d/final_%d_ana.root",runnumber,runnumber);
 
   TFile *file = new TFile(inputfile, "READ");
   TTree *tree = (TTree*)file->Get("tree");
 
-  std::vector<float> *_vertex_x = 0;
-  std::vector<float> *_vertex_y = 0;
-  std::vector<float> *_vertex_z = 0;
-  std::vector<float> *_cluster_x = 0;
-  std::vector<float> *_cluster_y = 0;
-  std::vector<float> *_cluster_z = 0;
-  std::vector<int> *_track_id = 0;
-  std::vector<float> *_track_quality = 0;
-  std::vector<float> *_track_dcaxy = 0;
-  std::vector<float> *_track_dcaz = 0;
-  std::vector<int> *_track_nc_tpc = 0;
-  std::vector<int> *_track_nc_mvtx = 0;
-  std::vector<int> *_track_nc_intt = 0;
-  std::vector<int> *_track_bc = 0;
-  std::vector<float> *_track_phi = 0;
-  std::vector<float> *_track_eta = 0;
-  std::vector<float> *_track_x = 0;
-  std::vector<float> *_track_y = 0;
-  std::vector<float> *_track_z = 0;
-  std::vector<float> *_track_ptq = 0;
-  std::vector<float> *_track_px = 0;
-  std::vector<float> *_track_py = 0;
-  std::vector<float> *_track_pz = 0;
-  std::vector<float> *_track_phi_origin = 0;
-  std::vector<float> *_track_eta_origin = 0;
-  std::vector<float> *_track_x_origin = 0;
-  std::vector<float> *_track_y_origin = 0;
-  std::vector<float> *_track_z_origin = 0;
-  std::vector<float> *_track_phi_emc = 0;
-  std::vector<float> *_track_eta_emc = 0;
-  std::vector<float> *_track_x_emc = 0;
-  std::vector<float> *_track_y_emc = 0;
-  std::vector<float> *_track_z_emc = 0;
-  std::vector<float> *_track_phi_ihc = 0;
-  std::vector<float> *_track_eta_ihc = 0;
-  std::vector<float> *_track_x_ihc = 0;
-  std::vector<float> *_track_y_ihc = 0;
-  std::vector<float> *_track_z_ihc = 0;
-  std::vector<float> *_track_phi_ohc = 0;
-  std::vector<float> *_track_eta_ohc = 0;
-  std::vector<float> *_track_x_ohc = 0;
-  std::vector<float> *_track_y_ohc = 0;
-  std::vector<float> *_track_z_ohc = 0;
-  std::vector<int> *_trClus_track_id = 0;
-  std::vector<int> *_trClus_type = 0;
-  std::vector<float> *_trClus_x = 0;
-  std::vector<float> *_trClus_y = 0;
-  std::vector<float> *_trClus_z = 0;
-  std::vector<int> *_emcal_id = 0;
-  std::vector<float> *_emcal_phi = 0;
-  std::vector<float> *_emcal_eta = 0;
-  std::vector<float> *_emcal_x = 0;
-  std::vector<float> *_emcal_y = 0;
-  std::vector<float> *_emcal_z = 0;
-  std::vector<float> *_emcal_e = 0;
-  std::vector<int> *_emcal_tower_cluster_id = 0;
-  std::vector<float> *_emcal_tower_e = 0;
-  std::vector<float> *_emcal_tower_phi = 0;
-  std::vector<float> *_emcal_tower_eta = 0;
-  std::vector<int> *_emcal_tower_status = 0;
-  std::vector<int> *_hcal_id = 0;
-  std::vector<float> *_hcal_phi = 0;
-  std::vector<float> *_hcal_eta = 0;
-  std::vector<float> *_hcal_x = 0;
-  std::vector<float> *_hcal_y = 0;
-  std::vector<float> *_hcal_z = 0;
-  std::vector<float> *_hcal_e = 0;
-  std::vector<int> *_hcal_tower_cluster_id = 0;
-  std::vector<float> *_hcal_tower_e = 0;
-  std::vector<float> *_hcal_tower_phi = 0;
-  std::vector<float> *_hcal_tower_eta = 0;
-  std::vector<int> *_hcal_tower_status = 0;
-  std::vector<int> *_ntracks = 0;
-  std::vector<float> *_mbd_z = 0;
-  std::vector<int> *_triggers = 0;
-
-  tree->SetBranchAddress("_vertex_x", &_vertex_x);
-  tree->SetBranchAddress("_vertex_y", &_vertex_y);
-  tree->SetBranchAddress("_vertex_z", &_vertex_z);
-  tree->SetBranchAddress("_cluster_x", &_cluster_x);
-  tree->SetBranchAddress("_cluster_y", &_cluster_y);
-  tree->SetBranchAddress("_cluster_z", &_cluster_z);
-  tree->SetBranchAddress("_track_id", &_track_id);
-  tree->SetBranchAddress("_track_quality", &_track_quality);
-  tree->SetBranchAddress("_track_dcaxy", &_track_dcaxy);
-  tree->SetBranchAddress("_track_dcaz", &_track_dcaz);
-  tree->SetBranchAddress("_track_nc_tpc", &_track_nc_tpc);
-  tree->SetBranchAddress("_track_nc_mvtx", &_track_nc_mvtx);
-  tree->SetBranchAddress("_track_nc_intt", &_track_nc_intt);
-  tree->SetBranchAddress("_track_bc", &_track_bc);
-  tree->SetBranchAddress("_track_phi", &_track_phi);
-  tree->SetBranchAddress("_track_eta", &_track_eta);
-  tree->SetBranchAddress("_track_x", &_track_x);
-  tree->SetBranchAddress("_track_y", &_track_y);
-  tree->SetBranchAddress("_track_z", &_track_z);
-  tree->SetBranchAddress("_track_ptq", &_track_ptq);
-  tree->SetBranchAddress("_track_px", &_track_px);
-  tree->SetBranchAddress("_track_py", &_track_py);
-  tree->SetBranchAddress("_track_pz", &_track_pz);
-  tree->SetBranchAddress("_track_phi_origin", &_track_phi_origin);
-  tree->SetBranchAddress("_track_eta_origin", &_track_eta_origin);
-  tree->SetBranchAddress("_track_x_origin", &_track_x_origin);
-  tree->SetBranchAddress("_track_y_origin", &_track_y_origin);
-  tree->SetBranchAddress("_track_z_origin", &_track_z_origin);
-  tree->SetBranchAddress("_track_phi_emc", &_track_phi_emc);
-  tree->SetBranchAddress("_track_eta_emc", &_track_eta_emc);
-  tree->SetBranchAddress("_track_x_emc", &_track_x_emc);
-  tree->SetBranchAddress("_track_y_emc", &_track_y_emc);
-  tree->SetBranchAddress("_track_z_emc", &_track_z_emc);
-  tree->SetBranchAddress("_track_phi_ihc", &_track_phi_ihc);
-  tree->SetBranchAddress("_track_eta_ihc", &_track_eta_ihc);
-  tree->SetBranchAddress("_track_x_ihc", &_track_x_ihc);
-  tree->SetBranchAddress("_track_y_ihc", &_track_y_ihc);
-  tree->SetBranchAddress("_track_z_ihc", &_track_z_ihc);
-  tree->SetBranchAddress("_track_phi_ohc", &_track_phi_ohc);
-  tree->SetBranchAddress("_track_eta_ohc", &_track_eta_ohc);
-  tree->SetBranchAddress("_track_x_ohc", &_track_x_ohc);
-  tree->SetBranchAddress("_track_y_ohc", &_track_y_ohc);
-  tree->SetBranchAddress("_track_z_ohc", &_track_z_ohc);
-  tree->SetBranchAddress("_trClus_track_id", &_trClus_track_id);
-  tree->SetBranchAddress("_trClus_type", &_trClus_type);
-  tree->SetBranchAddress("_trClus_x", &_trClus_x);
-  tree->SetBranchAddress("_trClus_y", &_trClus_y);
-  tree->SetBranchAddress("_trClus_z", &_trClus_z);
-  tree->SetBranchAddress("_emcal_id", &_emcal_id);
-  tree->SetBranchAddress("_emcal_phi", &_emcal_phi);
-  tree->SetBranchAddress("_emcal_eta", &_emcal_eta);
-  tree->SetBranchAddress("_emcal_x", &_emcal_x);
-  tree->SetBranchAddress("_emcal_y", &_emcal_y);
-  tree->SetBranchAddress("_emcal_z", &_emcal_z);
-  tree->SetBranchAddress("_emcal_e", &_emcal_e);
-  tree->SetBranchAddress("_emcal_tower_cluster_id", &_emcal_tower_cluster_id);
-  tree->SetBranchAddress("_emcal_tower_e", &_emcal_tower_e);
-  tree->SetBranchAddress("_emcal_tower_phi", &_emcal_tower_phi);
-  tree->SetBranchAddress("_emcal_tower_eta", &_emcal_tower_eta);
-  tree->SetBranchAddress("_emcal_tower_status", &_emcal_tower_status);
-  tree->SetBranchAddress("_hcal_id", &_hcal_id);
-  tree->SetBranchAddress("_hcal_phi", &_hcal_phi);
-  tree->SetBranchAddress("_hcal_eta", &_hcal_eta);
-  tree->SetBranchAddress("_hcal_x", &_hcal_x);
-  tree->SetBranchAddress("_hcal_y", &_hcal_y);
-  tree->SetBranchAddress("_hcal_z", &_hcal_z);
-  tree->SetBranchAddress("_hcal_e", &_hcal_e);
-  tree->SetBranchAddress("_hcal_tower_cluster_id", &_hcal_tower_cluster_id);
-  tree->SetBranchAddress("_hcal_tower_e", &_hcal_tower_e);
-  tree->SetBranchAddress("_hcal_tower_phi", &_hcal_tower_phi);
-  tree->SetBranchAddress("_hcal_tower_eta", &_hcal_tower_eta);
-  tree->SetBranchAddress("_hcal_tower_status", &_hcal_tower_status);
-  tree->SetBranchAddress("_mbd_z", &_mbd_z);
-  tree->SetBranchAddress("_triggers", &_triggers);
-  tree->SetBranchAddress("_ntracks", &_ntracks);
+  setBranch(tree);
 
   std::vector<std::vector<float>> all_tpc_cluster_x;
   std::vector<std::vector<float>> all_tpc_cluster_y;
@@ -389,7 +239,8 @@ void EvtDisplayAligned(int runnumber)
           continue;
         }
         std::pair<float, float> EMCalPos;
-        EMCalPos = std::make_pair(_emcal_phi->at(iem), _emcal_z->at(iem));
+        float radius_scale = emcal_radius / sqrt( pow(_emcal_x->at(iem),2) + pow(_emcal_y->at(iem),2) );
+        EMCalPos = std::make_pair(_emcal_phi->at(iem), radius_scale * _emcal_z->at(iem));
 
         float dphi = PiRange(TrackProjsEMCal.first - EMCalPos.first);
         float dz = TrackProjsEMCal.second - EMCalPos.second;
@@ -520,7 +371,8 @@ void EvtDisplayAligned(int runnumber)
             continue;
           }
           std::pair<float, float> EMCalPos;
-          EMCalPos = std::make_pair(_emcal_phi->at(iem), _emcal_z->at(iem));
+          float radius_scale = emcal_radius / sqrt( pow(_emcal_x->at(iem),2) + pow(_emcal_y->at(iem),2) );
+          EMCalPos = std::make_pair(_emcal_phi->at(iem), radius_scale * _emcal_z->at(iem));
 
           float dphi1 = PiRange(vec_track_phi.at(i1) - EMCalPos.first);
           float dz1 = vec_track_z.at(i1) - EMCalPos.second;
@@ -546,9 +398,10 @@ void EvtDisplayAligned(int runnumber)
     // loop all emcal clusters to match with tpc tracks
     for(unsigned int iem = 0; iem < _emcal_e->size(); iem++)
     {
-      float x = _emcal_x->at(iem);
-      float y = _emcal_y->at(iem);
-      float z = _emcal_z->at(iem);
+      float radius_scale = emcal_radius / sqrt( pow(_emcal_x->at(iem),2) + pow(_emcal_y->at(iem),2) );
+      float x = _emcal_x->at(iem) * radius_scale;
+      float y = _emcal_y->at(iem) * radius_scale;
+      float z = _emcal_z->at(iem) * radius_scale;
       float R = sqrt(x*x+y*y);
 
       auto it = std::find(vcalo_index.begin(), vcalo_index.end(), iem);
@@ -632,7 +485,7 @@ void EvtDisplayAligned(int runnumber)
     h_diff_dptdpz->Fill(diff_dptdpz.at(i));
   }
 
-  h_diff_dptdpz->SetTitle(Form("Run %d;|#Delta(pT/pz)|;Entries",runnumber));
+  h_diff_dptdpz->SetTitle(Form("sPHENIX Internal, Run %d;|#Delta(pT/pz)|;Entries",runnumber));
   h_diff_dptdpz->SetMinimum(0.1);
   h_diff_dptdpz->Draw("hist");
 
@@ -651,7 +504,7 @@ void EvtDisplayAligned(int runnumber)
     h_diff_phi->Fill(diff_phi.at(i));
   }
 
-  h_diff_phi->SetTitle(Form("Run %d;|#Phi_{1}-#Phi_{2}|;Entries",runnumber));
+  h_diff_phi->SetTitle(Form("sPHENIX Internal, Run %d;|#Phi_{1}-#Phi_{2}|;Entries",runnumber));
   h_diff_phi->SetMinimum(0.1);
   h_diff_phi->Draw("hist");
 
@@ -671,7 +524,7 @@ void EvtDisplayAligned(int runnumber)
     h2_eop_p->Fill(p, eop);
   }
 
-  h2_eop_p->SetTitle(Form("Run %d;P [GeV/c]; E/p;Entries",runnumber));
+  h2_eop_p->SetTitle(Form("sPHENIX Internal, Run %d;P [GeV/c]; E/p;Entries",runnumber));
   h2_eop_p->Draw("colz");
 
   canvas2->Update();
@@ -687,7 +540,7 @@ void EvtDisplayAligned(int runnumber)
     can->cd();
 
     TGraph *gr_tpc_all = new TGraph(all_tpc_cluster_x.at(index).size(), all_tpc_cluster_x.at(index).data(), all_tpc_cluster_y.at(index).data());
-    gr_tpc_all->SetTitle(Form("Run %d Event %d;X [cm];Y [cm]",runnumber,eventid.at(index)));
+    gr_tpc_all->SetTitle(Form("sPHENIX Internal, Run %d Event %d;X [cm];Y [cm]",runnumber,eventid.at(index)));
     gr_tpc_all->GetXaxis()->SetLimits(-(emcal_radius+10.), (emcal_radius+10.));
     gr_tpc_all->SetMinimum(-(emcal_radius+10.));
     gr_tpc_all->SetMaximum((emcal_radius+10.));
@@ -697,7 +550,7 @@ void EvtDisplayAligned(int runnumber)
     gr_tpc_all->Draw("AP");
 
     TGraph *gr_tpc_unmatched = new TGraph(unmatched_tpc_cluster_x.at(index).size(), unmatched_tpc_cluster_x.at(index).data(), unmatched_tpc_cluster_y.at(index).data());
-    gr_tpc_unmatched->SetTitle(Form("Run %d Event %d;X [cm];Y [cm]",runnumber,eventid.at(index)));
+    gr_tpc_unmatched->SetTitle(Form("sPHENIX Internal, Run %d Event %d;X [cm];Y [cm]",runnumber,eventid.at(index)));
     gr_tpc_unmatched->GetXaxis()->SetLimits(-(emcal_radius+10.), (emcal_radius+10.));
     gr_tpc_unmatched->SetMinimum(-(emcal_radius+10.));
     gr_tpc_unmatched->SetMaximum((emcal_radius+10.));
@@ -759,7 +612,7 @@ void EvtDisplayAligned(int runnumber)
     can->cd();
 
     TGraph *gr_tpc_all = new TGraph(all_tpc_cluster_R.at(index).size(), all_tpc_cluster_z.at(index).data(), all_tpc_cluster_R.at(index).data());
-    gr_tpc_all->SetTitle(Form("Run %d Event %d;Z [cm];R [cm]",runnumber,eventid.at(index)));
+    gr_tpc_all->SetTitle(Form("sPHENIX Internal, Run %d Event %d;Z [cm];R [cm]",runnumber,eventid.at(index)));
     gr_tpc_all->GetXaxis()->SetLimits(-150, 150);
     gr_tpc_all->SetMinimum(20);
     gr_tpc_all->SetMaximum(emcal_radius+10.);
@@ -769,7 +622,7 @@ void EvtDisplayAligned(int runnumber)
     gr_tpc_all->Draw("AP");
 
     TGraph *gr_tpc_unmatched = new TGraph(unmatched_tpc_cluster_R.at(index).size(), unmatched_tpc_cluster_z.at(index).data(), unmatched_tpc_cluster_R.at(index).data());
-    gr_tpc_unmatched->SetTitle(Form("Run %d Event %d;Z [cm];R [cm]",runnumber,eventid.at(index)));
+    gr_tpc_unmatched->SetTitle(Form("sPHENIX Internal, Run %d Event %d;Z [cm];R [cm]",runnumber,eventid.at(index)));
     gr_tpc_unmatched->GetXaxis()->SetLimits(-150, 150);
     gr_tpc_unmatched->SetMinimum(20);
     gr_tpc_unmatched->SetMaximum(emcal_radius+10.);

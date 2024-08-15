@@ -1,7 +1,10 @@
 #!/bin/bash
 
-input_file=$1
-run_number=$2
+#input_file=$1
+#run_number=$2
+
+run_number=$1
+input_file=run${run_number}_tpc.list
 
 if [ ! -f "$input_file" ]; then
   echo "File not found: $input_file"
