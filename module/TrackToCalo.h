@@ -83,6 +83,8 @@ class TrackToCalo : public SubsysReco
    std::string m_RawClusCont_EM_name = "TOPOCLUSTER_EMCAL";
    std::string m_RawClusCont_HAD_name = "TOPOCLUSTER_HCAL";
 
+   int _runNumber;
+   int _eventNumber;
    std::vector<int> _vertex_id;
    std::vector<int> _vertex_crossing;
    std::vector<int> _vertex_ntracks;

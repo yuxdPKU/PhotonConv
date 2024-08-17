@@ -84,6 +84,8 @@ int TrackToCalo::Init(PHCompositeNode *topNode)
   _outfile = new TFile(_outfilename.c_str(), "RECREATE");
   delete _tree;
   _tree = new TTree("tree", "A tree with track/calo info");
+  _tree->Branch("_runNumber", &_runNumber);
+  _tree->Branch("_eventNumber", &_eventNumber);
   _tree->Branch("_vertex_id", &_vertex_id);
   _tree->Branch("_vertex_corssing", &_vertex_crossing);
   _tree->Branch("_vertex_ntracks", &_vertex_ntracks);
@@ -189,6 +191,13 @@ int TrackToCalo::process_event(PHCompositeNode *topNode)
   {
     EventHeaderv1* evtHeader = findNode::getClass<EventHeaderv1>(topNode, "EventHeader");
     std::cout<<"runNumber = "<<evtHeader->get_RunNumber()<<" , m_evtNumber = "<<evtHeader->get_EvtSequence()<<std::endl;
+    _runNumber = evtHeader->get_RunNumber();
+    _eventNumber = evtHeader->get_EvtSequence();
+  }
+  else
+  {
+    _runNumber = 0;
+    _eventNumber = -1;
   }
 
   bool has_vertex = false;
