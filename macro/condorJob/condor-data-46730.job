@@ -43,11 +43,14 @@ Initialdir     = /sphenix/u/xyu3/hftg01/PhotonConv/macro
 # The executable we want to run.
 Executable     = $(Initialdir)/run_data.sh
 
+RunNumber      = 51243
+TpcList        = ./runList/trackrunlist/run$INT(RunNumber)_$INT(Process,%04d).list
+CaloList       = ./runList/dst_calo_run2pp-$INT(RunNumber,%08d).list
+DrawEvtDisplay = false
+
 # The argument to pass to the executable.
 #tracking firt then calo, only one tracking file
-Arguments      = "./trackrunlist/run46730_$INT(Process,%04d).txt run46730_calo.list"
-
-RunNumber      = 46730
+Arguments      = "$(TpcList) $(CaloList) $(DrawEvtDisplay)"
 
 # The job's stdout is sent to this file.
 Output         = $(Initialdir)/condorJob/log/job-Data-$(RunNumber).$(Cluster).$(Process).out
@@ -69,3 +72,4 @@ on_exit_hold = (ExitBySignal == True) || (ExitCode != 0)
 # then the job will be submitted N times.  Use the $(Process)
 # macro to make your input/output and log files unique.
 Queue 7
+#Queue TpcList from $(Initialdir)/runList/dst_tpc_event_run2pp-$INT(RunNumber,%08d).list

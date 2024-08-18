@@ -25,13 +25,14 @@ cd macro
 ```
 
 - Submit jobs in condorJob
-**Do not forget to change Initialdir, RunNumber, input DST list in Arguments, DVCorrTag which is related with pre-calib drift velocity, and the number of jobs you want to submit**
+**Do not forget to change Initialdir, RunNumber, input DST list, draw event display or not, and the number of jobs you want to submit**
 ```
 Initialdir     = /sphenix/u/xyu3/hftg01
 Executable     = $(Initialdir)/run_data.sh
 RunNumber      = 51103
-DVCorrTag      = 2
-Arguments      = "./runList/trackrunlist/run$(RunNumber)_$INT(Process,%04d).txt ./runList/run$(RunNumber)_calo.list $(DVCorrTag)"
+TpcList        = ./runList/trackrunlist/run$INT(RunNumber)_$INT(Process,%04d).list
+CaloList       = ./runList/run$INT(RunNumber,%08d)_$INT(Process,%04d).list
+DrawEvtDisplay = false
 Queue 9
 ```
 
