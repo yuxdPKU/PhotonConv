@@ -169,6 +169,7 @@ class TrackToCalo : public SubsysReco
    std::vector<float> _hcal_tower_phi;
    std::vector<float> _hcal_tower_eta;
    std::vector<int> _hcal_tower_status;
+   std::vector<int> _hcal_tower_io;
 
    std::vector<float> _mbd_x;
    std::vector<float> _mbd_y;

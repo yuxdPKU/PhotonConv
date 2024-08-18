@@ -167,6 +167,7 @@ int TrackToCalo::Init(PHCompositeNode *topNode)
   _tree->Branch("_hcal_tower_phi", &_hcal_tower_phi);
   _tree->Branch("_hcal_tower_eta", &_hcal_tower_eta);
   _tree->Branch("_hcal_tower_status", &_hcal_tower_status);
+  _tree->Branch("_hcal_tower_io", &_hcal_tower_io);
   _tree->Branch("_mbd_x", &_mbd_x);
   _tree->Branch("_mbd_y", &_mbd_y);
   _tree->Branch("_mbd_z", &_mbd_z);
@@ -1096,13 +1097,6 @@ int TrackToCalo::process_event(PHCompositeNode *topNode)
     _emcal_ecore.push_back(cluster->get_ecore());
     _emcal_chi2.push_back(cluster->get_chi2());
     _emcal_prob.push_back(cluster->get_prob());
-//std::cout<<" cluster->get_e() = "<<cluster->get_energy();
-//std::cout<<" cluster->get_x() = "<<cluster->get_x();
-//std::cout<<" cluster->get_y() = "<<cluster->get_y();
-//std::cout<<" cluster->get_z() = "<<cluster->get_z();
-//std::cout<<" cluster->get_ecore() = "<<cluster->get_ecore();
-//std::cout<<" cluster->get_chi2() = "<<cluster->get_chi2();
-//std::cout<<" cluster->get_prob() = "<<cluster->get_prob()<<std::endl;
 
     RawCluster::TowerConstRange towers = cluster->get_towers();
     RawCluster::TowerConstIterator toweriter;
@@ -1148,24 +1142,28 @@ int TrackToCalo::process_event(PHCompositeNode *topNode)
       _hcal_tower_cluster_id.push_back(clusIter_HAD->first);
       RawTowerGeom *tower_geom = nullptr;
       TowerInfo *towerInfo = nullptr;
+      int tower_io = -1;
 
       if(RawTowerDefs::decode_caloid(toweriter->first) == RawTowerDefs::CalorimeterId::HCALOUT)
       {
         tower_geom = OHCalGeo->get_tower_geometry(toweriter->first);
         unsigned int key = TowerInfoDefs::encode_hcal(tower_geom->get_bineta(), tower_geom->get_binphi());
         towerInfo = OHCAL_Container->get_tower_at_key(key);
+        tower_io = 2;
       }
       else if(RawTowerDefs::decode_caloid(toweriter->first) == RawTowerDefs::CalorimeterId::HCALIN)
       {
         tower_geom = IHCalGeo->get_tower_geometry(toweriter->first);
         unsigned int key = TowerInfoDefs::encode_hcal(tower_geom->get_bineta(), tower_geom->get_binphi());
         towerInfo = IHCAL_Container->get_tower_at_key(key);
+        tower_io = 1;
       }
 
       _hcal_tower_phi.push_back(tower_geom->get_phi());
       _hcal_tower_eta.push_back(tower_geom->get_eta());
       _hcal_tower_e.push_back(toweriter->second);
       _hcal_tower_status.push_back(towerInfo->get_status());
+      _hcal_tower_io.push_back(tower_io);
     }
   }
 
@@ -1334,6 +1332,7 @@ void TrackToCalo::ResetTreeVectors()
   _hcal_tower_phi.clear();
   _hcal_tower_eta.clear();
   _hcal_tower_status.clear();
+  _hcal_tower_io.clear();
   _mbd_x.clear();
   _mbd_y.clear();
   _mbd_z.clear();

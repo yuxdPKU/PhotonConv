@@ -6,6 +6,7 @@
 #include <GlobalVariables.C>
 #include <Trkr_Clustering.C>
 #include <Trkr_RecoInit.C>
+#include <Trkr_TpcReadoutInit.C>
 #include <Trkr_Reco.C>
 #include <G4_Global.C>
 
@@ -21,6 +22,8 @@
 #include <fun4all/Fun4AllServer.h>
 
 #include <phool/recoConsts.h>
+
+#include <cdbobjects/CDBTTree.h>
 
 #include <track_to_calo/TrackCaloMatch.h>
 #include <track_to_calo/TrackToCalo.h>
@@ -41,6 +44,8 @@
 
 R__LOAD_LIBRARY(libfun4all.so)
 R__LOAD_LIBRARY(libffamodules.so)
+R__LOAD_LIBRARY(libphool.so)
+R__LOAD_LIBRARY(libcdbobjects.so)
 R__LOAD_LIBRARY(libmvtx.so)
 R__LOAD_LIBRARY(libintt.so)
 R__LOAD_LIBRARY(libtpc.so)
@@ -63,52 +68,25 @@ void Fun4All_FieldOnAllTrackersCalos(
         "run46730_0000_trkr.txt",
         "run46730_calo.list"}, 
     bool doTpcOnlyTracking = true,
-    bool doDriftVelocityCorr = true,
-    int DriftVelocityCorrTag = 0,
     bool doEvtDisplay = false,
     bool doEMcalRadiusCorr = true,
     const bool convertSeeds = false)
 {
+  gSystem->Load("libg4dst.so");
+
   int verbosity = 0;
 
-  gSystem->Load("libg4dst.so");
-  //gSystem->Load("libFROG.so");
-  //FROG *fr = new FROG();
-
+  std::cout << "Including " << myInputLists.size() << " files." << std::endl;
   std::string firstfile = GetFirstLine(myInputLists[0]);
   if (*firstfile.c_str() == '\0') return;
   std::pair<int, int> runseg = Fun4AllUtils::GetRunSegment(firstfile);
   int runnumber = runseg.first;
   int segment = runseg.second;
 
-  auto rc = recoConsts::instance();
-  rc->set_IntFlag("RUNNUMBER", runnumber);
-
-  Enable::CDB = true;
-  rc->set_StringFlag("CDB_GLOBALTAG", "ProdA_2024");
-  rc->set_uint64Flag("TIMESTAMP", 6);
-
   //The next set of lines figures out folder revisions, file numbers etc
   string outDir = "/sphenix/u/xyu3/hftg01/PhotonConv/macro";
 
   Enable::DSTOUT = false;
-
-  //Create the server
-  Fun4AllServer *se = Fun4AllServer::instance();
-  se->Verbosity(verbosity);
-
-  std::cout << "Including " << myInputLists.size() << " files." << std::endl;
-
-  //Add all required input files
-  for (unsigned int i = 0; i < myInputLists.size(); ++i)
-  {
-    Fun4AllInputManager *infile = new Fun4AllDstInputManager("DSTin_" + to_string(i));
-    std::cout << "Including file " << myInputLists[i] << std::endl;
-    //infile->AddFile(myInputLists[i]);
-    infile->AddListFile(myInputLists[i]);
-    se->registerInputManager(infile);
-  }
-
   string outputRecoFileName = "TrackCalo_" + to_string(segment) + "_kfp.root";
   string outputAnaFileName = "TrackCalo_" + to_string(segment) + "_ana.root";
   string outputDstFileName = "TrackCalo_" + to_string(segment) + "_dst.root";
@@ -129,44 +107,54 @@ void Fun4All_FieldOnAllTrackersCalos(
   std::cout << "Dst file: " << outputDstFile << std::endl;
   std::cout << "Json file path: " << outputJsonDir << std::endl;
 
+  TpcReadoutInit( runnumber );
+  std::cout<< " run: " << runnumber
+	   << " samples: " << TRACKING::reco_tpc_maxtime_sample
+	   << " pre: " << TRACKING::reco_tpc_time_presample
+	   << " vdrift: " << G4TPC::tpc_drift_velocity_reco
+	   << std::endl;
+
+  //Create the server
+  Fun4AllServer *se = Fun4AllServer::instance();
+  se->Verbosity(verbosity);
+
+  //Add all required input files
+  for (unsigned int i = 0; i < myInputLists.size(); ++i)
+  {
+    Fun4AllInputManager *infile = new Fun4AllDstInputManager("DSTin_" + to_string(i));
+    std::cout << "Including file " << myInputLists[i] << std::endl;
+    //infile->AddFile(myInputLists[i]);
+    infile->AddListFile(myInputLists[i]);
+    se->registerInputManager(infile);
+  }
+
+  auto rc = recoConsts::instance();
+  rc->set_IntFlag("RUNNUMBER", runnumber);
+
+  Enable::CDB = true;
+  rc->set_StringFlag("CDB_GLOBALTAG", "ProdA_2024");
+  rc->set_uint64Flag("TIMESTAMP", runnumber);
+
   std::string geofile = CDBInterface::instance()->getUrl("Tracking_Geometry");
 
   Fun4AllRunNodeInputManager *ingeo = new Fun4AllRunNodeInputManager("GeoIn");
   ingeo->AddFile(geofile);
   se->registerInputManager(ingeo);
 
-  double dz_separation_0;
-  if (doDriftVelocityCorr)
+  CDBInterface *cdb = CDBInterface::instance();
+  std::string tpc_dv_calib_dir = cdb->getUrl("TPC_DRIFT_VELOCITY");
+  if (tpc_dv_calib_dir.empty())
   {
-    if (DriftVelocityCorrTag==0)
-    {
-      // recommened drift velocity correction for Ar/CF4/N2 gas
-      // tpc drift velocity = 0.00701 cm/ns
-      dz_separation_0 = -0.14*2*105;
-    }
-    else if (DriftVelocityCorrTag==1)
-    {
-      // recommened drift velocity correction for Ar/CF4/ISO gas in early time, like 6x6, 28x28, 56x56 before 08/09/2024
-      // tpc drift velocity = 0.00731 cm/ns
-      dz_separation_0 = -0.10332944*2*105;
-    }
-    else if (DriftVelocityCorrTag==2)
-    {
-      // recommened drift velocity correction for Ar/CF4/ISO gas in 111x111 run after 08/09/2024
-      // tpc drift velocity = 0.00625 cm/ns
-      dz_separation_0 = -0.23335280*2*105;
-    }
-    else
-    {
-      // for other cases which has not already been calibrated
-      dz_separation_0 = 0;
-    }
+    std::cout << "No calibrated TPC drift velocity for Run " << runnumber << ". Use default value " << G4TPC::tpc_drift_velocity_reco << " cm/ns" << std::endl;
   }
   else
   {
-    dz_separation_0 = 0;
+    CDBTTree *cdbttree = new CDBTTree(tpc_dv_calib_dir);
+    cdbttree->LoadCalibrations();
+    G4TPC::tpc_drift_velocity_reco = cdbttree->GetSingleFloatValue("tpc_drift_velocity");
+    std::cout << "Use calibrated TPC drift velocity for Run " << runnumber << ": " << G4TPC::tpc_drift_velocity_reco << " cm/ns" << std::endl;
   }
-  G4TPC::tpc_drift_velocity_reco = (8.0 / 1000) * 107.0 / 105.0 * (1+ dz_separation_0 / 2. / 105.); //cm/ns
+
   G4TPC::ENABLE_MODULE_EDGE_CORRECTIONS = true;
   //to turn on the default static corrections, enable the two lines below
   //G4TPC::ENABLE_STATIC_CORRECTIONS = true;
@@ -176,6 +164,8 @@ void Fun4All_FieldOnAllTrackersCalos(
   G4MAGNET::magfield_rescale = 1;
 
   TRACKING::pp_mode = false;
+  G4TRACKING::convert_seeds_to_svtxtracks = convertSeeds;
+  std::cout << "Converting to seeds : " << G4TRACKING::convert_seeds_to_svtxtracks << std::endl;
 
   TrackingInit();
   if(doTpcOnlyTracking)
@@ -250,7 +240,6 @@ void Fun4All_FieldOnAllTrackersCalos(
   se->registerSubsystem(seeder);
 
   // expand stubs in the TPC using simple kalman filter
-
   auto cprop = new PHSimpleKFProp("PHSimpleKFProp");
   cprop->set_field_dir(G4MAGNET::magfield_rescale);
   if (ConstField)
@@ -301,9 +290,6 @@ void Fun4All_FieldOnAllTrackersCalos(
    * End Track Seeding
    */
 
-  G4TRACKING::convert_seeds_to_svtxtracks = convertSeeds;
-  std::cout << "Converting to seeds : " << G4TRACKING::convert_seeds_to_svtxtracks << std::endl;
-
   /*
    * Either converts seeds to tracks with a straight line/helix fit
    * or run the full Acts track kalman filter fit
@@ -330,7 +316,7 @@ void Fun4All_FieldOnAllTrackersCalos(
     auto deltazcorr = new PHTpcDeltaZCorrection;
     deltazcorr->Verbosity(0);
     se->registerSubsystem(deltazcorr);
-  
+
     // perform final track fit with ACTS
     auto actsFit = new PHActsTrkFitter;
     actsFit->Verbosity(0);
@@ -355,10 +341,14 @@ void Fun4All_FieldOnAllTrackersCalos(
   finder->setTrackPtCut(-99999.);
   finder->setBeamLineCut(1);
   finder->setTrackQualityCut(1000000000);
-  finder->setRequireMVTX(false);
   if (!doTpcOnlyTracking)
   {
+    finder->setRequireMVTX(true);
     finder->setNmvtxRequired(3);
+  }
+  else
+  {
+    finder->setRequireMVTX(false);
   }
   finder->setOutlierPairCut(0.1);
   se->registerSubsystem(finder);
@@ -367,6 +357,8 @@ void Fun4All_FieldOnAllTrackersCalos(
 
   auto projection = new PHActsTrackProjection("CaloProjection");
   float new_cemc_rad = 100.70;//(1-(-0.077))*93.5 recommended cemc radius
+  //float new_cemc_rad = 99.1;//(1-(-0.060))*93.5
+  //float new_cemc_rad = 97.6;//(1-(-0.044))*93.5, (0.041+0.047)/2=0.044
   if (doEMcalRadiusCorr)
   {
     projection->setLayerRadius(SvtxTrack::CEMC, new_cemc_rad);
@@ -447,6 +439,7 @@ void Fun4All_FieldOnAllTrackersCalos(
 
   se->run(nEvents);
   se->End();
+  se->PrintTimer();
 
   ifstream file_reco(outputRecoFile.c_str(), ios::binary | ios::ate);
   if (file_reco.good() && (file_reco.tellg() > 100))
@@ -492,8 +485,8 @@ void Fun4All_FieldOnAllTrackersCalos(
     system(moveOutput.c_str());
   }
 
-  std::cout << "All done" << std::endl;
   delete se;
+  std::cout << "All done" << std::endl;
   gSystem->Exit(0);
 
   return;

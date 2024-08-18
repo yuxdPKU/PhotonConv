@@ -18,12 +18,11 @@ nEvents=-1
 
 count=1
 total=$#
-totalfilecount=$((total - 1))
 
 inputFiles="{"
 for fileList in $@
 do
-  if [ $count -eq $totalfilecount ]; then
+  if [ $count -eq $total ]; then
     break
   fi
   inputFiles+="\"${fileList}\","
@@ -31,10 +30,9 @@ do
 done
 inputFiles=${inputFiles::-1}
 inputFiles+="}"
-DVoption="${@:$#-1:1}"
 DrawEvtDisplay="${!#}"
 echo running: run_data.sh $*
 #valgrind --num-callers=30 --leak-check=full --suppressions=$ROOTSYS/etc/valgrind-root.supp root.exe -q -b Fun4All_Template.C\(${inputFiles},$nEvents\)
 #valgrind --num-callers=30 --leak-check=full --show-leak-kinds=all --track-origins=yes --suppressions=$ROOTSYS/root.supp root.exe -q -b Fun4All_Template.C\(${inputFiles},$nEvents\)
-root.exe -q -b Fun4All_FieldOnAllTrackersCalos.C\($nEvents,${inputFiles},true,true,${DVoption},${DrawEvtDisplay}\)
+root.exe -q -b Fun4All_FieldOnAllTrackersCalos.C\($nEvents,${inputFiles},true,${DrawEvtDisplay}\)
 echo Script done
