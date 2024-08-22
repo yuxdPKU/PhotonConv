@@ -24,8 +24,7 @@
 #include <trackbase/TrkrCluster.h>
 #include <calobase/RawTowerGeomContainer.h>
 
-//#include <KFParticle.h>  // for KFParticle
-
+#include <kfparticle_sphenix/KFParticle_sPHENIX.h>
 #include <kfparticle_sphenix/KFParticle_DST.h>
 #include <kfparticle_sphenix/KFParticle_Container.h>
 #include <kfparticle_sphenix/KFParticle_Tools.h>

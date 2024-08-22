@@ -27,13 +27,13 @@ libtrack_to_calo_la_LIBADD = \
   -lglobalvertex_io \
   -lg4detectors_io \
   -lphparameter \
-  -lkfparticle_sphenix_io \
-  -lKFParticle
+  -lkfparticle_sphenix_io
 
 AM_CPPFLAGS = \
   -I$(includedir) \
   -I$(OFFLINE_MAIN)/include \
-  -isystem$(ROOTSYS)/include
+  -isystem$(ROOTSYS)/include \
+  -DHomogeneousField
 
 pkginclude_HEADERS = \
   TrackCaloMatch.h \

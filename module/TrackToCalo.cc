@@ -64,7 +64,8 @@ TrackToCalo::TrackToCalo(const std::string &name, const std::string &file):
  SubsysReco(name),
  _outfilename(file),
  _outfile(nullptr),
- _tree(nullptr)
+ _tree(nullptr),
+ _tree_KFP(nullptr)
 {
   std::cout << "TrackToCalo::TrackToCalo(const std::string &name) Calling ctor" << std::endl;
 }
@@ -1498,7 +1499,7 @@ void TrackToCalo::fillTree_KFP()
     _emcal_z.push_back(cluster->get_z());
   }
 
-  _tree->Fill();
+  _tree_KFP->Fill();
 
 }
 
