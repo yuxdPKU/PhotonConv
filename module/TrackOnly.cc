@@ -156,6 +156,7 @@ int TrackOnly::process_event(PHCompositeNode *topNode)
     std::cout << "trackMap not found! Aborting!" << std::endl;
     return Fun4AllReturnCodes::ABORTEVENT;
   }
+std::cout<<"nTracks = "<<trackMap->size()<<std::endl;
 
   ActsGeometry *acts_Geometry = findNode::getClass<ActsGeometry>(topNode, "ActsGeometry");
   if (!acts_Geometry)

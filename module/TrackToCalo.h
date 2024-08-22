@@ -15,11 +15,21 @@
 #include <globalvertex/SvtxVertexMap.h>
 #include <ffarawobjects/Gl1Packet.h>
 #include <trackbase_historic/SvtxTrackMap.h>
+#include <trackbase_historic/SvtxTrackState_v1.h>
+#include <trackbase_historic/TrackSeed.h>
 #include <calobase/RawClusterContainer.h>
 #include <calobase/TowerInfoContainer.h>
 #include <trackbase/TrkrHitSetContainer.h>
 #include <trackbase/TrkrClusterContainer.h>
+#include <trackbase/TrkrCluster.h>
 #include <calobase/RawTowerGeomContainer.h>
+
+//#include <KFParticle.h>  // for KFParticle
+
+#include <kfparticle_sphenix/KFParticle_DST.h>
+#include <kfparticle_sphenix/KFParticle_Container.h>
+#include <kfparticle_sphenix/KFParticle_Tools.h>
+#include <kfparticle_sphenix/KFParticle_truthAndDetTools.h>
 
 #include <string>
 #include <vector>
@@ -54,6 +64,12 @@ class TrackToCalo : public SubsysReco
   int End(PHCompositeNode *topNode) override;
 
   void ResetTreeVectors();
+  void ResetTreeVectors_KFP();
+
+  void fillTree();
+  void fillTree_KFP();
+
+  void createBranches();
 
   void EMcalRadiusUser(bool use) {m_use_emcal_radius = use;}
   void IHcalRadiusUser(bool use) {m_use_ihcal_radius = use;}
@@ -64,9 +80,14 @@ class TrackToCalo : public SubsysReco
 
   void setRawClusContEMName(std::string name) {m_RawClusCont_EM_name = name;}
   void setRawClusContHADName(std::string name) {m_RawClusCont_HAD_name = name;}
+  void setKFPContName(std::string name) {m_KFPCont_name = name;}
+  void setKFPtrackMapName(std::string name) {m_KFPtrackMap_name = name;}
 
   void setTrackPtLowCut(float pt) {m_track_pt_low_cut = pt;}
   void setEmcalELowCut(float e) {m_emcal_e_low_cut = e;}
+
+  void doTrkrCaloMatching() {m_doTrkrCaloMatching = true;}
+  void doTrkrCaloMatching_KFP() {m_doTrkrCaloMatching_KFP = true;}
 
  private:
    int cnt = 0;
@@ -79,9 +100,13 @@ class TrackToCalo : public SubsysReco
    std::string _outfilename;
    TFile *_outfile = nullptr;
    TTree *_tree = nullptr;
+   TTree *_tree_KFP = nullptr;
 
    std::string m_RawClusCont_EM_name = "TOPOCLUSTER_EMCAL";
    std::string m_RawClusCont_HAD_name = "TOPOCLUSTER_HCAL";
+
+   std::string m_KFPCont_name = "KFParticle_Container";
+   std::string m_KFPtrackMap_name = "SvtxTrackMap";
 
    int _runNumber;
    int _eventNumber;
@@ -179,10 +204,79 @@ class TrackToCalo : public SubsysReco
 
    std::vector<int> _ntracks;
 
+   int _numCan;
+
+   std::vector<float> _gamma_mass;
+   std::vector<float> _gamma_massErr;
+   std::vector<float> _gamma_x;
+   std::vector<float> _gamma_y;
+   std::vector<float> _gamma_z;
+   std::vector<float> _gamma_px;
+   std::vector<float> _gamma_py;
+   std::vector<float> _gamma_pz;
+   std::vector<float> _gamma_pT;
+   std::vector<float> _gamma_pTErr;
+   std::vector<float> _gamma_p;
+   std::vector<float> _gamma_pErr;
+   std::vector<float> _gamma_pseudorapidity;
+   std::vector<float> _gamma_rapidity;
+   std::vector<float> _gamma_theta;
+   std::vector<float> _gamma_phi;
+   std::vector<float> _gamma_chi2;
+   std::vector<float> _gamma_nDoF;
+
+   std::vector<float> _ep_x;
+   std::vector<float> _ep_y;
+   std::vector<float> _ep_z;
+   std::vector<float> _ep_px;
+   std::vector<float> _ep_py;
+   std::vector<float> _ep_pz;
+   std::vector<float> _ep_pT;
+   std::vector<float> _ep_pTErr;
+   std::vector<float> _ep_p;
+   std::vector<float> _ep_pErr;
+   std::vector<float> _ep_pseudorapidity;
+   std::vector<float> _ep_rapidity;
+   std::vector<float> _ep_theta;
+   std::vector<float> _ep_phi;
+   std::vector<float> _ep_chi2;
+   std::vector<float> _ep_nDoF;
+
+   std::vector<float> _em_x;
+   std::vector<float> _em_y;
+   std::vector<float> _em_z;
+   std::vector<float> _em_px;
+   std::vector<float> _em_py;
+   std::vector<float> _em_pz;
+   std::vector<float> _em_pT;
+   std::vector<float> _em_pTErr;
+   std::vector<float> _em_p;
+   std::vector<float> _em_pErr;
+   std::vector<float> _em_pseudorapidity;
+   std::vector<float> _em_rapidity;
+   std::vector<float> _em_theta;
+   std::vector<float> _em_phi;
+   std::vector<float> _em_chi2;
+   std::vector<float> _em_nDoF;
+
+   std::vector<float> _ep_phi_emc;
+   std::vector<float> _ep_eta_emc;
+   std::vector<float> _ep_x_emc;
+   std::vector<float> _ep_y_emc;
+   std::vector<float> _ep_z_emc;
+
+   std::vector<float> _em_phi_emc;
+   std::vector<float> _em_eta_emc;
+   std::vector<float> _em_x_emc;
+   std::vector<float> _em_y_emc;
+   std::vector<float> _em_z_emc;
+
    GlobalVertexMap *vertexmap = nullptr;
    SvtxVertexMap *vertexMap = nullptr;
    Gl1Packet *gl1Packet = nullptr;
    SvtxTrackMap *trackMap = nullptr;
+   SvtxTrackMap *KFP_trackMap = nullptr;
+   KFParticle_Container *KFP_Container = nullptr;
    ActsGeometry *acts_Geometry = nullptr;
    RawClusterContainer *clustersEM = nullptr;
    RawClusterContainer *clustersHAD = nullptr;
@@ -196,9 +290,21 @@ class TrackToCalo : public SubsysReco
    RawTowerGeomContainer *IHCalGeo = nullptr;
    RawTowerGeomContainer *OHCalGeo = nullptr;
 
+   SvtxTrackState *thisState = nullptr;
+   SvtxTrack *track = nullptr;
+   TrackSeed *seed = nullptr;
+   TrackSeed *tpc_seed = nullptr;
+   TrkrCluster *trkrCluster = nullptr;
+
+   KFParticle* kfp_daughter = nullptr;
+   KFParticle* kfp_mother = nullptr;
+
    float m_track_pt_low_cut = 0.5;
    float m_emcal_e_low_cut = 0.2;
    float m_vx, m_vy, m_vz;
+
+   bool m_doTrkrCaloMatching = false;
+   bool m_doTrkrCaloMatching_KFP = false;
 };
 
 #endif // TRACKTOCALO_H
