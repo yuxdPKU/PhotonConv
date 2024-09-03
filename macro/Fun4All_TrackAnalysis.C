@@ -1,5 +1,4 @@
 //Track + Calo matching for 2024 pp data
-//authors: Xudong Yu <xyu3@bnl.gov>, Antonio Silva <antonio.silva@cern.ch>
 
 #include <G4_ActsGeom.C>
 #include <G4_Magnet.C>
@@ -63,10 +62,11 @@ namespace fs = std::filesystem;
 std::string GetFirstLine(std::string listname);
 bool is_directory_empty(const fs::path& dir_path);
 
-void Fun4All_FieldOnAllTrackersCalos(
+void Fun4All_TrackAnalysis(
     const int nEvents = 10,
     vector<string> myInputLists = {
-        "run46730_0000_trkr.txt",
+        "run46730_0000_trkr_seed.txt",
+        "run46730_0000_trkr_cluster.txt",
         "run46730_calo.list"}, 
     bool doTpcOnlyTracking = true,
     bool doEvtDisplay = false,
@@ -166,136 +166,10 @@ void Fun4All_FieldOnAllTrackersCalos(
 
   TRACKING::pp_mode = false;
 
+  TrackingInit();
+
   G4TRACKING::convert_seeds_to_svtxtracks = convertSeeds;
   std::cout << "Converting to seeds : " << G4TRACKING::convert_seeds_to_svtxtracks << std::endl;
-
-  // enable TPC zero suppression
-  if(runnumber>51428)
-  {
-    TRACKING::tpc_zero_supp = true;
-  }
-
-  TrackingInit();
-  if(doTpcOnlyTracking)
-  {
-    Tpc_HitUnpacking();
-  }
-  else
-  {
-    Mvtx_HitUnpacking();
-    Intt_HitUnpacking();
-    Tpc_HitUnpacking();
-    Micromegas_HitUnpacking();
-  }
-
-  Mvtx_Clustering();
-  Intt_Clustering();
-
-  auto tpcclusterizer = new TpcClusterizer;
-  tpcclusterizer->Verbosity(verbosity);
-  tpcclusterizer->set_do_hit_association(G4TPC::DO_HIT_ASSOCIATION);
-  tpcclusterizer->set_rawdata_reco();
-  se->registerSubsystem(tpcclusterizer);
-
-  Micromegas_Clustering();
-
-  /*
-   * Begin Track Seeding
-   */
-
-  /*
-   * Silicon Seeding
-   */
-  auto silicon_Seeding = new PHActsSiliconSeeding;
-  silicon_Seeding->Verbosity(0);
-  silicon_Seeding->searchInIntt();
-  silicon_Seeding->setinttRPhiSearchWindow(0.4);
-  silicon_Seeding->setinttZSearchWindow(1.6);
-  silicon_Seeding->seedAnalysis(false);
-  se->registerSubsystem(silicon_Seeding);
-
-  auto merger = new PHSiliconSeedMerger;
-  merger->Verbosity(0);
-  se->registerSubsystem(merger);
-
-  /*
-   * Tpc Seeding
-   */
-  auto seeder = new PHCASeeding("PHCASeeding");
-  double fieldstrength = std::numeric_limits<double>::quiet_NaN();  // set by isConstantField if constant
-  bool ConstField = isConstantField(G4MAGNET::magfield_tracking, fieldstrength);
-  if (ConstField)
-  {
-    seeder->useConstBField(true);
-    seeder->constBField(fieldstrength);
-  }
-  else
-  {
-    seeder->set_field_dir(-1 * G4MAGNET::magfield_rescale);
-    seeder->useConstBField(false);
-    seeder->magFieldFile(G4MAGNET::magfield_tracking);  // to get charge sign right
-  }
-  seeder->Verbosity(verbosity);
-  seeder->SetLayerRange(7, 55);
-  seeder->SetSearchWindow(2.,0.05); // z-width and phi-width, default in macro at 1.5 and 0.05
-  seeder->SetClusAdd_delta_window(3.0,0.06); //  (0.5, 0.005) are default; sdzdr_cutoff, d2/dr2(phi)_cutoff
-  //seeder->SetNClustersPerSeedRange(4,60); // default is 6, 6
-  seeder->SetMinHitsPerCluster(0);
-  seeder->SetMinClustersPerTrack(3);
-  seeder->useFixedClusterError(true);
-  seeder->set_pp_mode(TRACKING::pp_mode);
-  se->registerSubsystem(seeder);
-
-  // expand stubs in the TPC using simple kalman filter
-  auto cprop = new PHSimpleKFProp("PHSimpleKFProp");
-  cprop->set_field_dir(G4MAGNET::magfield_rescale);
-  if (ConstField)
-  {
-    cprop->useConstBField(true);
-    cprop->setConstBField(fieldstrength);
-  }
-  else
-  {
-    cprop->magFieldFile(G4MAGNET::magfield_tracking);
-    cprop->set_field_dir(-1 * G4MAGNET::magfield_rescale);
-  }
-  cprop->useFixedClusterError(true);
-  cprop->set_max_window(5.);
-  cprop->Verbosity(verbosity);
-  cprop->set_pp_mode(TRACKING::pp_mode);
-  se->registerSubsystem(cprop);
-
-  /*
-   * Track Matching between silicon and TPC
-   */
-  // The normal silicon association methods
-  // Match the TPC track stubs from the CA seeder to silicon track stubs from PHSiliconTruthTrackSeeding
-  auto silicon_match = new PHSiliconTpcTrackMatching;
-  silicon_match->Verbosity(0);
-  silicon_match->set_x_search_window(2.);
-  silicon_match->set_y_search_window(2.);
-  silicon_match->set_z_search_window(5.);
-  silicon_match->set_phi_search_window(0.2);
-  silicon_match->set_eta_search_window(0.1);
-  silicon_match->set_use_old_matching(true);
-  silicon_match->set_pp_mode(true);
-  se->registerSubsystem(silicon_match);
-
-  // Match TPC track stubs from CA seeder to clusters in the micromegas layers
-  auto mm_match = new PHMicromegasTpcTrackMatching;
-  mm_match->Verbosity(0);
-  mm_match->set_rphi_search_window_lyr1(0.4);
-  mm_match->set_rphi_search_window_lyr2(13.0);
-  mm_match->set_z_search_window_lyr1(26.0);
-  mm_match->set_z_search_window_lyr2(0.4);
-
-  mm_match->set_min_tpc_layer(38);             // layer in TPC to start projection fit
-  mm_match->set_test_windows_printout(false);  // used for tuning search windows only
-  se->registerSubsystem(mm_match);
-
-  /*
-   * End Track Seeding
-   */
 
   /*
    * Either converts seeds to tracks with a straight line/helix fit
@@ -435,17 +309,8 @@ void Fun4All_FieldOnAllTrackersCalos(
   if (Enable::DSTOUT)
   {
     Fun4AllDstOutputManager *out = new Fun4AllDstOutputManager("DSTOUT", outputDstFile);
-    out->StripNode("TPC");
-    out->StripNode("Sync");
-    out->StripNode("MBD");
-    out->StripNode("ZDC");
-    out->StripNode("SEPD");
-    out->StripNode("HCALIN");
-    out->StripNode("HCALOUT");
-    out->StripNode("alignmentTransformationContainer");
-    out->StripNode("alignmentTransformationContainerTransient");
-    out->StripNode("SiliconTrackSeedContainer");
-    out->StripNode("RUN");
+    //out->StripNode("RUN");
+    //out->AddNode("Sync");
     out->SaveRunNode(0);
     se->registerOutputManager(out);
   }

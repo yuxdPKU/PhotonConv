@@ -194,6 +194,13 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
   TrackSeed *tpc_seed = nullptr;
   TrkrCluster *trkrCluster = nullptr;
 
+  //for (auto &iter : *trackMap)
+  //{
+  //  SvtxTrack* kfp = iter.second;
+  //  std::cout<<"iter.first = "<<iter.first<<std::endl;
+  //  std::cout<<"svtxtrack id = "<<kfp->get_id()<<" px = "<<kfp->get_px()<<" py = "<<kfp->get_py()<<" pz = "<<kfp->get_pz()<<std::endl;
+  //}
+
   int num_matched_pair = 0;
   for (auto &iter : *trackMap)
   {
@@ -240,6 +247,7 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
     float _track_y_emc = NAN;
     float _track_z_emc = NAN;
 
+//std::cout<<"yuxd test: track px,py,pz = "<<track->get_px()<<" "<<track->get_py()<<" "<<track->get_pz()<<" x,y,z = "<<track->get_x()<<" "<<track->get_y()<<" "<<track->get_z()<<" id = "<<track->get_id()<<std::endl;
     if(!thisState)
     {
       continue;
@@ -273,7 +281,8 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
       float _emcal_eta = asinh(cluster->get_z()/sqrt(cluster->get_x()*cluster->get_x() + cluster->get_y()*cluster->get_y()));
       float _emcal_x = cluster->get_x();
       float _emcal_y = cluster->get_y();
-      float _emcal_z = cluster->get_z();
+      float radius_scale = m_emcal_radius_user / sqrt(_emcal_x*_emcal_x+_emcal_y*_emcal_y);
+      float _emcal_z = radius_scale*cluster->get_z();
 
       float dphi = PiRange(_track_phi_emc - _emcal_phi);
       float dz = _track_z_emc - _emcal_z;
@@ -281,11 +290,8 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
       if(fabs(dphi)<m_dphi_cut && fabs(dz)<m_dz_cut)
       {
         std::cout<<"matched tracks!!!"<<std::endl;
-        std::cout<<"_track_x_emc = "<<_track_x_emc<<" , _emcal_x = "<<_emcal_x<<std::endl;
-        std::cout<<"_track_y_emc = "<<_track_y_emc<<" , _emcal_y = "<<_emcal_y<<std::endl;
-        std::cout<<"_track_z_emc = "<<_track_z_emc<<" , _emcal_z = "<<_emcal_z<<std::endl;
-        std::cout<<"_track_phi_emc = "<<_track_phi_emc<<" , _emcal_phi = "<<_emcal_phi<<std::endl;
-        std::cout<<"_track_eta_emc = "<<_track_eta_emc<<" , _emcal_eta = "<<_emcal_eta<<std::endl;
+        std::cout<<"emcal x = "<<_emcal_x<<" , y = "<<_emcal_y<<" , z = "<<_emcal_z<<" , phi = "<<_emcal_phi<<" , eta = "<<_emcal_eta<<std::endl;
+        std::cout<<"track projected x = "<<_track_x_emc<<" , y = "<<_track_y_emc<<" , z = "<<_track_z_emc<<" , phi = "<<_track_phi_emc<<" , eta = "<<_track_eta_emc<<std::endl;
         std::cout<<"track px = "<<track->get_px()<<" , py = "<<track->get_py()<<" , pz = "<<track->get_pz()<<" , pt = "<<track->get_pt()<<" , p = "<<track->get_p()<<" , charge = "<<track->get_charge()<<std::endl;
 
         is_match = true;
@@ -294,7 +300,9 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
 
     if(is_match)
     {
-      trackMap_new->insert(iter.second);
+      //trackMap_new->insert(iter.second);
+      trackMap_new->insertWithKey(iter.second,iter.first);
+//std::cout<<"Hey!!!!!! insertWithKey iter.first = "<<iter.first<<" , track->get_id() = "<<track->get_id()<<std::endl;
       num_matched_pair++;
     }
   }

@@ -257,6 +257,7 @@ void TrackToCalo::createBranches()
   _tree_KFP->Branch("_emcal_y", &_emcal_y);
   _tree_KFP->Branch("_emcal_z", &_emcal_z);
   _tree_KFP->Branch("_emcal_e", &_emcal_e);
+  _tree_KFP->Branch("_epem_DCA", &_epem_DCA);
 }
 
 //____________________________________________________________________________..
@@ -676,6 +677,13 @@ void TrackToCalo::fillTree()
 
   //Acts::Vector3 acts_vertex(vertex.x(), vertex.y(), vertex.z());
 
+  //for (auto &iter : *trackMap)
+  //{
+  //  SvtxTrack* kfp = iter.second;
+  //  std::cout<<"iter.first = "<<iter.first<<std::endl;
+  //  std::cout<<"svtxtrack id = "<<kfp->get_id()<<" px = "<<kfp->get_px()<<" py = "<<kfp->get_py()<<" pz = "<<kfp->get_pz()<<std::endl;
+  //}
+
   for (auto &iter : *trackMap)
   {
     track = iter.second;
@@ -890,6 +898,7 @@ void TrackToCalo::fillTree()
     _track_pcax.push_back(track->get_x());
     _track_pcay.push_back(track->get_y());
     _track_pcaz.push_back(track->get_z());
+    _track_crossing.push_back(track->get_crossing());
 
   }
 
@@ -1362,6 +1371,19 @@ void TrackToCalo::fillTree_KFP()
     return;
   }
 
+  //for (auto &iter : *KFP_Container)
+  //{
+  //  KFParticle* kfp = iter.second;
+  //  std::cout<<"KFP PDGID = "<<kfp->GetPDG()<<" p = "<<kfp->GetP()<<std::endl;
+  //}
+
+  //for (auto &iter : *KFP_trackMap)
+  //{
+  //  SvtxTrack* kfp = iter.second;
+  //  std::cout<<"iter.first = "<<iter.first<<std::endl;
+  //  std::cout<<"svtxtrack id = "<<kfp->get_id()<<" px = "<<kfp->get_px()<<" py = "<<kfp->get_py()<<" pz = "<<kfp->get_pz()<<std::endl;
+  //}
+
   _numCan = static_cast<int>(length_kfps) / 3;
 
   for (int i = 0; i < _numCan; i++)
@@ -1391,93 +1413,108 @@ void TrackToCalo::fillTree_KFP()
     _gamma_chi2.push_back(kfp_mother->GetChi2());
     _gamma_nDoF.push_back(kfp_mother->GetNDF());
 
-    it_kfp_cont = KFP_Container->begin();
-    std::advance(it_kfp_cont, 3 * i + 1);
-    kfp_daughter = it_kfp_cont->second;
-
-    auto it_kfp_trackmap = KFP_trackMap->begin();
-    std::advance(it_kfp_trackmap, 3 * i + 1);
-    track = it_kfp_trackmap->second;
-
-    // project to R_EMCAL
-    thisState = track->get_state(caloRadiusEMCal);
-
-    int pdgid = kfp_daughter->GetPDG();
-
-    if (pdgid == 11)
+    // one for e+, one for e-
+    for (int j = 1; j <= 2; j++)
     {
-      _em_x.push_back(kfp_daughter->GetX());
-      _em_y.push_back(kfp_daughter->GetY());
-      _em_z.push_back(kfp_daughter->GetZ());
-      _em_px.push_back(kfp_daughter->GetPx());
-      _em_py.push_back(kfp_daughter->GetPy());
-      _em_pz.push_back(kfp_daughter->GetPz());
-      _em_pT.push_back(kfp_daughter->GetPt());
-      _em_pTErr.push_back(kfp_daughter->GetErrPt());
-      _em_p.push_back(kfp_daughter->GetP());
-      _em_pErr.push_back(kfp_daughter->GetErrP());
-      _em_pseudorapidity.push_back(kfp_daughter->GetEta());
-      _em_rapidity.push_back(kfp_daughter->GetRapidity());
-      _em_theta.push_back(kfp_daughter->GetTheta());
-      _em_phi.push_back(kfp_daughter->GetPhi());
-      _em_chi2.push_back(kfp_daughter->GetChi2());
-      _em_nDoF.push_back(kfp_daughter->GetNDF());
 
-      if(!thisState)
+      it_kfp_cont = KFP_Container->begin();
+      std::advance(it_kfp_cont, 3 * i + j);
+      kfp_daughter = it_kfp_cont->second;
+
+      auto it_kfp_trackmap = KFP_trackMap->begin();
+      std::advance(it_kfp_trackmap, 3 * i + j);
+      track = it_kfp_trackmap->second;
+//std::cout<<"yuxd test in KFP: track px,py,pz = "<<track->get_px()<<" "<<track->get_py()<<" "<<track->get_pz()<<" x,y,z = "<<track->get_x()<<" "<<track->get_y()<<" "<<track->get_z()<<" id = "<<track->get_id()<<std::endl;
+
+      // project to R_EMCAL
+      thisState = track->get_state(caloRadiusEMCal);
+
+      int pdgid = kfp_daughter->GetPDG(); // pdgid might be reverse
+      int charge = kfp_daughter->Q();
+
+      if (charge == -1)
       {
-        _em_phi_emc.push_back(NAN);
-        _em_eta_emc.push_back(NAN);
-        _em_x_emc.push_back(NAN);
-        _em_y_emc.push_back(NAN);
-        _em_z_emc.push_back(NAN);
+        kfp_em = it_kfp_cont->second;
+        _em_x.push_back(kfp_daughter->GetX());
+        _em_y.push_back(kfp_daughter->GetY());
+        _em_z.push_back(kfp_daughter->GetZ());
+        _em_px.push_back(kfp_daughter->GetPx());
+        _em_py.push_back(kfp_daughter->GetPy());
+        _em_pz.push_back(kfp_daughter->GetPz());
+        _em_pT.push_back(kfp_daughter->GetPt());
+        _em_pTErr.push_back(kfp_daughter->GetErrPt());
+        _em_p.push_back(kfp_daughter->GetP());
+        _em_pErr.push_back(kfp_daughter->GetErrP());
+        _em_pseudorapidity.push_back(kfp_daughter->GetEta());
+        _em_rapidity.push_back(kfp_daughter->GetRapidity());
+        _em_theta.push_back(kfp_daughter->GetTheta());
+        _em_phi.push_back(kfp_daughter->GetPhi());
+        _em_chi2.push_back(kfp_daughter->GetChi2());
+        _em_nDoF.push_back(kfp_daughter->GetNDF());
+        _em_crossing.push_back(track->get_crossing());
+
+        if(!thisState)
+        {
+          _em_phi_emc.push_back(NAN);
+          _em_eta_emc.push_back(NAN);
+          _em_x_emc.push_back(NAN);
+          _em_y_emc.push_back(NAN);
+          _em_z_emc.push_back(NAN);
+        }
+        else
+        {
+          _em_phi_emc.push_back(atan2(thisState->get_y(), thisState->get_x()));
+          _em_eta_emc.push_back(asinh(thisState->get_z()/sqrt(thisState->get_x()*thisState->get_x() + thisState->get_y()*thisState->get_y())));
+          _em_x_emc.push_back(thisState->get_x());
+          _em_y_emc.push_back(thisState->get_y());
+          _em_z_emc.push_back(thisState->get_z());
+        }
+
       }
-      else
+      else if (charge == 1)
       {
-        _em_phi_emc.push_back(atan2(thisState->get_y(), thisState->get_x()));
-        _em_eta_emc.push_back(asinh(thisState->get_z()/sqrt(thisState->get_x()*thisState->get_x() + thisState->get_y()*thisState->get_y())));
-        _em_x_emc.push_back(thisState->get_x());
-        _em_y_emc.push_back(thisState->get_y());
-        _em_z_emc.push_back(thisState->get_z());
+        kfp_ep = it_kfp_cont->second;
+        _ep_x.push_back(kfp_daughter->GetX());
+        _ep_y.push_back(kfp_daughter->GetY());
+        _ep_z.push_back(kfp_daughter->GetZ());
+        _ep_px.push_back(kfp_daughter->GetPx());
+        _ep_py.push_back(kfp_daughter->GetPy());
+        _ep_pz.push_back(kfp_daughter->GetPz());
+        _ep_pT.push_back(kfp_daughter->GetPt());
+        _ep_pTErr.push_back(kfp_daughter->GetErrPt());
+        _ep_p.push_back(kfp_daughter->GetP());
+        _ep_pErr.push_back(kfp_daughter->GetErrP());
+        _ep_pseudorapidity.push_back(kfp_daughter->GetEta());
+        _ep_rapidity.push_back(kfp_daughter->GetRapidity());
+        _ep_theta.push_back(kfp_daughter->GetTheta());
+        _ep_phi.push_back(kfp_daughter->GetPhi());
+        _ep_chi2.push_back(kfp_daughter->GetChi2());
+        _ep_nDoF.push_back(kfp_daughter->GetNDF());
+        _ep_crossing.push_back(track->get_crossing());
+
+        if(!thisState)
+        {
+          _ep_phi_emc.push_back(NAN);
+          _ep_eta_emc.push_back(NAN);
+          _ep_x_emc.push_back(NAN);
+          _ep_y_emc.push_back(NAN);
+          _ep_z_emc.push_back(NAN);
+        }
+        else
+        {
+          _ep_phi_emc.push_back(atan2(thisState->get_y(), thisState->get_x()));
+          _ep_eta_emc.push_back(asinh(thisState->get_z()/sqrt(thisState->get_x()*thisState->get_x() + thisState->get_y()*thisState->get_y())));
+          _ep_x_emc.push_back(thisState->get_x());
+          _ep_y_emc.push_back(thisState->get_y());
+          _ep_z_emc.push_back(thisState->get_z());
+        }
+
       }
 
     }
-    else if (pdgid == -11)
-    {
-      _ep_x.push_back(kfp_daughter->GetX());
-      _ep_y.push_back(kfp_daughter->GetY());
-      _ep_z.push_back(kfp_daughter->GetZ());
-      _ep_px.push_back(kfp_daughter->GetPx());
-      _ep_py.push_back(kfp_daughter->GetPy());
-      _ep_pz.push_back(kfp_daughter->GetPz());
-      _ep_pT.push_back(kfp_daughter->GetPt());
-      _ep_pTErr.push_back(kfp_daughter->GetErrPt());
-      _ep_p.push_back(kfp_daughter->GetP());
-      _ep_pErr.push_back(kfp_daughter->GetErrP());
-      _ep_pseudorapidity.push_back(kfp_daughter->GetEta());
-      _ep_rapidity.push_back(kfp_daughter->GetRapidity());
-      _ep_theta.push_back(kfp_daughter->GetTheta());
-      _ep_phi.push_back(kfp_daughter->GetPhi());
-      _ep_chi2.push_back(kfp_daughter->GetChi2());
-      _ep_nDoF.push_back(kfp_daughter->GetNDF());
 
-      if(!thisState)
-      {
-        _ep_phi_emc.push_back(NAN);
-        _ep_eta_emc.push_back(NAN);
-        _ep_x_emc.push_back(NAN);
-        _ep_y_emc.push_back(NAN);
-        _ep_z_emc.push_back(NAN);
-      }
-      else
-      {
-        _ep_phi_emc.push_back(atan2(thisState->get_y(), thisState->get_x()));
-        _ep_eta_emc.push_back(asinh(thisState->get_z()/sqrt(thisState->get_x()*thisState->get_x() + thisState->get_y()*thisState->get_y())));
-        _ep_x_emc.push_back(thisState->get_x());
-        _ep_y_emc.push_back(thisState->get_y());
-        _ep_z_emc.push_back(thisState->get_z());
-      }
+    _epem_DCA.push_back(kfp_ep->GetDistanceFromParticle(*kfp_em));
 
-    }
   }
 
   RawCluster *cluster = nullptr;
@@ -1531,6 +1568,7 @@ void TrackToCalo::ResetTreeVectors()
   _track_pcax.clear();
   _track_pcay.clear();
   _track_pcaz.clear();
+  _track_crossing.clear();
   _track_vx.clear();
   _track_vy.clear();
   _track_vz.clear();
@@ -1638,6 +1676,7 @@ void TrackToCalo::ResetTreeVectors_KFP()
   _ep_phi.clear();
   _ep_chi2.clear();
   _ep_nDoF.clear();
+  _ep_crossing.clear();
   _ep_phi_emc.clear();
   _ep_eta_emc.clear();
   _ep_x_emc.clear();
@@ -1657,6 +1696,7 @@ void TrackToCalo::ResetTreeVectors_KFP()
   _em_phi.clear();
   _em_chi2.clear();
   _em_nDoF.clear();
+  _em_crossing.clear();
   _em_phi_emc.clear();
   _em_eta_emc.clear();
   _em_x_emc.clear();
@@ -1668,4 +1708,5 @@ void TrackToCalo::ResetTreeVectors_KFP()
   _emcal_y.clear();
   _emcal_z.clear();
   _emcal_e.clear();
+  _epem_DCA.clear();
 }

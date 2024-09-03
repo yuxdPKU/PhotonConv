@@ -125,6 +125,7 @@ class TrackToCalo : public SubsysReco
    std::vector<float> _track_pcax;
    std::vector<float> _track_pcay;
    std::vector<float> _track_pcaz;
+   std::vector<float> _track_crossing;
    std::vector<float> _track_vx;
    std::vector<float> _track_vy;
    std::vector<float> _track_vz;
@@ -240,6 +241,7 @@ class TrackToCalo : public SubsysReco
    std::vector<float> _ep_phi;
    std::vector<float> _ep_chi2;
    std::vector<float> _ep_nDoF;
+   std::vector<float> _ep_crossing;
 
    std::vector<float> _em_x;
    std::vector<float> _em_y;
@@ -257,6 +259,7 @@ class TrackToCalo : public SubsysReco
    std::vector<float> _em_phi;
    std::vector<float> _em_chi2;
    std::vector<float> _em_nDoF;
+   std::vector<float> _em_crossing;
 
    std::vector<float> _ep_phi_emc;
    std::vector<float> _ep_eta_emc;
@@ -269,6 +272,8 @@ class TrackToCalo : public SubsysReco
    std::vector<float> _em_x_emc;
    std::vector<float> _em_y_emc;
    std::vector<float> _em_z_emc;
+
+   std::vector<float> _epem_DCA;
 
    GlobalVertexMap *vertexmap = nullptr;
    SvtxVertexMap *vertexMap = nullptr;
@@ -295,8 +300,10 @@ class TrackToCalo : public SubsysReco
    TrackSeed *tpc_seed = nullptr;
    TrkrCluster *trkrCluster = nullptr;
 
-   KFParticle* kfp_daughter = nullptr;
    KFParticle* kfp_mother = nullptr;
+   KFParticle* kfp_daughter = nullptr;
+   KFParticle* kfp_ep = nullptr;
+   KFParticle* kfp_em = nullptr;
 
    float m_track_pt_low_cut = 0.5;
    float m_emcal_e_low_cut = 0.2;

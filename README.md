@@ -11,31 +11,37 @@ make -j 4
 make install
 ```
 
-- Make DST list, for example 6x6 bunch crossing data
-```
-cd macro
-./make_tpclist_6x6.sh
-```
+- Prepare a run list, one line one runnumber, e.g. `macro/runList/run51619-51886_1000seg_condor_trkrcalo.list`
 
-- `run[runnumber]_tpc.list` and `run[runnumber]_calo.list` will show up in runList/ directory
-
-- Each TPC DST has 2500 events (fast type of DST only has 100 events), split each DST into one file in trackrunlist folder
+- Grab DST file list by using CreateDstList.pl:
 ```
-./splitlist.sh [runnumber]
+cd macro/runList
+./grablist.sh run51619-51886_1000seg_condor_trkrcalo.list
+```
+different kinds of DST list are generated: streaming production with all trackers, streaming production with tpc only, tracking production in cluster level, tracking production in seed level, calo production
+
+- Split tracker DST list into several files
+```
+./splitlist_list_trkr_calo.sh [in-file-list-name] [out-file-list-name] [number-of-DST-per-file]
+```
+or
+```
+./splitlist_list_tpc.sh [in-file-list-name] [out-file-list-name] [number-of-DST-per-file]
 ```
 
 - Submit jobs in condorJob
-**Do not forget to change Initialdir, RunNumber, input DST list, draw event display or not, and the number of jobs you want to submit**
+If you want to do tracking only with track fitting (tracking production as input), use `gen_condor_job_trkrcalo.sh`.
 ```
-Initialdir     = /sphenix/u/xyu3/hftg01
-Executable     = $(Initialdir)/run_data.sh
-RunNumber      = 51103
-TpcList        = ./runList/trackrunlist/run$INT(RunNumber)_$INT(Process,%04d).list
-CaloList       = ./runList/run$INT(RunNumber,%08d)_$INT(Process,%04d).list
-DrawEvtDisplay = false
-Queue 9
+./gen_condor_job.sh [path-of-list-file]
 ```
+If you want to do tracking from hit unpacker (streaming production as input), use `gen_condor_job.sh`.
+```
+./gen_condor_job_trkrcalo.sh [path-of-list-file]
+```
+**Do not forget to change Initialdir!!!**
 
-- Output root file saved in Reconstructed/[runnumber]
+- When job running, output root file temporarily stored in inReconstruction/[runnumber]
+
+- When job finished, output root file saved in Reconstructed/[runnumber]
 
 - Offline analysis code in OfflineAna

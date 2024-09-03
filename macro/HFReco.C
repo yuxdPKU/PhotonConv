@@ -44,10 +44,13 @@ namespace HeavyFlavorReco
   //string decayDescriptor = "[D0 -> K^- pi^+]cc";  //See twiki on how to set this
   string reconstructionName = "PhotonConvKFPReco";         //Used for naming output folder, file and node
   string trackmapName = "MySvtxTrackMap";
+  //Used for naming container in DST
+  string containerName = "PhotonConv";
   string outputRecoFile;
   string outputHFEffFile;
   string outputTrackingEvalFile;
   bool useMyTrackMap = true;  //Alternative Track Map
+  bool useContainer = true; // Save Container: svtxtrack and KFParticle
   bool runTruthTrigger = false;  //Decay Finder
   bool runTrackEff = false;  //HF track efficiency
   bool saveEvalFile = false;  //Official Eval root file
@@ -269,6 +272,7 @@ void PhotonConvKFPReco()
   kfparticle->Verbosity(1);
 
   if (useMyTrackMap) kfparticle->setTrackMapNodeName(trackmapName);
+  if (useContainer) kfparticle->setContainerName(containerName);
 
   kfparticle->setDecayDescriptor(decayDescriptor);
 
@@ -279,8 +283,8 @@ void PhotonConvKFPReco()
   kfparticle->getCaloInfo(getCaloInfo);
   kfparticle->getAllPVInfo(false);
   kfparticle->allowZeroMassTracks(true);
-  kfparticle->saveDST(false);
-  kfparticle->saveParticleContainer(false);
+  kfparticle->saveDST(true);
+  //kfparticle->saveParticleContainer(false);
 
   bool fixToPV = false;
   bool useFakePV = true;
@@ -313,7 +317,7 @@ void PhotonConvKFPReco()
   //Parent parameters
   kfparticle->setMotherPT(0);
   kfparticle->setMinimumMass(-1.0);
-  kfparticle->setMaximumMass(1.0);
+  kfparticle->setMaximumMass(10.0);
   kfparticle->setMaximumMotherVertexVolume(0.9);
   kfparticle->setMotherIPchi2(FLT_MAX);
   kfparticle->setFlightDistancechi2(-1.);
