@@ -38,6 +38,7 @@ class TH1;
 class TH2;
 class TFile;
 class TTree;
+class KFParticle_sPHENIX;
 
 class TrackToCalo : public SubsysReco
 {
@@ -214,6 +215,7 @@ class TrackToCalo : public SubsysReco
    std::vector<float> _gamma_px;
    std::vector<float> _gamma_py;
    std::vector<float> _gamma_pz;
+   std::vector<float> _gamma_pE;
    std::vector<float> _gamma_pT;
    std::vector<float> _gamma_pTErr;
    std::vector<float> _gamma_p;
@@ -224,13 +226,17 @@ class TrackToCalo : public SubsysReco
    std::vector<float> _gamma_phi;
    std::vector<float> _gamma_chi2;
    std::vector<float> _gamma_nDoF;
+   std::vector<float> _gamma_vertex_volume;
+   std::vector<float> _gamma_SV_chi2_per_nDoF;
 
+   std::vector<float> _ep_mass;
    std::vector<float> _ep_x;
    std::vector<float> _ep_y;
    std::vector<float> _ep_z;
    std::vector<float> _ep_px;
    std::vector<float> _ep_py;
    std::vector<float> _ep_pz;
+   std::vector<float> _ep_pE;
    std::vector<float> _ep_pT;
    std::vector<float> _ep_pTErr;
    std::vector<float> _ep_p;
@@ -243,12 +249,14 @@ class TrackToCalo : public SubsysReco
    std::vector<float> _ep_nDoF;
    std::vector<float> _ep_crossing;
 
+   std::vector<float> _em_mass;
    std::vector<float> _em_x;
    std::vector<float> _em_y;
    std::vector<float> _em_z;
    std::vector<float> _em_px;
    std::vector<float> _em_py;
    std::vector<float> _em_pz;
+   std::vector<float> _em_pE;
    std::vector<float> _em_pT;
    std::vector<float> _em_pTErr;
    std::vector<float> _em_p;
@@ -273,7 +281,8 @@ class TrackToCalo : public SubsysReco
    std::vector<float> _em_y_emc;
    std::vector<float> _em_z_emc;
 
-   std::vector<float> _epem_DCA;
+   std::vector<float> _epem_DCA_2d;
+   std::vector<float> _epem_DCA_3d;
 
    GlobalVertexMap *vertexmap = nullptr;
    SvtxVertexMap *vertexMap = nullptr;

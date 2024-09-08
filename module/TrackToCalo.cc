@@ -59,6 +59,9 @@
 #include <TH1F.h>
 #include <TH2F.h>
 
+#include <kfparticle_sphenix/KFParticle_Tools.h>
+KFParticle_Tools kf_tools;
+
 //____________________________________________________________________________..
 TrackToCalo::TrackToCalo(const std::string &name, const std::string &file):
  SubsysReco(name),
@@ -200,6 +203,7 @@ void TrackToCalo::createBranches()
   _tree_KFP->Branch("_gamma_px", &_gamma_px);
   _tree_KFP->Branch("_gamma_py", &_gamma_py);
   _tree_KFP->Branch("_gamma_pz", &_gamma_pz);
+  _tree_KFP->Branch("_gamma_pE", &_gamma_pE);
   _tree_KFP->Branch("_gamma_pT", &_gamma_pT);
   _tree_KFP->Branch("_gamma_pTErr", &_gamma_pTErr);
   _tree_KFP->Branch("_gamma_p", &_gamma_p);
@@ -210,12 +214,16 @@ void TrackToCalo::createBranches()
   _tree_KFP->Branch("_gamma_phi", &_gamma_phi);
   _tree_KFP->Branch("_gamma_chi2", &_gamma_chi2);
   _tree_KFP->Branch("_gamma_nDoF", &_gamma_nDoF);
+  _tree_KFP->Branch("_gamma_vertex_volume", &_gamma_vertex_volume);
+  _tree_KFP->Branch("_gamma_SV_chi2_per_nDoF", &_gamma_SV_chi2_per_nDoF);
+  _tree_KFP->Branch("_ep_mass", &_ep_mass);
   _tree_KFP->Branch("_ep_x", &_ep_x);
   _tree_KFP->Branch("_ep_y", &_ep_y);
   _tree_KFP->Branch("_ep_z", &_ep_z);
   _tree_KFP->Branch("_ep_px", &_ep_px);
   _tree_KFP->Branch("_ep_py", &_ep_py);
   _tree_KFP->Branch("_ep_pz", &_ep_pz);
+  _tree_KFP->Branch("_ep_pE", &_ep_pE);
   _tree_KFP->Branch("_ep_pT", &_ep_pT);
   _tree_KFP->Branch("_ep_pTErr", &_ep_pTErr);
   _tree_KFP->Branch("_ep_p", &_ep_p);
@@ -232,12 +240,14 @@ void TrackToCalo::createBranches()
   _tree_KFP->Branch("_ep_x_emc", &_ep_x_emc);
   _tree_KFP->Branch("_ep_y_emc", &_ep_y_emc);
   _tree_KFP->Branch("_ep_z_emc", &_ep_z_emc);
+  _tree_KFP->Branch("_em_mass", &_em_mass);
   _tree_KFP->Branch("_em_x", &_em_x);
   _tree_KFP->Branch("_em_y", &_em_y);
   _tree_KFP->Branch("_em_z", &_em_z);
   _tree_KFP->Branch("_em_px", &_em_px);
   _tree_KFP->Branch("_em_py", &_em_py);
   _tree_KFP->Branch("_em_pz", &_em_pz);
+  _tree_KFP->Branch("_em_pE", &_em_pE);
   _tree_KFP->Branch("_em_pT", &_em_pT);
   _tree_KFP->Branch("_em_pTErr", &_em_pTErr);
   _tree_KFP->Branch("_em_p", &_em_p);
@@ -260,7 +270,8 @@ void TrackToCalo::createBranches()
   _tree_KFP->Branch("_emcal_y", &_emcal_y);
   _tree_KFP->Branch("_emcal_z", &_emcal_z);
   _tree_KFP->Branch("_emcal_e", &_emcal_e);
-  _tree_KFP->Branch("_epem_DCA", &_epem_DCA);
+  _tree_KFP->Branch("_epem_DCA_2d", &_epem_DCA_2d);
+  _tree_KFP->Branch("_epem_DCA_3d", &_epem_DCA_3d);
 }
 
 //____________________________________________________________________________..
@@ -1405,6 +1416,7 @@ void TrackToCalo::fillTree_KFP()
     _gamma_px.push_back(kfp_mother->GetPx());
     _gamma_py.push_back(kfp_mother->GetPy());
     _gamma_pz.push_back(kfp_mother->GetPz());
+    _gamma_pE.push_back(kfp_mother->GetE());
     _gamma_pT.push_back(kfp_mother->GetPt());
     _gamma_pTErr.push_back(kfp_mother->GetErrPt());
     _gamma_p.push_back(kfp_mother->GetP());
@@ -1415,6 +1427,7 @@ void TrackToCalo::fillTree_KFP()
     _gamma_phi.push_back(kfp_mother->GetPhi());
     _gamma_chi2.push_back(kfp_mother->GetChi2());
     _gamma_nDoF.push_back(kfp_mother->GetNDF());
+    _gamma_vertex_volume.push_back( kf_tools.calculateEllipsoidVolume(*kfp_mother) );
 
     // one for e+, one for e-
     for (int j = 1; j <= 2; j++)
@@ -1438,12 +1451,14 @@ void TrackToCalo::fillTree_KFP()
       if (charge == -1)
       {
         kfp_em = it_kfp_cont->second;
+        _em_mass.push_back(kfp_daughter->GetMass());
         _em_x.push_back(kfp_daughter->GetX());
         _em_y.push_back(kfp_daughter->GetY());
         _em_z.push_back(kfp_daughter->GetZ());
         _em_px.push_back(kfp_daughter->GetPx());
         _em_py.push_back(kfp_daughter->GetPy());
         _em_pz.push_back(kfp_daughter->GetPz());
+        _em_pE.push_back(kfp_daughter->GetE());
         _em_pT.push_back(kfp_daughter->GetPt());
         _em_pTErr.push_back(kfp_daughter->GetErrPt());
         _em_p.push_back(kfp_daughter->GetP());
@@ -1477,12 +1492,14 @@ void TrackToCalo::fillTree_KFP()
       else if (charge == 1)
       {
         kfp_ep = it_kfp_cont->second;
+        _ep_mass.push_back(kfp_daughter->GetMass());
         _ep_x.push_back(kfp_daughter->GetX());
         _ep_y.push_back(kfp_daughter->GetY());
         _ep_z.push_back(kfp_daughter->GetZ());
         _ep_px.push_back(kfp_daughter->GetPx());
         _ep_py.push_back(kfp_daughter->GetPy());
         _ep_pz.push_back(kfp_daughter->GetPz());
+        _ep_pE.push_back(kfp_daughter->GetE());
         _ep_pT.push_back(kfp_daughter->GetPt());
         _ep_pTErr.push_back(kfp_daughter->GetErrPt());
         _ep_p.push_back(kfp_daughter->GetP());
@@ -1516,7 +1533,8 @@ void TrackToCalo::fillTree_KFP()
 
     }
 
-    _epem_DCA.push_back(kfp_ep->GetDistanceFromParticle(*kfp_em));
+    _epem_DCA_2d.push_back(kfp_ep->GetDistanceFromParticleXY(*kfp_em));
+    _epem_DCA_3d.push_back(kfp_ep->GetDistanceFromParticle(*kfp_em));
 
   }
 
@@ -1655,6 +1673,7 @@ void TrackToCalo::ResetTreeVectors_KFP()
   _gamma_px.clear();
   _gamma_py.clear();
   _gamma_pz.clear();
+  _gamma_pE.clear();
   _gamma_pT.clear();
   _gamma_pTErr.clear();
   _gamma_p.clear();
@@ -1665,6 +1684,8 @@ void TrackToCalo::ResetTreeVectors_KFP()
   _gamma_phi.clear();
   _gamma_chi2.clear();
   _gamma_nDoF.clear();
+  _gamma_vertex_volume.clear();
+  _ep_mass.clear();
   _ep_x.clear();
   _ep_y.clear();
   _ep_z.clear();
@@ -1685,12 +1706,14 @@ void TrackToCalo::ResetTreeVectors_KFP()
   _ep_x_emc.clear();
   _ep_y_emc.clear();
   _ep_z_emc.clear();
+  _em_mass.clear();
   _em_x.clear();
   _em_y.clear();
   _em_z.clear();
   _em_px.clear();
   _em_py.clear();
   _em_pz.clear();
+  _em_pE.clear();
   _em_pT.clear();
   _em_pTErr.clear();
   _em_pseudorapidity.clear();
@@ -1711,5 +1734,6 @@ void TrackToCalo::ResetTreeVectors_KFP()
   _emcal_y.clear();
   _emcal_z.clear();
   _emcal_e.clear();
-  _epem_DCA.clear();
+  _epem_DCA_2d.clear();
+  _epem_DCA_3d.clear();
 }

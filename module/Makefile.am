@@ -27,7 +27,8 @@ libtrack_to_calo_la_LIBADD = \
   -lglobalvertex_io \
   -lg4detectors_io \
   -lphparameter \
-  -lkfparticle_sphenix_io
+  -lkfparticle_sphenix_io \
+  -lkfparticle_sphenix
 
 AM_CPPFLAGS = \
   -I$(includedir) \
