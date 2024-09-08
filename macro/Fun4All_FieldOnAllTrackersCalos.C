@@ -159,7 +159,7 @@ void Fun4All_FieldOnAllTrackersCalos(
 
   G4TPC::ENABLE_MODULE_EDGE_CORRECTIONS = true;
   //to turn on the default static corrections, enable the two lines below
-  G4TPC::ENABLE_STATIC_CORRECTIONS = true;
+  //G4TPC::ENABLE_STATIC_CORRECTIONS = true;
   //G4TPC::DISTORTIONS_USE_PHI_AS_RADIANS = false;
 
   G4MAGNET::magfield_rescale = 1;
@@ -237,9 +237,12 @@ void Fun4All_FieldOnAllTrackersCalos(
   }
   seeder->Verbosity(verbosity);
   seeder->SetLayerRange(7, 55);
-  seeder->SetSearchWindow(2.,0.05); // z-width and phi-width, default in macro at 1.5 and 0.05
-  seeder->SetClusAdd_delta_window(3.0,0.06); //  (0.5, 0.005) are default; sdzdr_cutoff, d2/dr2(phi)_cutoff
-  //seeder->SetNClustersPerSeedRange(4,60); // default is 6, 6
+//used in https://github.com/klendathu2k/slurp-examples/blob/87e186c1149cccd0002ee2cd2f5cad8ceaa362e9/sPHENIX/TrackingProduction/Fun4All_JobA.C#L120
+  seeder->SetSearchWindow(1.5,0.05); // z-width and phi-width
+//used in https://github.com/sPHENIX-Collaboration/macros/blob/b9d924261ee96352f26867bc4bf80fd37d0a2d04/TrackingProduction/Fun4All_FieldOnAllTrackers.C#L191
+//  seeder->SetSearchWindow(2.,0.05); // z-width and phi-width, default in macro at 1.5 and 0.05
+//  seeder->SetClusAdd_delta_window(3.0,0.06); //  (0.5, 0.005) are default; sdzdr_cutoff, d2/dr2(phi)_cutoff
+//  //seeder->SetNClustersPerSeedRange(4,60); // default is 6, 6
   seeder->SetMinHitsPerCluster(0);
   seeder->SetMinClustersPerTrack(3);
   seeder->useFixedClusterError(true);

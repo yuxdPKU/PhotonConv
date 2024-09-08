@@ -312,13 +312,13 @@ void PhotonConvKFPReco()
 
   //Vertex parameters
   kfparticle->setMaximumVertexchi2nDOF(FLT_MAX);
-  kfparticle->setMaximumDaughterDCA(10);
+  kfparticle->setMaximumDaughterDCA(FLT_MAX);
 
   //Parent parameters
   kfparticle->setMotherPT(0);
   kfparticle->setMinimumMass(-1.0);
   kfparticle->setMaximumMass(10.0);
-  kfparticle->setMaximumMotherVertexVolume(0.9);
+  kfparticle->setMaximumMotherVertexVolume(FLT_MAX);
   kfparticle->setMotherIPchi2(FLT_MAX);
   kfparticle->setFlightDistancechi2(-1.);
   kfparticle->setMinDIRA(-1.1);

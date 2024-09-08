@@ -114,6 +114,7 @@ void TrackToCalo::createBranches()
   _tree->Branch("_track_pcax", &_track_pcax);
   _tree->Branch("_track_pcay", &_track_pcay);
   _tree->Branch("_track_pcaz", &_track_pcaz);
+  _tree->Branch("_track_crossing", &_track_crossing);
   _tree->Branch("_track_vx", &_track_vx);
   _tree->Branch("_track_vy", &_track_vy);
   _tree->Branch("_track_vz", &_track_vz);
@@ -225,6 +226,7 @@ void TrackToCalo::createBranches()
   _tree_KFP->Branch("_ep_phi", &_ep_phi);
   _tree_KFP->Branch("_ep_chi2", &_ep_chi2);
   _tree_KFP->Branch("_ep_nDoF", &_ep_nDoF);
+  _tree_KFP->Branch("_ep_crossing", &_ep_crossing);
   _tree_KFP->Branch("_ep_phi_emc", &_ep_phi_emc);
   _tree_KFP->Branch("_ep_eta_emc", &_ep_eta_emc);
   _tree_KFP->Branch("_ep_x_emc", &_ep_x_emc);
@@ -246,6 +248,7 @@ void TrackToCalo::createBranches()
   _tree_KFP->Branch("_em_phi", &_em_phi);
   _tree_KFP->Branch("_em_chi2", &_em_chi2);
   _tree_KFP->Branch("_em_nDoF", &_em_nDoF);
+  _tree_KFP->Branch("_em_crossing", &_em_crossing);
   _tree_KFP->Branch("_em_phi_emc", &_em_phi_emc);
   _tree_KFP->Branch("_em_eta_emc", &_em_eta_emc);
   _tree_KFP->Branch("_em_x_emc", &_em_x_emc);
