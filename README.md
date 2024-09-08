@@ -16,7 +16,7 @@ make install
 - Grab DST file list by using CreateDstList.pl:
 ```
 cd macro/runList
-./grablist.sh run51619-51886_1000seg_condor_trkrcalo.list
+./grablist.sh run51619-51886_1000seg.list
 ```
 different kinds of DST list are generated: streaming production with all trackers, streaming production with tpc only, tracking production in cluster level, tracking production in seed level, calo production
 
