@@ -50,6 +50,8 @@
 #include <Acts/Surfaces/PerigeeSurface.hpp>
 #include <Acts/Geometry/TrackingGeometry.hpp>
 
+#include <KFVertex.h>
+
 #include <CLHEP/Vector/ThreeVector.h>
 #include <math.h>
 #include <vector>
@@ -102,7 +104,7 @@ void TrackToCalo::createBranches()
   _tree->Branch("_runNumber", &_runNumber);
   _tree->Branch("_eventNumber", &_eventNumber);
   _tree->Branch("_vertex_id", &_vertex_id);
-  _tree->Branch("_vertex_corssing", &_vertex_crossing);
+  _tree->Branch("_vertex_crossing", &_vertex_crossing);
   _tree->Branch("_vertex_ntracks", &_vertex_ntracks);
   _tree->Branch("_vertex_x", &_vertex_x);
   _tree->Branch("_vertex_y", &_vertex_y);
@@ -1535,6 +1537,10 @@ void TrackToCalo::fillTree_KFP()
 
     _epem_DCA_2d.push_back(kfp_ep->GetDistanceFromParticleXY(*kfp_em));
     _epem_DCA_3d.push_back(kfp_ep->GetDistanceFromParticle(*kfp_em));
+    KFVertex motherDecayVertex;
+    motherDecayVertex += *kfp_ep;
+    motherDecayVertex += *kfp_em;
+    _gamma_SV_chi2_per_nDoF.push_back( motherDecayVertex.GetChi2() / motherDecayVertex.GetNDF() );
 
   }
 
@@ -1685,6 +1691,7 @@ void TrackToCalo::ResetTreeVectors_KFP()
   _gamma_chi2.clear();
   _gamma_nDoF.clear();
   _gamma_vertex_volume.clear();
+  _gamma_SV_chi2_per_nDoF.clear();
   _ep_mass.clear();
   _ep_x.clear();
   _ep_y.clear();

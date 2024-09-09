@@ -29,6 +29,7 @@
 #include <kfparticle_sphenix/KFParticle_Container.h>
 #include <kfparticle_sphenix/KFParticle_Tools.h>
 #include <kfparticle_sphenix/KFParticle_truthAndDetTools.h>
+#include <kfparticle_sphenix/KFParticle_nTuple.h>
 
 #include <string>
 #include <vector>
