@@ -304,6 +304,9 @@ void PhotonConvKFPReco()
     kfparticle->setDecayLengthRange(-1*FLT_MAX, FLT_MAX);
   }
 
+  kfparticle->setMinMVTXhits(0);
+  kfparticle->setMinTPChits(22);
+
   //Track parameters
   kfparticle->setMinimumTrackPT(0.);
   kfparticle->setMinimumTrackIPchi2(-1.);
