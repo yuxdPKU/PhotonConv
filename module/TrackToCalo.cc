@@ -1390,7 +1390,7 @@ void TrackToCalo::fillTree_KFP()
   //for (auto &iter : *KFP_Container)
   //{
   //  KFParticle* kfp = iter.second;
-  //  std::cout<<"KFP PDGID = "<<kfp->GetPDG()<<" p = "<<kfp->GetP()<<std::endl;
+  //  std::cout<<"KFP ID = "<<kfp->Id()<<" PDGID = "<<kfp->GetPDG()<<" p = "<<kfp->GetP()<<std::endl;
   //}
 
   //for (auto &iter : *KFP_trackMap)
@@ -1453,6 +1453,7 @@ void TrackToCalo::fillTree_KFP()
       if (charge == -1)
       {
         kfp_em = it_kfp_cont->second;
+        kfp_em->SetProductionVertex(*kfp_mother);
         _em_mass.push_back(kfp_daughter->GetMass());
         _em_x.push_back(kfp_daughter->GetX());
         _em_y.push_back(kfp_daughter->GetY());
@@ -1494,6 +1495,7 @@ void TrackToCalo::fillTree_KFP()
       else if (charge == 1)
       {
         kfp_ep = it_kfp_cont->second;
+        kfp_ep->SetProductionVertex(*kfp_mother);
         _ep_mass.push_back(kfp_daughter->GetMass());
         _ep_x.push_back(kfp_daughter->GetX());
         _ep_y.push_back(kfp_daughter->GetY());
