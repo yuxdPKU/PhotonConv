@@ -10,7 +10,7 @@ int _EMCAL_NPHI = 256;
 int _HCAL_NETA = 24;
 int _HCAL_NPHI = 64;
 
-float min_Track_P = 0.5;
+float min_Track_Pt = 0.5;
 float min_EMCal_E = 0.2;
 float min_HCal_E = 0.2;
 

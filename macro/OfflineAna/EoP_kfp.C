@@ -81,7 +81,7 @@ void EoP_kfp(int runnumber)
 
     for (int ican = 0; ican < _numCan; ican++)
     {
-      if (_em_pT->at(iem) < min_Track_Pt || _ep_pT->at(iem) < min_Track_Pt) continue;
+      if (_em_pT->at(ican) < min_Track_Pt || _ep_pT->at(ican) < min_Track_Pt) continue;
 
       float quality_cut = 1000;
       if ( (_gamma_chi2->at(ican) / _gamma_nDoF->at(ican))>quality_cut || (_ep_chi2->at(ican) / _ep_nDoF->at(ican))>quality_cut || (_em_chi2->at(ican) / _em_nDoF->at(ican))>quality_cut)
@@ -110,7 +110,7 @@ void EoP_kfp(int runnumber)
       teop_gamma_radius = gamma_r;
       teop_gamma_quality = _gamma_chi2->at(ican) / _gamma_nDoF->at(ican);
       teop_gamma_vertex_volume = _gamma_vertex_volume->at(ican);
-      //teop_gamma_SV_chi2_per_nDoF = _gamma_SV_chi2_per_nDoF->at(ican);
+      teop_gamma_SV_chi2_per_nDoF = _gamma_SV_chi2_per_nDoF->at(ican);
       if (verbosity>0)
       {
         cout<<"track e+ px = "<<_ep_px->at(ican)<<" py = "<<_ep_py->at(ican)<<" pz = "<<_ep_pz->at(ican)<<" phi_emc = "<<_ep_phi_emc->at(ican)<<" z_emc = "<<_ep_z_emc->at(ican)<<endl;
