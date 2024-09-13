@@ -303,6 +303,10 @@ void Fun4All_TrackAnalysis(
   ttc->setKFPtrackMapName("PhotonConv_SvtxTrackMap");
   ttc->setKFPContName("PhotonConv_KFParticle_Container");
   ttc->doTrkrCaloMatching();
+  ttc->anaTrkrInfo();
+  ttc->anaCaloInfo();
+  ttc->setTrackPtLowCut(0.5);
+  ttc->setEmcalELowCut(0.2);
   ttc->doTrkrCaloMatching_KFP();
   se->registerSubsystem(ttc);
 

@@ -68,9 +68,12 @@ class TrackToCalo : public SubsysReco
   void ResetTreeVectors_KFP();
 
   void fillTree();
+  void fillTree_TrackOnly();
+  void fillTree_CaloOnly();
   void fillTree_KFP();
 
   void createBranches();
+  void createBranches_KFP();
 
   void EMcalRadiusUser(bool use) {m_use_emcal_radius = use;}
   void IHcalRadiusUser(bool use) {m_use_ihcal_radius = use;}
@@ -84,11 +87,16 @@ class TrackToCalo : public SubsysReco
   void setKFPContName(std::string name) {m_KFPCont_name = name;}
   void setKFPtrackMapName(std::string name) {m_KFPtrackMap_name = name;}
 
+  void resetCaloRadius();
+
   void setTrackPtLowCut(float pt) {m_track_pt_low_cut = pt;}
   void setEmcalELowCut(float e) {m_emcal_e_low_cut = e;}
 
   void doTrkrCaloMatching() {m_doTrkrCaloMatching = true;}
   void doTrkrCaloMatching_KFP() {m_doTrkrCaloMatching_KFP = true;}
+
+  void anaTrkrInfo() {m_doTrackOnly = true;}
+  void anaCaloInfo() {m_doCaloOnly = true;}
 
  private:
    int cnt = 0;
@@ -143,21 +151,33 @@ class TrackToCalo : public SubsysReco
    std::vector<float> _track_pz;
    std::vector<float> _track_phi_origin;
    std::vector<float> _track_eta_origin;
+   std::vector<float> _track_px_origin;
+   std::vector<float> _track_py_origin;
+   std::vector<float> _track_pz_origin;
    std::vector<float> _track_x_origin;
    std::vector<float> _track_y_origin;
    std::vector<float> _track_z_origin;
    std::vector<float> _track_phi_emc;
    std::vector<float> _track_eta_emc;
+   std::vector<float> _track_px_emc;
+   std::vector<float> _track_py_emc;
+   std::vector<float> _track_pz_emc;
    std::vector<float> _track_x_emc;
    std::vector<float> _track_y_emc;
    std::vector<float> _track_z_emc;
    std::vector<float> _track_phi_ihc;
    std::vector<float> _track_eta_ihc;
+   std::vector<float> _track_px_ihc;
+   std::vector<float> _track_py_ihc;
+   std::vector<float> _track_pz_ihc;
    std::vector<float> _track_x_ihc;
    std::vector<float> _track_y_ihc;
    std::vector<float> _track_z_ihc;
    std::vector<float> _track_phi_ohc;
    std::vector<float> _track_eta_ohc;
+   std::vector<float> _track_px_ohc;
+   std::vector<float> _track_py_ohc;
+   std::vector<float> _track_pz_ohc;
    std::vector<float> _track_x_ohc;
    std::vector<float> _track_y_ohc;
    std::vector<float> _track_z_ohc;
@@ -249,6 +269,11 @@ class TrackToCalo : public SubsysReco
    std::vector<float> _ep_chi2;
    std::vector<float> _ep_nDoF;
    std::vector<float> _ep_crossing;
+   std::vector<int> _ep_clus_ican;
+   //std::vector<int> _ep_clus_type;
+   std::vector<float> _ep_clus_x;
+   std::vector<float> _ep_clus_y;
+   std::vector<float> _ep_clus_z;
 
    std::vector<float> _em_mass;
    std::vector<float> _em_x;
@@ -269,15 +294,26 @@ class TrackToCalo : public SubsysReco
    std::vector<float> _em_chi2;
    std::vector<float> _em_nDoF;
    std::vector<float> _em_crossing;
+   std::vector<int> _em_clus_ican;
+   //std::vector<int> _em_clus_type;
+   std::vector<float> _em_clus_x;
+   std::vector<float> _em_clus_y;
+   std::vector<float> _em_clus_z;
 
    std::vector<float> _ep_phi_emc;
    std::vector<float> _ep_eta_emc;
+   std::vector<float> _ep_px_emc;
+   std::vector<float> _ep_py_emc;
+   std::vector<float> _ep_pz_emc;
    std::vector<float> _ep_x_emc;
    std::vector<float> _ep_y_emc;
    std::vector<float> _ep_z_emc;
 
    std::vector<float> _em_phi_emc;
    std::vector<float> _em_eta_emc;
+   std::vector<float> _em_px_emc;
+   std::vector<float> _em_py_emc;
+   std::vector<float> _em_pz_emc;
    std::vector<float> _em_x_emc;
    std::vector<float> _em_y_emc;
    std::vector<float> _em_z_emc;
@@ -319,8 +355,14 @@ class TrackToCalo : public SubsysReco
    float m_emcal_e_low_cut = 0.2;
    float m_vx, m_vy, m_vz;
 
+   double caloRadiusEMCal;
+   double caloRadiusIHCal;
+   double caloRadiusOHCal;
+
    bool m_doTrkrCaloMatching = false;
    bool m_doTrkrCaloMatching_KFP = false;
+   bool m_doTrackOnly = false;
+   bool m_doCaloOnly = false;
 };
 
 #endif // TRACKTOCALO_H

@@ -432,23 +432,18 @@ void Fun4All_FieldOnAllTrackersCalos(
   ttc->setKFPtrackMapName("PhotonConv_SvtxTrackMap");
   ttc->setKFPContName("PhotonConv_KFParticle_Container");
   ttc->doTrkrCaloMatching();
+  ttc->anaTrkrInfo();
+  ttc->anaCaloInfo();
+  ttc->setTrackPtLowCut(0.5);
+  ttc->setEmcalELowCut(0.2);
   ttc->doTrkrCaloMatching_KFP();
   se->registerSubsystem(ttc);
 
   if (Enable::DSTOUT)
   {
     Fun4AllDstOutputManager *out = new Fun4AllDstOutputManager("DSTOUT", outputDstFile);
-    out->StripNode("TPC");
-    out->StripNode("Sync");
-    out->StripNode("MBD");
-    out->StripNode("ZDC");
-    out->StripNode("SEPD");
-    out->StripNode("HCALIN");
-    out->StripNode("HCALOUT");
-    out->StripNode("alignmentTransformationContainer");
-    out->StripNode("alignmentTransformationContainerTransient");
-    out->StripNode("SiliconTrackSeedContainer");
-    out->StripNode("RUN");
+    //out->StripNode("RUN");
+    //out->AddNode("Sync");
     out->SaveRunNode(0);
     se->registerOutputManager(out);
   }

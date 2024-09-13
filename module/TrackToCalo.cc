@@ -89,7 +89,16 @@ int TrackToCalo::Init(PHCompositeNode *topNode)
 
   delete _outfile;
   _outfile = new TFile(_outfilename.c_str(), "RECREATE");
-  createBranches();
+
+  if (m_doTrkrCaloMatching)
+  {
+    createBranches();
+  }
+
+  if (m_doTrkrCaloMatching_KFP)
+  {
+    createBranches_KFP();
+  }
 
   cnt=0;
 
@@ -135,21 +144,33 @@ void TrackToCalo::createBranches()
   _tree->Branch("_track_pz", &_track_pz);
   _tree->Branch("_track_phi_origin", &_track_phi_origin);
   _tree->Branch("_track_eta_origin", &_track_eta_origin);
+  _tree->Branch("_track_px_origin", &_track_px_origin);
+  _tree->Branch("_track_py_origin", &_track_py_origin);
+  _tree->Branch("_track_pz_origin", &_track_pz_origin);
   _tree->Branch("_track_x_origin", &_track_x_origin);
   _tree->Branch("_track_y_origin", &_track_y_origin);
   _tree->Branch("_track_z_origin", &_track_z_origin);
   _tree->Branch("_track_phi_emc", &_track_phi_emc);
   _tree->Branch("_track_eta_emc", &_track_eta_emc);
+  _tree->Branch("_track_px_emc", &_track_px_emc);
+  _tree->Branch("_track_py_emc", &_track_py_emc);
+  _tree->Branch("_track_pz_emc", &_track_pz_emc);
   _tree->Branch("_track_x_emc", &_track_x_emc);
   _tree->Branch("_track_y_emc", &_track_y_emc);
   _tree->Branch("_track_z_emc", &_track_z_emc);
   _tree->Branch("_track_phi_ihc", &_track_phi_ihc);
   _tree->Branch("_track_eta_ihc", &_track_eta_ihc);
+  _tree->Branch("_track_px_ihc", &_track_px_ihc);
+  _tree->Branch("_track_py_ihc", &_track_py_ihc);
+  _tree->Branch("_track_pz_ihc", &_track_pz_ihc);
   _tree->Branch("_track_x_ihc", &_track_x_ihc);
   _tree->Branch("_track_y_ihc", &_track_y_ihc);
   _tree->Branch("_track_z_ihc", &_track_z_ihc);
   _tree->Branch("_track_phi_ohc", &_track_phi_ohc);
   _tree->Branch("_track_eta_ohc", &_track_eta_ohc);
+  _tree->Branch("_track_px_ohc", &_track_px_ohc);
+  _tree->Branch("_track_py_ohc", &_track_py_ohc);
+  _tree->Branch("_track_pz_ohc", &_track_pz_ohc);
   _tree->Branch("_track_x_ohc", &_track_x_ohc);
   _tree->Branch("_track_y_ohc", &_track_y_ohc);
   _tree->Branch("_track_z_ohc", &_track_z_ohc);
@@ -191,7 +212,10 @@ void TrackToCalo::createBranches()
   _tree->Branch("_mbd_z", &_mbd_z);
   _tree->Branch("_triggers", &_triggers);
   _tree->Branch("_ntracks", &_ntracks);
+}
 
+void TrackToCalo::createBranches_KFP()
+{
   delete _tree_KFP;
   _tree_KFP = new TTree("tree_KFP", "A tree with track/calo info after KFParticle");
   _tree_KFP->Branch("_runNumber", &_runNumber);
@@ -237,8 +261,16 @@ void TrackToCalo::createBranches()
   _tree_KFP->Branch("_ep_chi2", &_ep_chi2);
   _tree_KFP->Branch("_ep_nDoF", &_ep_nDoF);
   _tree_KFP->Branch("_ep_crossing", &_ep_crossing);
+  _tree_KFP->Branch("_ep_clus_ican", &_ep_clus_ican);
+  //_tree_KFP->Branch("_ep_clus_type", &_ep_clus_type);
+  _tree_KFP->Branch("_ep_clus_x", &_ep_clus_x);
+  _tree_KFP->Branch("_ep_clus_y", &_ep_clus_y);
+  _tree_KFP->Branch("_ep_clus_z", &_ep_clus_z);
   _tree_KFP->Branch("_ep_phi_emc", &_ep_phi_emc);
   _tree_KFP->Branch("_ep_eta_emc", &_ep_eta_emc);
+  _tree_KFP->Branch("_ep_px_emc", &_ep_px_emc);
+  _tree_KFP->Branch("_ep_py_emc", &_ep_py_emc);
+  _tree_KFP->Branch("_ep_pz_emc", &_ep_pz_emc);
   _tree_KFP->Branch("_ep_x_emc", &_ep_x_emc);
   _tree_KFP->Branch("_ep_y_emc", &_ep_y_emc);
   _tree_KFP->Branch("_ep_z_emc", &_ep_z_emc);
@@ -261,8 +293,16 @@ void TrackToCalo::createBranches()
   _tree_KFP->Branch("_em_chi2", &_em_chi2);
   _tree_KFP->Branch("_em_nDoF", &_em_nDoF);
   _tree_KFP->Branch("_em_crossing", &_em_crossing);
+  _tree_KFP->Branch("_em_clus_ican", &_em_clus_ican);
+  //_tree_KFP->Branch("_em_clus_type", &_em_clus_type);
+  _tree_KFP->Branch("_em_clus_x", &_em_clus_x);
+  _tree_KFP->Branch("_em_clus_y", &_em_clus_y);
+  _tree_KFP->Branch("_em_clus_z", &_em_clus_z);
   _tree_KFP->Branch("_em_phi_emc", &_em_phi_emc);
   _tree_KFP->Branch("_em_eta_emc", &_em_eta_emc);
+  _tree_KFP->Branch("_em_px_emc", &_em_px_emc);
+  _tree_KFP->Branch("_em_py_emc", &_em_py_emc);
+  _tree_KFP->Branch("_em_pz_emc", &_em_pz_emc);
   _tree_KFP->Branch("_em_x_emc", &_em_x_emc);
   _tree_KFP->Branch("_em_y_emc", &_em_y_emc);
   _tree_KFP->Branch("_em_z_emc", &_em_z_emc);
@@ -452,12 +492,19 @@ int TrackToCalo::process_event(PHCompositeNode *topNode)
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-//____________________________________________________________________________..
 void TrackToCalo::fillTree()
 {
-  if (!trackMap || !acts_Geometry || !clustersEM || !clustersHAD || !EMCAL_Container || !IHCAL_Container || !OHCAL_Container || !trkrContainer || !EMCalGeo || !IHCalGeo || !OHCalGeo)
+    if (m_doTrackOnly) {fillTree_TrackOnly();}
+    if (m_doCaloOnly) {fillTree_CaloOnly();}
+    _tree->Fill();
+}
+
+//____________________________________________________________________________..
+void TrackToCalo::fillTree_TrackOnly()
+{
+  if (!trackMap || !acts_Geometry || !trkrContainer)
   {
-    std::cout << PHWHERE << "missing node trees, can't continue with track calo matching"
+    std::cout << PHWHERE << "missing node trees, can't continue with track calo matching (Track Only Part)"
               << std::endl;
     return;
   }
@@ -663,34 +710,6 @@ void TrackToCalo::fillTree()
   }
   */
 
-  double caloRadiusEMCal;
-  double caloRadiusIHCal;
-  double caloRadiusOHCal;
-  if (m_use_emcal_radius)
-  {
-    caloRadiusEMCal = m_emcal_radius_user;
-  }
-  else
-  {
-    caloRadiusEMCal = EMCalGeo->get_radius();
-  }
-  if (m_use_ihcal_radius)
-  {
-    caloRadiusIHCal = m_ihcal_radius_user;
-  }
-  else
-  {
-    caloRadiusIHCal = IHCalGeo->get_radius();
-  }
-  if (m_use_ohcal_radius)
-  {
-    caloRadiusOHCal = m_ohcal_radius_user;
-  }
-  else
-  {
-    caloRadiusOHCal = OHCalGeo->get_radius();
-  }
-
   //Acts::Vector3 acts_vertex(vertex.x(), vertex.y(), vertex.z());
 
   //for (auto &iter : *trackMap)
@@ -788,86 +807,6 @@ void TrackToCalo::fillTree()
       }
     }
 
-    // project to R=0
-    thisState = track->get_state(0);
-
-    if(!thisState)
-    {
-      _track_phi_origin.push_back(NAN);
-      _track_eta_origin.push_back(NAN);
-      _track_x_origin.push_back(NAN);
-      _track_y_origin.push_back(NAN);
-      _track_z_origin.push_back(NAN);
-    }
-    else
-    {
-      _track_phi_origin.push_back(atan2(thisState->get_y(), thisState->get_x()));
-      _track_eta_origin.push_back(asinh(thisState->get_z()/sqrt(thisState->get_x()*thisState->get_x() + thisState->get_y()*thisState->get_y())));
-      _track_x_origin.push_back(thisState->get_x());
-      _track_y_origin.push_back(thisState->get_y());
-      _track_z_origin.push_back(thisState->get_z());
-    }
-
-    // project to R_EMCAL
-    thisState = track->get_state(caloRadiusEMCal);
-
-    if(!thisState)
-    {
-      _track_phi_emc.push_back(NAN);
-      _track_eta_emc.push_back(NAN);
-      _track_x_emc.push_back(NAN);
-      _track_y_emc.push_back(NAN);
-      _track_z_emc.push_back(NAN);
-    }
-    else
-    {
-      _track_phi_emc.push_back(atan2(thisState->get_y(), thisState->get_x()));
-      _track_eta_emc.push_back(asinh(thisState->get_z()/sqrt(thisState->get_x()*thisState->get_x() + thisState->get_y()*thisState->get_y())));
-      _track_x_emc.push_back(thisState->get_x());
-      _track_y_emc.push_back(thisState->get_y());
-      _track_z_emc.push_back(thisState->get_z());
-    }
-
-    // project to R_IHCAL
-    thisState = track->get_state(caloRadiusIHCal);
-
-    if(!thisState)
-    {
-      _track_phi_ihc.push_back(NAN);
-      _track_eta_ihc.push_back(NAN);
-      _track_x_ihc.push_back(NAN);
-      _track_y_ihc.push_back(NAN);
-      _track_z_ihc.push_back(NAN);
-    }
-    else
-    {
-      _track_phi_ihc.push_back(atan2(thisState->get_y(), thisState->get_x()));
-      _track_eta_ihc.push_back(asinh(thisState->get_z()/sqrt(thisState->get_x()*thisState->get_x() + thisState->get_y()*thisState->get_y())));
-      _track_x_ihc.push_back(thisState->get_x());
-      _track_y_ihc.push_back(thisState->get_y());
-      _track_z_ihc.push_back(thisState->get_z());
-    }
-
-    // project to R_OHCAL
-    thisState = track->get_state(caloRadiusOHCal);
-
-    if(!thisState)
-    {
-      _track_phi_ohc.push_back(NAN);
-      _track_eta_ohc.push_back(NAN);
-      _track_x_ohc.push_back(NAN);
-      _track_y_ohc.push_back(NAN);
-      _track_z_ohc.push_back(NAN);
-    }
-    else
-    {
-      _track_phi_ohc.push_back(atan2(thisState->get_y(), thisState->get_x()));
-      _track_eta_ohc.push_back(asinh(thisState->get_z()/sqrt(thisState->get_x()*thisState->get_x() + thisState->get_y()*thisState->get_y())));
-      _track_x_ohc.push_back(thisState->get_x());
-      _track_y_ohc.push_back(thisState->get_y());
-      _track_z_ohc.push_back(thisState->get_z());
-    }
-
     unsigned int m_vertexid = track->get_vertex_id();
     bool track_have_vertex = false;
     if (vertexMap)
@@ -916,9 +855,177 @@ void TrackToCalo::fillTree()
     _track_pcaz.push_back(track->get_z());
     _track_crossing.push_back(track->get_crossing());
 
+    if (!m_doCaloOnly) continue;
+
+    resetCaloRadius();
+
+    // project to R=0
+    thisState = track->get_state(0);
+
+    if(!thisState)
+    {
+      _track_phi_origin.push_back(NAN);
+      _track_eta_origin.push_back(NAN);
+      _track_px_origin.push_back(NAN);
+      _track_py_origin.push_back(NAN);
+      _track_pz_origin.push_back(NAN);
+      _track_x_origin.push_back(NAN);
+      _track_y_origin.push_back(NAN);
+      _track_z_origin.push_back(NAN);
+    }
+    else
+    {
+      _track_phi_origin.push_back(thisState->get_phi());
+      _track_eta_origin.push_back(thisState->get_eta());
+      _track_px_origin.push_back(thisState->get_px());
+      _track_py_origin.push_back(thisState->get_py());
+      _track_pz_origin.push_back(thisState->get_pz());
+      _track_x_origin.push_back(thisState->get_x());
+      _track_y_origin.push_back(thisState->get_y());
+      _track_z_origin.push_back(thisState->get_z());
+    }
+
+    // project to R_EMCAL
+    thisState = track->get_state(caloRadiusEMCal);
+
+    if(!thisState)
+    {
+      _track_phi_emc.push_back(NAN);
+      _track_eta_emc.push_back(NAN);
+      _track_px_emc.push_back(NAN);
+      _track_py_emc.push_back(NAN);
+      _track_pz_emc.push_back(NAN);
+      _track_x_emc.push_back(NAN);
+      _track_y_emc.push_back(NAN);
+      _track_z_emc.push_back(NAN);
+    }
+    else
+    {
+      _track_phi_emc.push_back(thisState->get_phi());
+      _track_eta_emc.push_back(thisState->get_eta());
+      _track_px_emc.push_back(thisState->get_px());
+      _track_py_emc.push_back(thisState->get_py());
+      _track_pz_emc.push_back(thisState->get_pz());
+      _track_x_emc.push_back(thisState->get_x());
+      _track_y_emc.push_back(thisState->get_y());
+      _track_z_emc.push_back(thisState->get_z());
+    }
+
+    // project to R_IHCAL
+    thisState = track->get_state(caloRadiusIHCal);
+
+    if(!thisState)
+    {
+      _track_phi_ihc.push_back(NAN);
+      _track_eta_ihc.push_back(NAN);
+      _track_px_ihc.push_back(NAN);
+      _track_py_ihc.push_back(NAN);
+      _track_pz_ihc.push_back(NAN);
+      _track_x_ihc.push_back(NAN);
+      _track_y_ihc.push_back(NAN);
+      _track_z_ihc.push_back(NAN);
+    }
+    else
+    {
+      _track_phi_ihc.push_back(thisState->get_phi());
+      _track_eta_ihc.push_back(thisState->get_eta());
+      _track_px_ihc.push_back(thisState->get_px());
+      _track_py_ihc.push_back(thisState->get_py());
+      _track_pz_ihc.push_back(thisState->get_pz());
+      _track_x_ihc.push_back(thisState->get_x());
+      _track_y_ihc.push_back(thisState->get_y());
+      _track_z_ihc.push_back(thisState->get_z());
+    }
+
+    // project to R_OHCAL
+    thisState = track->get_state(caloRadiusOHCal);
+
+    if(!thisState)
+    {
+      _track_phi_ohc.push_back(NAN);
+      _track_eta_ohc.push_back(NAN);
+      _track_px_ohc.push_back(NAN);
+      _track_py_ohc.push_back(NAN);
+      _track_pz_ohc.push_back(NAN);
+      _track_x_ohc.push_back(NAN);
+      _track_y_ohc.push_back(NAN);
+      _track_z_ohc.push_back(NAN);
+    }
+    else
+    {
+      _track_phi_ohc.push_back(thisState->get_phi());
+      _track_eta_ohc.push_back(thisState->get_eta());
+      _track_px_ohc.push_back(thisState->get_px());
+      _track_py_ohc.push_back(thisState->get_py());
+      _track_pz_ohc.push_back(thisState->get_pz());
+      _track_x_ohc.push_back(thisState->get_x());
+      _track_y_ohc.push_back(thisState->get_y());
+      _track_z_ohc.push_back(thisState->get_z());
+    }
+  }
+}
+
+//____________________________________________________________________________..
+void TrackToCalo::fillTree_CaloOnly()
+{
+  if (!clustersEM || !clustersHAD || !EMCAL_Container || !IHCAL_Container || !OHCAL_Container || !EMCalGeo || !IHCalGeo || !OHCalGeo)
+  {
+    std::cout << PHWHERE << "missing node trees, can't continue with track calo matching (Calo Only Part)"
+              << std::endl;
+    return;
+  }
+
+  bool has_vertex = false;
+  GlobalVertex *mbd_vtx = nullptr;
+
+  CLHEP::Hep3Vector vertex(0., 0., 0.);
+
+  if(vertexmap)
+  {
+    if(!vertexmap->empty())
+    {
+      mbd_vtx = vertexmap->begin()->second;
+      if(mbd_vtx)
+      {
+        vertex.setX(mbd_vtx->get_x());
+        vertex.setY(mbd_vtx->get_y());
+        vertex.setZ(mbd_vtx->get_z());
+        has_vertex = true;
+      }
+    }
+  }
+
+  if(!m_doTrackOnly)
+  {
+    if(has_vertex)
+    {
+      _mbd_x.push_back(vertex.x());
+      _mbd_y.push_back(vertex.y());
+      _mbd_z.push_back(vertex.z());
+    }
+    else
+    {
+      _mbd_x.push_back(NAN);
+      _mbd_y.push_back(NAN);
+      _mbd_z.push_back(NAN);
+    }
+  }
+
+  if(gl1Packet && !m_doTrackOnly)
+  {
+    auto scaled_vector = gl1Packet->getScaledVector();
+    for(int i = 0; i < 32; i++)
+    {
+      if((scaled_vector & (int)std::pow(2,i)) != 0)
+      {
+        _triggers.push_back(i);
+      }
+    }
   }
 
   /*
+  resetCaloRadius();
+
   caloRadiusEMCal *= Acts::UnitConstants::cm;
 
   const auto eta = 2.5;
@@ -1348,14 +1455,11 @@ void TrackToCalo::fillTree()
   }
 
   */
-
-  _tree->Fill();
-
 }
 
 void TrackToCalo::fillTree_KFP()
 {
-  if (!KFP_Container || !KFP_trackMap || !acts_Geometry || !clustersEM || !EMCalGeo)
+  if (!KFP_Container || !KFP_trackMap || !acts_Geometry || !clustersEM || !EMCalGeo || !trkrContainer)
   {
     std::cout << PHWHERE << "missing node trees, can't continue with track calo matching with KFParticle"
               << std::endl;
@@ -1364,15 +1468,7 @@ void TrackToCalo::fillTree_KFP()
 
   CLHEP::Hep3Vector vertex(0., 0., 0.);
 
-  double caloRadiusEMCal;
-  if (m_use_emcal_radius)
-  {
-    caloRadiusEMCal = m_emcal_radius_user;
-  }
-  else
-  {
-    caloRadiusEMCal = EMCalGeo->get_radius();
-  }
+  resetCaloRadius();
 
   if (KFP_Container->empty())
   {
@@ -1442,6 +1538,7 @@ void TrackToCalo::fillTree_KFP()
       auto it_kfp_trackmap = KFP_trackMap->begin();
       std::advance(it_kfp_trackmap, 3 * i + j);
       track = it_kfp_trackmap->second;
+
 //std::cout<<"yuxd test in KFP: track px,py,pz = "<<track->get_px()<<" "<<track->get_py()<<" "<<track->get_pz()<<" x,y,z = "<<track->get_x()<<" "<<track->get_y()<<" "<<track->get_z()<<" id = "<<track->get_id()<<std::endl;
 
       // project to R_EMCAL
@@ -1474,18 +1571,45 @@ void TrackToCalo::fillTree_KFP()
         _em_nDoF.push_back(kfp_daughter->GetNDF());
         _em_crossing.push_back(track->get_crossing());
 
+        tpc_seed = track->get_tpc_seed();
+        if(tpc_seed)
+        {
+          for(auto key_iter = tpc_seed->begin_cluster_keys(); key_iter != tpc_seed->end_cluster_keys(); ++key_iter)
+          {
+            const auto& cluster_key = *key_iter;
+            trkrCluster = trkrContainer->findCluster(cluster_key);
+            if(!trkrCluster)
+            {
+              continue;
+            }
+            Acts::Vector3 global(0., 0., 0.);
+            global = acts_Geometry->getGlobalPosition(cluster_key, trkrCluster);
+            _em_clus_ican.push_back(i);
+            //_em_clus_type.push_back(TrkrDefs::getTrkrId(cluster_key));
+            _em_clus_x.push_back(global[0]);
+            _em_clus_y.push_back(global[1]);
+            _em_clus_z.push_back(global[2]);
+          }
+        }
+
         if(!thisState)
         {
           _em_phi_emc.push_back(NAN);
           _em_eta_emc.push_back(NAN);
+          _em_px_emc.push_back(NAN);
+          _em_py_emc.push_back(NAN);
+          _em_pz_emc.push_back(NAN);
           _em_x_emc.push_back(NAN);
           _em_y_emc.push_back(NAN);
           _em_z_emc.push_back(NAN);
         }
         else
         {
-          _em_phi_emc.push_back(atan2(thisState->get_y(), thisState->get_x()));
-          _em_eta_emc.push_back(asinh(thisState->get_z()/sqrt(thisState->get_x()*thisState->get_x() + thisState->get_y()*thisState->get_y())));
+          _em_phi_emc.push_back(thisState->get_phi());
+          _em_eta_emc.push_back(thisState->get_eta());
+          _em_px_emc.push_back(thisState->get_px());
+          _em_py_emc.push_back(thisState->get_py());
+          _em_pz_emc.push_back(thisState->get_pz());
           _em_x_emc.push_back(thisState->get_x());
           _em_y_emc.push_back(thisState->get_y());
           _em_z_emc.push_back(thisState->get_z());
@@ -1516,18 +1640,45 @@ void TrackToCalo::fillTree_KFP()
         _ep_nDoF.push_back(kfp_daughter->GetNDF());
         _ep_crossing.push_back(track->get_crossing());
 
+        tpc_seed = track->get_tpc_seed();
+        if(tpc_seed)
+        {
+          for(auto key_iter = tpc_seed->begin_cluster_keys(); key_iter != tpc_seed->end_cluster_keys(); ++key_iter)
+          {
+            const auto& cluster_key = *key_iter;
+            trkrCluster = trkrContainer->findCluster(cluster_key);
+            if(!trkrCluster)
+            {
+              continue;
+            }
+            Acts::Vector3 global(0., 0., 0.);
+            global = acts_Geometry->getGlobalPosition(cluster_key, trkrCluster);
+            _ep_clus_ican.push_back(i);
+            //_ep_clus_type.push_back(TrkrDefs::getTrkrId(cluster_key));
+            _ep_clus_x.push_back(global[0]);
+            _ep_clus_y.push_back(global[1]);
+            _ep_clus_z.push_back(global[2]);
+          }
+        }
+
         if(!thisState)
         {
           _ep_phi_emc.push_back(NAN);
           _ep_eta_emc.push_back(NAN);
+          _ep_px_emc.push_back(NAN);
+          _ep_py_emc.push_back(NAN);
+          _ep_pz_emc.push_back(NAN);
           _ep_x_emc.push_back(NAN);
           _ep_y_emc.push_back(NAN);
           _ep_z_emc.push_back(NAN);
         }
         else
         {
-          _ep_phi_emc.push_back(atan2(thisState->get_y(), thisState->get_x()));
-          _ep_eta_emc.push_back(asinh(thisState->get_z()/sqrt(thisState->get_x()*thisState->get_x() + thisState->get_y()*thisState->get_y())));
+          _ep_phi_emc.push_back(thisState->get_phi());
+          _ep_eta_emc.push_back(thisState->get_eta());
+          _ep_px_emc.push_back(thisState->get_px());
+          _ep_py_emc.push_back(thisState->get_py());
+          _ep_pz_emc.push_back(thisState->get_pz());
           _ep_x_emc.push_back(thisState->get_x());
           _ep_y_emc.push_back(thisState->get_y());
           _ep_z_emc.push_back(thisState->get_z());
@@ -1613,21 +1764,33 @@ void TrackToCalo::ResetTreeVectors()
   _track_pz.clear();
   _track_phi_origin.clear();
   _track_eta_origin.clear();
+  _track_px_origin.clear();
+  _track_py_origin.clear();
+  _track_pz_origin.clear();
   _track_x_origin.clear();
   _track_y_origin.clear();
   _track_z_origin.clear();
   _track_phi_emc.clear();
   _track_eta_emc.clear();
+  _track_px_emc.clear();
+  _track_py_emc.clear();
+  _track_pz_emc.clear();
   _track_x_emc.clear();
   _track_y_emc.clear();
   _track_z_emc.clear();
   _track_phi_ihc.clear();
   _track_eta_ihc.clear();
+  _track_px_ihc.clear();
+  _track_py_ihc.clear();
+  _track_pz_ihc.clear();
   _track_x_ihc.clear();
   _track_y_ihc.clear();
   _track_z_ihc.clear();
   _track_phi_ohc.clear();
   _track_eta_ohc.clear();
+  _track_px_ohc.clear();
+  _track_py_ohc.clear();
+  _track_pz_ohc.clear();
   _track_x_ohc.clear();
   _track_y_ohc.clear();
   _track_z_ohc.clear();
@@ -1701,8 +1864,11 @@ void TrackToCalo::ResetTreeVectors_KFP()
   _ep_px.clear();
   _ep_py.clear();
   _ep_pz.clear();
+  _ep_pE.clear();
   _ep_pT.clear();
   _ep_pTErr.clear();
+  _ep_p.clear();
+  _ep_pErr.clear();
   _ep_pseudorapidity.clear();
   _ep_rapidity.clear();
   _ep_theta.clear();
@@ -1710,8 +1876,15 @@ void TrackToCalo::ResetTreeVectors_KFP()
   _ep_chi2.clear();
   _ep_nDoF.clear();
   _ep_crossing.clear();
+  _ep_clus_ican.clear();
+  _ep_clus_x.clear();
+  _ep_clus_y.clear();
+  _ep_clus_z.clear();
   _ep_phi_emc.clear();
   _ep_eta_emc.clear();
+  _ep_px_emc.clear();
+  _ep_py_emc.clear();
+  _ep_pz_emc.clear();
   _ep_x_emc.clear();
   _ep_y_emc.clear();
   _ep_z_emc.clear();
@@ -1725,6 +1898,8 @@ void TrackToCalo::ResetTreeVectors_KFP()
   _em_pE.clear();
   _em_pT.clear();
   _em_pTErr.clear();
+  _em_p.clear();
+  _em_pErr.clear();
   _em_pseudorapidity.clear();
   _em_rapidity.clear();
   _em_theta.clear();
@@ -1732,8 +1907,15 @@ void TrackToCalo::ResetTreeVectors_KFP()
   _em_chi2.clear();
   _em_nDoF.clear();
   _em_crossing.clear();
+  _em_clus_ican.clear();
+  _em_clus_x.clear();
+  _em_clus_y.clear();
+  _em_clus_z.clear();
   _em_phi_emc.clear();
   _em_eta_emc.clear();
+  _em_px_emc.clear();
+  _em_py_emc.clear();
+  _em_pz_emc.clear();
   _em_x_emc.clear();
   _em_y_emc.clear();
   _em_z_emc.clear();
@@ -1745,4 +1927,39 @@ void TrackToCalo::ResetTreeVectors_KFP()
   _emcal_e.clear();
   _epem_DCA_2d.clear();
   _epem_DCA_3d.clear();
+}
+
+void TrackToCalo::resetCaloRadius()
+{
+  if (!EMCalGeo || !IHCalGeo || !OHCalGeo)
+  {
+    std::cout << PHWHERE << "missing node trees, can't continue with track projection"
+              << std::endl;
+    return;
+  }
+
+  if (m_use_emcal_radius)
+  {
+    caloRadiusEMCal = m_emcal_radius_user;
+  }
+  else
+  {
+    caloRadiusEMCal = EMCalGeo->get_radius();
+  }
+  if (m_use_ihcal_radius)
+  {
+    caloRadiusIHCal = m_ihcal_radius_user;
+  }
+  else
+  {
+    caloRadiusIHCal = IHCalGeo->get_radius();
+  }
+  if (m_use_ohcal_radius)
+  {
+    caloRadiusOHCal = m_ohcal_radius_user;
+  }
+  else
+  {
+    caloRadiusOHCal = OHCalGeo->get_radius();
+  }
 }
