@@ -228,7 +228,7 @@ void EvtDisplayAligned(int runnumber)
 
       // project tpc tracks to emcal and hcal
       std::pair<float, float> TrackProjsEMCal;
-      TrackProjsEMCal = std::make_pair(_track_phi_emc->at(itrack), _track_z_emc->at(itrack));
+      TrackProjsEMCal = std::make_pair( cal_phi(_track_x_emc->at(itrack), _track_y_emc->at(itrack)), _track_z_emc->at(itrack));
 
       bool is_match = false;
       // loop all emcal clusters to match with tpc tracks
@@ -276,7 +276,7 @@ void EvtDisplayAligned(int runnumber)
       float trk_project_hcal_R = sqrt(pow(trk_project_hcal_x,2)+pow(trk_project_hcal_y,2));
       float trk_pt = sqrt(pow(_track_px->at(itrack),2)+pow(_track_py->at(itrack),2));
       float trk_pz = _track_pz->at(itrack);
-      float trk_phi = atan2(_track_py->at(itrack), _track_px->at(itrack));
+      float trk_phi = _track_phi->at(itrack);
       float trk_x = _track_x_emc->at(itrack);
       float trk_y = _track_y_emc->at(itrack);
       float trk_z = _track_z_emc->at(itrack);

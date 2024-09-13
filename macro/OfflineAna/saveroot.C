@@ -67,7 +67,7 @@ void saveroot(int runnumber)
       // project tpc tracks to emcal and hcal
       std::pair<float, float> TrackProjsEMCal;
       std::pair<float, float> TrackProjsHCal;
-      TrackProjsEMCal = std::make_pair(_track_phi_emc->at(itrack), _track_z_emc->at(itrack));
+      TrackProjsEMCal = std::make_pair( cal_phi(_track_x_emc->at(itrack), _track_y_emc->at(itrack)), _track_z_emc->at(itrack));
       TVector3 p3_track(_track_px->at(itrack),_track_py->at(itrack),_track_pz->at(itrack));
       TVector3 R3_track_emc(_track_x_emc->at(itrack),_track_y_emc->at(itrack),0);
 
@@ -80,7 +80,7 @@ void saveroot(int runnumber)
         //if(_emcal_e->at(iem) < min_EMCal_E) continue;
         //if(fabs(_emcal_eta->at(iem)) > 1.1) continue;
         std::pair<float, float> EMCalPos;
-        float emcal_phi = atan2(_emcal_y->at(iem), _emcal_x->at(iem));
+        float emcal_phi = cal_phi(_emcal_x->at(iem), _emcal_y->at(iem));
         float radius_scale = emcal_radius / sqrt( pow(_emcal_x->at(iem),2) + pow(_emcal_y->at(iem),2) );
         EMCalPos = std::make_pair(emcal_phi, radius_scale*_emcal_z->at(iem));
 

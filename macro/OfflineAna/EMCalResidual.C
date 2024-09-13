@@ -159,8 +159,8 @@ void EMCalResidual(int runnumber)
       // project tpc tracks to emcal and hcal
       std::pair<float, float> TrackProjsEMCal;
       std::pair<float, float> TrackProjsHCal;
-      TrackProjsEMCal = std::make_pair(_track_phi_emc->at(itrack), _track_z_emc->at(itrack));
-      TrackProjsHCal = std::make_pair(_track_phi_ohc->at(itrack), _track_z_ohc->at(itrack));
+      TrackProjsEMCal = std::make_pair( cal_phi(_track_x_emc->at(itrack), _track_y_emc->at(itrack)), _track_z_emc->at(itrack));
+      TrackProjsHCal = std::make_pair( cal_phi(_track_x_ohc->at(itrack), _track_y_ohc->at(itrack)), _track_z_ohc->at(itrack));
       TVector3 p3_track(_track_px->at(itrack),_track_py->at(itrack),_track_pz->at(itrack));
       TVector3 R3_track_emc(_track_x_emc->at(itrack),_track_y_emc->at(itrack),0);
 
@@ -174,7 +174,7 @@ void EMCalResidual(int runnumber)
         //if(_emcal_e->at(iem) < min_EMCal_E) continue;
         //if(fabs(_emcal_eta->at(iem)) > 1.1) continue;
         std::pair<float, float> EMCalPos;
-        float emcal_phi = atan2(_emcal_y->at(iem), _emcal_x->at(iem));
+        float emcal_phi = cal_phi(_emcal_x->at(iem), _emcal_y->at(iem));
         float radius_scale = emcal_radius / sqrt( pow(_emcal_x->at(iem),2) + pow(_emcal_y->at(iem),2) );
         EMCalPos = std::make_pair(emcal_phi, radius_scale * _emcal_z->at(iem));
 
@@ -576,9 +576,15 @@ void EMCalResidual(int runnumber)
 
   TH1* h1_phi_track = new TH1F("h1_phi_track", "h1_phi_track", 100, -M_PI, M_PI);
   h1_phi_track->SetTitle(Form("sPHENIX Internal, Run %d",runnumber));
-  h1_phi_track->GetXaxis()->SetTitle("#Phi [rad]");
+  h1_phi_track->GetXaxis()->SetTitle("Track #Phi [rad]");
   h1_phi_track->GetYaxis()->SetTitle(Form("Events / %.2f rad",(2*M_PI)/100.));
   h1_phi_track->SetMinimum(0);
+
+  TH1* h1_z_track = new TH1F("h1_z_track", "h1_z_track", 100, -180, 180);
+  h1_z_track->SetTitle(Form("sPHENIX Internal, Run %d",runnumber));
+  h1_z_track->GetXaxis()->SetTitle("Track Z [cm]");
+  h1_z_track->GetYaxis()->SetTitle(Form("Events / %.2f rad",(2*180.)/100.));
+  h1_z_track->SetMinimum(0);
 
   TH2* h2_eOp_p = new TH2F("h2_eOp_p", "h2_eOp_p", 100, 0, 15, 100, 0, 2);
   h2_eOp_p->SetTitle(Form("sPHENIX Internal, Run %d",runnumber));
@@ -796,6 +802,10 @@ void EMCalResidual(int runnumber)
     {
       h1_phi_track->Fill(matched_track_phi.at(index).at(0));
     }
+    if (matched_track_z.at(index).size()!=0)
+    {
+      h1_z_track->Fill(matched_track_z.at(index).at(0));
+    }
     if (matched_emcal_z.at(index).size()!=0)
     {
       h2_z_y_emcal->Fill(matched_emcal_z.at(index).at(0), matched_emcal_y.at(index).at(0));
@@ -979,6 +989,12 @@ void EMCalResidual(int runnumber)
   //can7->SetRightMargin(0.05);
   can7->cd();
   h1_phi_track->Draw();
+
+  TCanvas *can7_2 = new TCanvas(Form("can7_2"), "can7_2", 800, 800);
+  //can7_2->SetLeftMargin(0.10);
+  //can7_2->SetRightMargin(0.05);
+  can7_2->cd();
+  h1_z_track->Draw();
 
   TCanvas *can8_pos = new TCanvas(Form("can8_pos"), "can8_pos", 800, 800);
   //can8_pos->SetLeftMargin(0.12);
@@ -1307,6 +1323,9 @@ void EMCalResidual(int runnumber)
 
   can7->Update();
   can7->SaveAs(Form("figure/%d/TrackEMcal_phi_track_run%d.pdf",runnumber,runnumber));
+
+  can7_2->Update();
+  can7_2->SaveAs(Form("figure/%d/TrackEMcal_z_track_run%d.pdf",runnumber,runnumber));
 
   can8_pos->Update();
   can8_pos->SaveAs(Form("figure/%d/TrackEMcal_dphi_deta_run%d_pos.pdf",runnumber,runnumber));
