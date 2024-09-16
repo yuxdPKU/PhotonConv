@@ -252,8 +252,10 @@ void TrackToCalo::createBranches_KFP()
   _tree_KFP->Branch("_ep_pE", &_ep_pE);
   _tree_KFP->Branch("_ep_pT", &_ep_pT);
   _tree_KFP->Branch("_ep_pTErr", &_ep_pTErr);
+  _tree_KFP->Branch("_ep_pT_raw", &_ep_pT_raw);
   _tree_KFP->Branch("_ep_p", &_ep_p);
   _tree_KFP->Branch("_ep_pErr", &_ep_pErr);
+  _tree_KFP->Branch("_ep_p_raw", &_ep_p_raw);
   _tree_KFP->Branch("_ep_pseudorapidity", &_ep_pseudorapidity);
   _tree_KFP->Branch("_ep_rapidity", &_ep_rapidity);
   _tree_KFP->Branch("_ep_theta", &_ep_theta);
@@ -284,8 +286,10 @@ void TrackToCalo::createBranches_KFP()
   _tree_KFP->Branch("_em_pE", &_em_pE);
   _tree_KFP->Branch("_em_pT", &_em_pT);
   _tree_KFP->Branch("_em_pTErr", &_em_pTErr);
+  _tree_KFP->Branch("_em_pT_raw", &_em_pT_raw);
   _tree_KFP->Branch("_em_p", &_em_p);
   _tree_KFP->Branch("_em_pErr", &_em_pErr);
+  _tree_KFP->Branch("_em_p_raw", &_em_p_raw);
   _tree_KFP->Branch("_em_pseudorapidity", &_em_pseudorapidity);
   _tree_KFP->Branch("_em_rapidity", &_em_rapidity);
   _tree_KFP->Branch("_em_theta", &_em_theta);
@@ -1534,12 +1538,15 @@ void TrackToCalo::fillTree_KFP()
       it_kfp_cont = KFP_Container->begin();
       std::advance(it_kfp_cont, 3 * i + j);
       kfp_daughter = it_kfp_cont->second;
+std::cout<<"KFP: before SetProductionVertex kfp_daughter->GetMass() = "<<kfp_daughter->GetMass()<<std::endl;
+std::cout<<"KFP: before SetProductionVertex sqrt(E2-p2) = "<<sqrt(pow(kfp_daughter->GetE(),2) - pow(kfp_daughter->GetPx(),2) - pow(kfp_daughter->GetPy(),2) - pow(kfp_daughter->GetPz(),2))<<std::endl;
+      kfp_daughter->SetProductionVertex(*kfp_mother);
+std::cout<<"KFP: after SetProductionVertex kfp_daughter->GetMass() = "<<kfp_daughter->GetMass()<<std::endl;
+std::cout<<"KFP: after SetProductionVertex sqrt(E2-p2) = "<<sqrt(pow(kfp_daughter->GetE(),2) - pow(kfp_daughter->GetPx(),2) - pow(kfp_daughter->GetPy(),2) - pow(kfp_daughter->GetPz(),2))<<std::endl;
 
       auto it_kfp_trackmap = KFP_trackMap->begin();
       std::advance(it_kfp_trackmap, 3 * i + j);
       track = it_kfp_trackmap->second;
-
-//std::cout<<"yuxd test in KFP: track px,py,pz = "<<track->get_px()<<" "<<track->get_py()<<" "<<track->get_pz()<<" x,y,z = "<<track->get_x()<<" "<<track->get_y()<<" "<<track->get_z()<<" id = "<<track->get_id()<<std::endl;
 
       // project to R_EMCAL
       thisState = track->get_state(caloRadiusEMCal);
@@ -1549,8 +1556,7 @@ void TrackToCalo::fillTree_KFP()
 
       if (charge == -1)
       {
-        kfp_em = it_kfp_cont->second;
-        kfp_em->SetProductionVertex(*kfp_mother);
+        kfp_em = kfp_daughter;
         _em_mass.push_back(kfp_daughter->GetMass());
         _em_x.push_back(kfp_daughter->GetX());
         _em_y.push_back(kfp_daughter->GetY());
@@ -1561,8 +1567,10 @@ void TrackToCalo::fillTree_KFP()
         _em_pE.push_back(kfp_daughter->GetE());
         _em_pT.push_back(kfp_daughter->GetPt());
         _em_pTErr.push_back(kfp_daughter->GetErrPt());
+        _em_pT_raw.push_back(track->get_pt());
         _em_p.push_back(kfp_daughter->GetP());
         _em_pErr.push_back(kfp_daughter->GetErrP());
+        _em_p_raw.push_back(track->get_p());
         _em_pseudorapidity.push_back(kfp_daughter->GetEta());
         _em_rapidity.push_back(kfp_daughter->GetRapidity());
         _em_theta.push_back(kfp_daughter->GetTheta());
@@ -1618,8 +1626,7 @@ void TrackToCalo::fillTree_KFP()
       }
       else if (charge == 1)
       {
-        kfp_ep = it_kfp_cont->second;
-        kfp_ep->SetProductionVertex(*kfp_mother);
+        kfp_ep = kfp_daughter;
         _ep_mass.push_back(kfp_daughter->GetMass());
         _ep_x.push_back(kfp_daughter->GetX());
         _ep_y.push_back(kfp_daughter->GetY());
@@ -1630,8 +1637,10 @@ void TrackToCalo::fillTree_KFP()
         _ep_pE.push_back(kfp_daughter->GetE());
         _ep_pT.push_back(kfp_daughter->GetPt());
         _ep_pTErr.push_back(kfp_daughter->GetErrPt());
+        _ep_pT_raw.push_back(track->get_pt());
         _ep_p.push_back(kfp_daughter->GetP());
         _ep_pErr.push_back(kfp_daughter->GetErrP());
+        _ep_p_raw.push_back(track->get_p());
         _ep_pseudorapidity.push_back(kfp_daughter->GetEta());
         _ep_rapidity.push_back(kfp_daughter->GetRapidity());
         _ep_theta.push_back(kfp_daughter->GetTheta());
@@ -1867,8 +1876,10 @@ void TrackToCalo::ResetTreeVectors_KFP()
   _ep_pE.clear();
   _ep_pT.clear();
   _ep_pTErr.clear();
+  _ep_pT_raw.clear();
   _ep_p.clear();
   _ep_pErr.clear();
+  _ep_p_raw.clear();
   _ep_pseudorapidity.clear();
   _ep_rapidity.clear();
   _ep_theta.clear();
@@ -1898,8 +1909,10 @@ void TrackToCalo::ResetTreeVectors_KFP()
   _em_pE.clear();
   _em_pT.clear();
   _em_pTErr.clear();
+  _em_pT_raw.clear();
   _em_p.clear();
   _em_pErr.clear();
+  _em_p_raw.clear();
   _em_pseudorapidity.clear();
   _em_rapidity.clear();
   _em_theta.clear();

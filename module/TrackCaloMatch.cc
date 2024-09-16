@@ -208,8 +208,8 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
 
     if(!track) continue;
 
-    float track_p = track->get_p();
-    if(track_p < m_track_pt_low_cut)
+    float track_pt = track->get_pt();
+    if(track_pt < m_track_pt_low_cut)
     {
       continue;
     }
@@ -242,12 +242,11 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
 
     thisState = track->get_state(caloRadiusEMCal);
     float _track_phi_emc = NAN;
-    float _track_eta_emc = NAN;
-    float _track_x_emc = NAN;
-    float _track_y_emc = NAN;
+    //float _track_eta_emc = NAN;
+    //float _track_x_emc = NAN;
+    //float _track_y_emc = NAN;
     float _track_z_emc = NAN;
 
-//std::cout<<"yuxd test: track px,py,pz = "<<track->get_px()<<" "<<track->get_py()<<" "<<track->get_pz()<<" x,y,z = "<<track->get_x()<<" "<<track->get_y()<<" "<<track->get_z()<<" id = "<<track->get_id()<<std::endl;
     if(!thisState)
     {
       continue;
@@ -255,9 +254,9 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
     else
     {
       _track_phi_emc = atan2(thisState->get_y(), thisState->get_x());
-      _track_eta_emc = asinh(thisState->get_z()/sqrt(thisState->get_x()*thisState->get_x() + thisState->get_y()*thisState->get_y()));
-      _track_x_emc = thisState->get_x();
-      _track_y_emc = thisState->get_y();
+      //_track_eta_emc = asinh(thisState->get_z()/sqrt(thisState->get_x()*thisState->get_x() + thisState->get_y()*thisState->get_y()));
+      //_track_x_emc = thisState->get_x();
+      //_track_y_emc = thisState->get_y();
       _track_z_emc = thisState->get_z();
     }
 
@@ -278,7 +277,7 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
       }
 
       float _emcal_phi = atan2(cluster->get_y(), cluster->get_x());
-      float _emcal_eta = asinh(cluster->get_z()/sqrt(cluster->get_x()*cluster->get_x() + cluster->get_y()*cluster->get_y()));
+      //float _emcal_eta = asinh(cluster->get_z()/sqrt(cluster->get_x()*cluster->get_x() + cluster->get_y()*cluster->get_y()));
       float _emcal_x = cluster->get_x();
       float _emcal_y = cluster->get_y();
       float radius_scale = m_emcal_radius_user / sqrt(_emcal_x*_emcal_x+_emcal_y*_emcal_y);
@@ -289,10 +288,10 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
 
       if(fabs(dphi)<m_dphi_cut && fabs(dz)<m_dz_cut)
       {
-        std::cout<<"matched tracks!!!"<<std::endl;
-        std::cout<<"emcal x = "<<_emcal_x<<" , y = "<<_emcal_y<<" , z = "<<_emcal_z<<" , phi = "<<_emcal_phi<<" , eta = "<<_emcal_eta<<std::endl;
-        std::cout<<"track projected x = "<<_track_x_emc<<" , y = "<<_track_y_emc<<" , z = "<<_track_z_emc<<" , phi = "<<_track_phi_emc<<" , eta = "<<_track_eta_emc<<std::endl;
-        std::cout<<"track px = "<<track->get_px()<<" , py = "<<track->get_py()<<" , pz = "<<track->get_pz()<<" , pt = "<<track->get_pt()<<" , p = "<<track->get_p()<<" , charge = "<<track->get_charge()<<std::endl;
+        //std::cout<<"matched tracks!!!"<<std::endl;
+        //std::cout<<"emcal x = "<<_emcal_x<<" , y = "<<_emcal_y<<" , z = "<<_emcal_z<<" , phi = "<<_emcal_phi<<" , eta = "<<_emcal_eta<<std::endl;
+        //std::cout<<"track projected x = "<<_track_x_emc<<" , y = "<<_track_y_emc<<" , z = "<<_track_z_emc<<" , phi = "<<_track_phi_emc<<" , eta = "<<_track_eta_emc<<std::endl;
+        //std::cout<<"track px = "<<track->get_px()<<" , py = "<<track->get_py()<<" , pz = "<<track->get_pz()<<" , pt = "<<track->get_pt()<<" , p = "<<track->get_p()<<" , charge = "<<track->get_charge()<<std::endl;
 
         is_match = true;
       }

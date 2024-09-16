@@ -27,6 +27,7 @@ void EoP_kfp(int runnumber)
   float teop_emcal_e, teop_emcal_phi, teop_emcal_z, teop_emcal_eta;
   float teop_track_p, teop_track_phi_projemc, teop_track_z_projemc;
   float teop_track_pt, teop_track_eta;
+  float teop_track_pt_raw, teop_track_p_raw;
   int teop_track_charge, teop_track_crossing;
   float teop_track_mass_1, teop_track_mass_2;
   float teop_track12_deta, teop_track12_dphi;
@@ -45,7 +46,9 @@ void EoP_kfp(int runnumber)
   outputtree->Branch("_emcal_z",&teop_emcal_z,"_emcal_z/F");
   outputtree->Branch("_emcal_eta",&teop_emcal_eta,"_emcal_eta/F");
   outputtree->Branch("_track_p",&teop_track_p,"_track_p/F");
+  outputtree->Branch("_track_p_raw",&teop_track_p_raw,"_track_p_raw/F");
   outputtree->Branch("_track_pt",&teop_track_pt,"_track_pt/F");
+  outputtree->Branch("_track_pt_raw",&teop_track_pt_raw,"_track_pt_raw/F");
   outputtree->Branch("_track_eta",&teop_track_eta,"_track_eta/F");
   outputtree->Branch("_track_mass_1",&teop_track_mass_1,"_track_mass_1/F");
   outputtree->Branch("_track_mass_2",&teop_track_mass_2,"_track_mass_2/F");
@@ -177,7 +180,9 @@ void EoP_kfp(int runnumber)
       teop_emcal_z = vec_emcal_matched_z.at(index);
       teop_emcal_eta = vec_emcal_matched_eta.at(index);
       teop_track_p = _ep_p->at(ican);
+      teop_track_p_raw = _ep_p_raw->at(ican);
       teop_track_pt = _ep_pT->at(ican);
+      teop_track_pt_raw = _ep_pT_raw->at(ican);
       teop_track_eta = _ep_pseudorapidity->at(ican);
       teop_track_mass_1 = _ep_mass->at(ican);
       teop_track_mass_2 = sqrt( pow(_ep_pE->at(ican),2) - pow(_ep_px->at(ican),2) - pow(_ep_py->at(ican),2) - pow(_ep_pz->at(ican),2));
@@ -211,7 +216,7 @@ void EoP_kfp(int runnumber)
         if(_emcal_e->at(iem) < min_EMCal_E) continue;
         //if(fabs(_emcal_eta->at(iem)) > 1.1) continue;
         float emcal_phi = cal_phi(_emcal_x->at(iem), _emcal_y->at(iem));
-        float track_phi = cal_phi(_ep_x_emc->at(ican), _ep_y_emc->at(ican));
+        float track_phi = cal_phi(_em_x_emc->at(ican), _em_y_emc->at(ican));
         float radius_scale = emcal_radius / sqrt( pow(_emcal_x->at(iem),2) + pow(_emcal_y->at(iem),2) );
         float emcal_z = radius_scale * _emcal_z->at(iem);
         float emcal_eta = cal_eta(_emcal_x->at(iem), _emcal_y->at(iem), _emcal_z->at(iem));
@@ -258,7 +263,9 @@ void EoP_kfp(int runnumber)
       teop_emcal_z = vec_emcal_matched_z.at(index);
       teop_emcal_eta = vec_emcal_matched_eta.at(index);
       teop_track_p = _em_p->at(ican);
+      teop_track_p_raw = _em_p_raw->at(ican);
       teop_track_pt = _em_pT->at(ican);
+      teop_track_pt_raw = _em_pT_raw->at(ican);
       teop_track_eta = _em_pseudorapidity->at(ican);
       teop_track_mass_1 = _em_mass->at(ican);
       teop_track_mass_2 = sqrt( pow(_em_pE->at(ican),2) - pow(_em_px->at(ican),2) - pow(_em_py->at(ican),2) - pow(_em_pz->at(ican),2));

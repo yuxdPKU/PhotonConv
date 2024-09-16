@@ -260,8 +260,10 @@ class TrackToCalo : public SubsysReco
    std::vector<float> _ep_pE;
    std::vector<float> _ep_pT;
    std::vector<float> _ep_pTErr;
+   std::vector<float> _ep_pT_raw;
    std::vector<float> _ep_p;
    std::vector<float> _ep_pErr;
+   std::vector<float> _ep_p_raw;
    std::vector<float> _ep_pseudorapidity;
    std::vector<float> _ep_rapidity;
    std::vector<float> _ep_theta;
@@ -285,8 +287,10 @@ class TrackToCalo : public SubsysReco
    std::vector<float> _em_pE;
    std::vector<float> _em_pT;
    std::vector<float> _em_pTErr;
+   std::vector<float> _em_pT_raw;
    std::vector<float> _em_p;
    std::vector<float> _em_pErr;
+   std::vector<float> _em_p_raw;
    std::vector<float> _em_pseudorapidity;
    std::vector<float> _em_rapidity;
    std::vector<float> _em_theta;
