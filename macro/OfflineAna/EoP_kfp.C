@@ -26,11 +26,12 @@ void EoP_kfp(int runnumber)
   float teop_gamma_quality, teop_track_quality;
   float teop_emcal_e, teop_emcal_phi, teop_emcal_z, teop_emcal_eta;
   float teop_track_p, teop_track_phi_projemc, teop_track_z_projemc;
-  float teop_track_pt, teop_track_eta;
+  float teop_track_pt, teop_track_eta, teop_track_e;
   float teop_track_pt_raw, teop_track_p_raw;
+  float teop_track_pt_unmoved, teop_track_p_unmoved, teop_track_e_unmoved;
   int teop_track_charge, teop_track_crossing;
-  float teop_track_mass_1, teop_track_mass_2;
-  float teop_track12_deta, teop_track12_dphi;
+  float teop_track_mass_1, teop_track_mass_2, teop_track_mass_3;
+  float teop_track12_deta, teop_track12_dphi, teop_track12_dz;
   float teop_trkemc_dphi, teop_trkemc_dz;
   float teop_track12_dca_2d, teop_track12_dca_3d;
 
@@ -47,11 +48,16 @@ void EoP_kfp(int runnumber)
   outputtree->Branch("_emcal_eta",&teop_emcal_eta,"_emcal_eta/F");
   outputtree->Branch("_track_p",&teop_track_p,"_track_p/F");
   outputtree->Branch("_track_p_raw",&teop_track_p_raw,"_track_p_raw/F");
+  outputtree->Branch("_track_p_unmoved",&teop_track_p_unmoved,"_track_p_unmoved/F");
   outputtree->Branch("_track_pt",&teop_track_pt,"_track_pt/F");
   outputtree->Branch("_track_pt_raw",&teop_track_pt_raw,"_track_pt_raw/F");
+  outputtree->Branch("_track_pt_unmoved",&teop_track_pt_unmoved,"_track_pt_unmoved/F");
   outputtree->Branch("_track_eta",&teop_track_eta,"_track_eta/F");
+  outputtree->Branch("_track_e",&teop_track_e,"_track_e/F");
+  outputtree->Branch("_track_e_unmoved",&teop_track_e_unmoved,"_track_e_unmoved/F");
   outputtree->Branch("_track_mass_1",&teop_track_mass_1,"_track_mass_1/F");
   outputtree->Branch("_track_mass_2",&teop_track_mass_2,"_track_mass_2/F");
+  outputtree->Branch("_track_mass_3",&teop_track_mass_3,"_track_mass_3/F");
   outputtree->Branch("_track_phi_projemc",&teop_track_phi_projemc,"_track_phi_projemc/F");
   outputtree->Branch("_track_z_projemc",&teop_track_z_projemc,"_track_z_projemc/F");
   outputtree->Branch("_track_quality",&teop_track_quality,"_track_quality/F");
@@ -59,6 +65,7 @@ void EoP_kfp(int runnumber)
   outputtree->Branch("_track_crossing",&teop_track_crossing,"_track_crossing/I");
   outputtree->Branch("_track12_deta",&teop_track12_deta,"_track12_deta/F");
   outputtree->Branch("_track12_dphi",&teop_track12_dphi,"_track12_dphi/F");
+  outputtree->Branch("_track12_dz",&teop_track12_dz,"_track12_dz/F");
   outputtree->Branch("_trkemc_dphi",&teop_trkemc_dphi,"_trkemc_dphi/F");
   outputtree->Branch("_trkemc_dz",&teop_trkemc_dz,"_trkemc_dz/F");
   outputtree->Branch("_track12_dca_2d",&teop_track12_dca_2d,"_track12_dca_2d/F");
@@ -157,6 +164,12 @@ void EoP_kfp(int runnumber)
 
       }
 
+      if (vec_emcal_matched_e.size() == 0)
+      {
+        if (verbosity>0)cout<<"no matched???"<<endl;
+        continue;
+      }
+
       max_e = 0;
       min_dphi = 100;
       index = -1;
@@ -169,23 +182,21 @@ void EoP_kfp(int runnumber)
         }
       }
 
-      if (vec_emcal_matched_e.size() == 0)
-      {
-        if (verbosity>0)cout<<"no matched???"<<endl;
-        continue;
-      }
-
       teop_emcal_e = vec_emcal_matched_e.at(index);
       teop_emcal_phi = vec_emcal_matched_phi.at(index);
       teop_emcal_z = vec_emcal_matched_z.at(index);
       teop_emcal_eta = vec_emcal_matched_eta.at(index);
       teop_track_p = _ep_p->at(ican);
       teop_track_p_raw = _ep_p_raw->at(ican);
+      teop_track_p_unmoved = _ep_p_unmoved->at(ican);
       teop_track_pt = _ep_pT->at(ican);
       teop_track_pt_raw = _ep_pT_raw->at(ican);
+      teop_track_pt_unmoved = _ep_pT_unmoved->at(ican);
+      teop_track_e_unmoved = _ep_pE_unmoved->at(ican);
       teop_track_eta = _ep_pseudorapidity->at(ican);
       teop_track_mass_1 = _ep_mass->at(ican);
-      teop_track_mass_2 = sqrt( pow(_ep_pE->at(ican),2) - pow(_ep_px->at(ican),2) - pow(_ep_py->at(ican),2) - pow(_ep_pz->at(ican),2));
+      teop_track_mass_2 = sqrt( pow(_ep_pE->at(ican),2) - pow(_ep_p->at(ican),2) );
+      teop_track_mass_3 = sqrt( pow(_ep_pE_unmoved->at(ican),2) - pow(_ep_p_unmoved->at(ican),2) );
       teop_track_phi_projemc = cal_phi(_ep_x_emc->at(ican), _ep_y_emc->at(ican));
       teop_track_z_projemc = _ep_z_emc->at(ican);
       teop_track_quality = _ep_chi2->at(ican) / _ep_nDoF->at(ican);
@@ -193,6 +204,7 @@ void EoP_kfp(int runnumber)
       teop_track_crossing = _ep_crossing->at(ican);
       teop_track12_deta = _ep_pseudorapidity->at(ican) - _em_pseudorapidity->at(ican);
       teop_track12_dphi = _ep_phi->at(ican) - _em_phi->at(ican);
+      teop_track12_dz = _ep_z_emc->at(ican) - _em_z_emc->at(ican);
       teop_trkemc_dphi = vec_track_emcal_residual_phi.at(index);
       teop_trkemc_dz = vec_track_emcal_residual_z.at(index);
       teop_track12_dca_2d = _epem_DCA_2d->at(ican);
@@ -240,6 +252,12 @@ void EoP_kfp(int runnumber)
 
       }
 
+      if (vec_emcal_matched_e.size() == 0)
+      {
+        if (verbosity>0)cout<<"no matched???"<<endl;
+        continue;
+      }
+
       max_e = 0;
       min_dphi = 100;
       index = -1;
@@ -252,23 +270,21 @@ void EoP_kfp(int runnumber)
         }
       }
 
-      if (vec_emcal_matched_e.size() == 0)
-      {
-        if (verbosity>0)cout<<"no matched???"<<endl;
-        continue;
-      }
-
       teop_emcal_e = vec_emcal_matched_e.at(index);
       teop_emcal_phi = vec_emcal_matched_phi.at(index);
       teop_emcal_z = vec_emcal_matched_z.at(index);
       teop_emcal_eta = vec_emcal_matched_eta.at(index);
       teop_track_p = _em_p->at(ican);
       teop_track_p_raw = _em_p_raw->at(ican);
+      teop_track_p_unmoved = _em_p_unmoved->at(ican);
       teop_track_pt = _em_pT->at(ican);
       teop_track_pt_raw = _em_pT_raw->at(ican);
+      teop_track_pt_unmoved = _em_pT_unmoved->at(ican);
+      teop_track_e_unmoved = _em_pE_unmoved->at(ican);
       teop_track_eta = _em_pseudorapidity->at(ican);
       teop_track_mass_1 = _em_mass->at(ican);
-      teop_track_mass_2 = sqrt( pow(_em_pE->at(ican),2) - pow(_em_px->at(ican),2) - pow(_em_py->at(ican),2) - pow(_em_pz->at(ican),2));
+      teop_track_mass_2 = sqrt( pow(_em_pE->at(ican),2) - pow(_em_p->at(ican),2) );
+      teop_track_mass_3 = sqrt( pow(_em_pE_unmoved->at(ican),2) - pow(_em_p_unmoved->at(ican),2) );
       teop_track_phi_projemc = cal_phi(_em_x_emc->at(ican), _em_y_emc->at(ican));
       teop_track_z_projemc = _em_z_emc->at(ican);
       teop_track_quality = _em_chi2->at(ican) / _em_nDoF->at(ican);
@@ -276,6 +292,7 @@ void EoP_kfp(int runnumber)
       teop_track_crossing = _em_crossing->at(ican);
       teop_track12_deta = _ep_pseudorapidity->at(ican) - _em_pseudorapidity->at(ican);
       teop_track12_dphi = _ep_phi->at(ican) - _em_phi->at(ican);
+      teop_track12_dz = _ep_z_emc->at(ican) - _em_z_emc->at(ican);
       teop_trkemc_dphi = vec_track_emcal_residual_phi.at(index);
       teop_trkemc_dz = vec_track_emcal_residual_z.at(index);
       teop_track12_dca_2d = _epem_DCA_2d->at(ican);

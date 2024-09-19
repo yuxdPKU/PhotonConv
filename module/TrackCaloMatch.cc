@@ -179,6 +179,25 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
     }
   }
 
+  if(m_rejectLaserEvent)
+  {
+    if(!laserEventInfo)
+    {
+      laserEventInfo = findNode::getClass<LaserEventInfo>(topNode, "LaserEventInfo");
+      if(!laserEventInfo)
+      {
+        std::cout << "LaserEventInfo not found! Aborting!" << std::endl;
+        return Fun4AllReturnCodes::ABORTEVENT;
+      }
+    }
+
+    if (laserEventInfo->isLaserEvent())
+    {
+      std::cout << "This is a laser event!" << std::endl;
+      return Fun4AllReturnCodes::EVENT_OK;
+    }
+  }
+
   double caloRadiusEMCal;
   if (m_use_emcal_radius)
   {
@@ -208,8 +227,7 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
 
     if(!track) continue;
 
-    float track_pt = track->get_pt();
-    if(track_pt < m_track_pt_low_cut)
+    if(track->get_pt() < m_track_pt_low_cut)
     {
       continue;
     }
@@ -235,7 +253,7 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
       }
     }
 
-    if(n_tpc_clusters<m_ntpc_low_cut) 
+    if(n_tpc_clusters < m_ntpc_low_cut) 
     {
       continue;
     }
@@ -280,7 +298,7 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
       //float _emcal_eta = asinh(cluster->get_z()/sqrt(cluster->get_x()*cluster->get_x() + cluster->get_y()*cluster->get_y()));
       float _emcal_x = cluster->get_x();
       float _emcal_y = cluster->get_y();
-      float radius_scale = m_emcal_radius_user / sqrt(_emcal_x*_emcal_x+_emcal_y*_emcal_y);
+      float radius_scale = caloRadiusEMCal / sqrt(_emcal_x*_emcal_x+_emcal_y*_emcal_y);
       float _emcal_z = radius_scale*cluster->get_z();
 
       float dphi = PiRange(_track_phi_emc - _emcal_phi);

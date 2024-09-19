@@ -22,6 +22,7 @@
 #include <trackbase/TrkrHitSetContainer.h>
 #include <trackbase/TrkrClusterContainer.h>
 #include <trackbase/TrkrCluster.h>
+#include <tpc/LaserEventInfo.h>
 #include <calobase/RawTowerGeomContainer.h>
 
 #include <kfparticle_sphenix/KFParticle_sPHENIX.h>
@@ -97,6 +98,8 @@ class TrackToCalo : public SubsysReco
 
   void anaTrkrInfo() {m_doTrackOnly = true;}
   void anaCaloInfo() {m_doCaloOnly = true;}
+
+  void setRejectLaserEvent(bool value) {m_rejectLaserEvent = value;}
 
  private:
    int cnt = 0;
@@ -258,12 +261,15 @@ class TrackToCalo : public SubsysReco
    std::vector<float> _ep_py;
    std::vector<float> _ep_pz;
    std::vector<float> _ep_pE;
+   std::vector<float> _ep_pE_unmoved;
    std::vector<float> _ep_pT;
    std::vector<float> _ep_pTErr;
    std::vector<float> _ep_pT_raw;
+   std::vector<float> _ep_pT_unmoved;
    std::vector<float> _ep_p;
    std::vector<float> _ep_pErr;
    std::vector<float> _ep_p_raw;
+   std::vector<float> _ep_p_unmoved;
    std::vector<float> _ep_pseudorapidity;
    std::vector<float> _ep_rapidity;
    std::vector<float> _ep_theta;
@@ -285,12 +291,15 @@ class TrackToCalo : public SubsysReco
    std::vector<float> _em_py;
    std::vector<float> _em_pz;
    std::vector<float> _em_pE;
+   std::vector<float> _em_pE_unmoved;
    std::vector<float> _em_pT;
    std::vector<float> _em_pTErr;
    std::vector<float> _em_pT_raw;
+   std::vector<float> _em_pT_unmoved;
    std::vector<float> _em_p;
    std::vector<float> _em_pErr;
    std::vector<float> _em_p_raw;
+   std::vector<float> _em_p_unmoved;
    std::vector<float> _em_pseudorapidity;
    std::vector<float> _em_rapidity;
    std::vector<float> _em_theta;
@@ -343,6 +352,7 @@ class TrackToCalo : public SubsysReco
    RawTowerGeomContainer *EMCalGeo = nullptr;
    RawTowerGeomContainer *IHCalGeo = nullptr;
    RawTowerGeomContainer *OHCalGeo = nullptr;
+   LaserEventInfo* laserEventInfo = nullptr;
 
    SvtxTrackState *thisState = nullptr;
    SvtxTrack *track = nullptr;
@@ -367,6 +377,8 @@ class TrackToCalo : public SubsysReco
    bool m_doTrkrCaloMatching_KFP = false;
    bool m_doTrackOnly = false;
    bool m_doCaloOnly = false;
+
+   bool m_rejectLaserEvent = true;
 };
 
 #endif // TRACKTOCALO_H
