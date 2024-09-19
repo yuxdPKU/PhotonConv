@@ -614,3 +614,11 @@ float cal_eta(float x, float y, float z) {
   float eta = asinh( z / sqrt( x*x + y*y ) );
   return eta;
 }
+
+double customsqrt(double x) {
+    if (x < 0) {
+        return -std::sqrt(-x);
+    } else {
+        return std::sqrt(x);
+    }
+}

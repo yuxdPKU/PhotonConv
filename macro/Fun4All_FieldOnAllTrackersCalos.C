@@ -422,8 +422,9 @@ void Fun4All_FieldOnAllTrackersCalos(
   tcm->setEMcalRadius(new_cemc_rad);
   tcm->setdphicut(0.2);
   tcm->setdzcut(10000);
-  tcm->setTrackPtLowCut(0.5);
-  tcm->setEmcalELowCut(0.2);
+  tcm->setTrackPtLowCut(1.0);
+  tcm->setEmcalELowCut(0.5);
+  tcm->setRejectLaserEvent(true);
   se->registerSubsystem(tcm);
 
   // begin KFParticle
@@ -434,19 +435,20 @@ void Fun4All_FieldOnAllTrackersCalos(
   ttc->setEMcalRadius(new_cemc_rad);
   ttc->setKFPtrackMapName("PhotonConv_SvtxTrackMap");
   ttc->setKFPContName("PhotonConv_KFParticle_Container");
-  ttc->doTrkrCaloMatching();
-  ttc->anaTrkrInfo();
-  ttc->anaCaloInfo();
-  ttc->setTrackPtLowCut(0.5);
-  ttc->setEmcalELowCut(0.2);
+  //ttc->doTrkrCaloMatching();
+  //ttc->anaTrkrInfo();
+  //ttc->anaCaloInfo();
+  ttc->setTrackPtLowCut(1.0);
+  ttc->setEmcalELowCut(0.5);
   ttc->doTrkrCaloMatching_KFP();
+  ttc->setRejectLaserEvent(true);
   se->registerSubsystem(ttc);
 
   if (Enable::DSTOUT)
   {
     Fun4AllDstOutputManager *out = new Fun4AllDstOutputManager("DSTOUT", outputDstFile);
-    //out->StripNode("RUN");
-    //out->AddNode("Sync");
+    out->StripNode("RUN");
+    out->AddNode("Sync");
     out->SaveRunNode(0);
     se->registerOutputManager(out);
   }

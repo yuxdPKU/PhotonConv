@@ -135,7 +135,7 @@ class TrackCaloMatch : public SubsysReco
    float m_dphi_cut = 0.1;
    float m_dz_cut = 20;
 
-   bool m_rejectLaserEvent = true;
+   bool m_rejectLaserEvent = false;
 };
 
 #endif

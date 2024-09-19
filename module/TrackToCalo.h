@@ -378,7 +378,7 @@ class TrackToCalo : public SubsysReco
    bool m_doTrackOnly = false;
    bool m_doCaloOnly = false;
 
-   bool m_rejectLaserEvent = true;
+   bool m_rejectLaserEvent = false;
 };
 
 #endif // TRACKTOCALO_H
