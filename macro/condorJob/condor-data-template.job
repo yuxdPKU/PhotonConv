@@ -43,6 +43,7 @@ Initialdir     = [path]
 # The executable we want to run.
 Executable     = $(Initialdir)/run_data.sh
 
+Nevent         = -1
 RunNumber      = RUNNUMBER
 TpcList        = ./runList/trackrunlist/run$INT(RunNumber)_$INT(Process,%04d).list
 CaloList       = ./runList/dst_calo_run2pp-$INT(RunNumber,%08d).list
@@ -50,7 +51,7 @@ DrawEvtDisplay = false
 
 # The argument to pass to the executable.
 #tracking firt then calo, only one tracking file
-Arguments      = "$(TpcList) $(CaloList) $(DrawEvtDisplay)"
+Arguments      = "$(Nevent) $(TpcList) $(CaloList) $(DrawEvtDisplay)"
 
 # The job's stdout is sent to this file.
 Output         = $(Initialdir)/condorJob/log/job-Data-$(RunNumber).$(Cluster).$(Process).out

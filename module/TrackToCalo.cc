@@ -487,6 +487,7 @@ int TrackToCalo::process_event(PHCompositeNode *topNode)
     }
   }
 
+/*
   if(m_rejectLaserEvent)
   {
     if(!laserEventInfo)
@@ -505,6 +506,7 @@ int TrackToCalo::process_event(PHCompositeNode *topNode)
       return Fun4AllReturnCodes::EVENT_OK;
     }
   }
+*/
 
   if (m_doTrkrCaloMatching)
   {

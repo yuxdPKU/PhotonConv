@@ -209,11 +209,22 @@ void Fun4All_FieldOnAllTrackersCalos(
   /*
    * Silicon Seeding
    */
+
+  /*
   auto silicon_Seeding = new PHActsSiliconSeeding;
   silicon_Seeding->Verbosity(0);
   silicon_Seeding->searchInIntt();
   silicon_Seeding->setinttRPhiSearchWindow(0.4);
   silicon_Seeding->setinttZSearchWindow(1.6);
+  silicon_Seeding->seedAnalysis(false);
+  se->registerSubsystem(silicon_Seeding);
+  */
+
+  auto silicon_Seeding = new PHActsSiliconSeeding;
+  silicon_Seeding->Verbosity(0);
+  // these get us to about 83% INTT > 1 
+  silicon_Seeding->setinttRPhiSearchWindow(1.0);
+  silicon_Seeding->setinttZSearchWindow(7.0); 
   silicon_Seeding->seedAnalysis(false);
   se->registerSubsystem(silicon_Seeding);
 
@@ -283,8 +294,7 @@ void Fun4All_FieldOnAllTrackersCalos(
   silicon_match->set_z_search_window(5.);
   silicon_match->set_phi_search_window(0.2);
   silicon_match->set_eta_search_window(0.1);
-  silicon_match->set_use_old_matching(true);
-  silicon_match->set_pp_mode(true);
+  silicon_match->set_pp_mode(TRACKING::pp_mode);
   se->registerSubsystem(silicon_match);
 
   // Match TPC track stubs from CA seeder to clusters in the micromegas layers
@@ -346,6 +356,12 @@ void Fun4All_FieldOnAllTrackersCalos(
     actsFit->useOutlierFinder(false);
     actsFit->setFieldMap(G4MAGNET::magfield_tracking);
     se->registerSubsystem(actsFit);
+
+    auto cleaner = new PHTrackCleaner();
+    cleaner->Verbosity(0);
+    se->registerSubsystem(cleaner);
+
+
   }
 
   PHSimpleVertexFinder *finder = new PHSimpleVertexFinder;
@@ -435,9 +451,9 @@ void Fun4All_FieldOnAllTrackersCalos(
   ttc->setEMcalRadius(new_cemc_rad);
   ttc->setKFPtrackMapName("PhotonConv_SvtxTrackMap");
   ttc->setKFPContName("PhotonConv_KFParticle_Container");
-  //ttc->doTrkrCaloMatching();
-  //ttc->anaTrkrInfo();
-  //ttc->anaCaloInfo();
+  ttc->doTrkrCaloMatching();
+  ttc->anaTrkrInfo();
+  ttc->anaCaloInfo();
   ttc->setTrackPtLowCut(1.0);
   ttc->setEmcalELowCut(0.5);
   ttc->doTrkrCaloMatching_KFP();

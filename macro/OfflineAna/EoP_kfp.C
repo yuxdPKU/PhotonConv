@@ -31,7 +31,7 @@ void EoP_kfp(int runnumber)
   float teop_track_pt_unmoved, teop_track_p_unmoved, teop_track_e_unmoved;
   int teop_track_charge, teop_track_crossing;
   float teop_track_mass_1, teop_track_mass_2, teop_track_mass_3;
-  float teop_track12_deta, teop_track12_dphi, teop_track12_dz_emc;
+  float teop_track12_deta, teop_track12_dphi, teop_track12_dz_emc, teop_track12_dp;
   float teop_trkemc_dphi, teop_trkemc_dz;
   float teop_track12_dca_2d, teop_track12_dca_3d;
 
@@ -66,6 +66,7 @@ void EoP_kfp(int runnumber)
   outputtree->Branch("_track12_deta",&teop_track12_deta,"_track12_deta/F");
   outputtree->Branch("_track12_dphi",&teop_track12_dphi,"_track12_dphi/F");
   outputtree->Branch("_track12_dz_emc",&teop_track12_dz_emc,"_track12_dz_emc/F");
+  outputtree->Branch("_track12_dp",&teop_track12_dp,"_track12_dp/F");
   outputtree->Branch("_trkemc_dphi",&teop_trkemc_dphi,"_trkemc_dphi/F");
   outputtree->Branch("_trkemc_dz",&teop_trkemc_dz,"_trkemc_dz/F");
   outputtree->Branch("_track12_dca_2d",&teop_track12_dca_2d,"_track12_dca_2d/F");
@@ -205,6 +206,7 @@ void EoP_kfp(int runnumber)
       teop_track12_deta = _ep_pseudorapidity->at(ican) - _em_pseudorapidity->at(ican);
       teop_track12_dphi = _ep_phi->at(ican) - _em_phi->at(ican);
       teop_track12_dz_emc = _ep_z_emc->at(ican) - _em_z_emc->at(ican);
+      teop_track12_dp = _ep_p->at(ican) - _em_p->at(ican);
       teop_trkemc_dphi = vec_track_emcal_residual_phi.at(index);
       teop_trkemc_dz = vec_track_emcal_residual_z.at(index);
       teop_track12_dca_2d = _epem_DCA_2d->at(ican);
@@ -293,6 +295,7 @@ void EoP_kfp(int runnumber)
       teop_track12_deta = _ep_pseudorapidity->at(ican) - _em_pseudorapidity->at(ican);
       teop_track12_dphi = _ep_phi->at(ican) - _em_phi->at(ican);
       teop_track12_dz_emc = _ep_z_emc->at(ican) - _em_z_emc->at(ican);
+      teop_track12_dp = _ep_p->at(ican) - _em_p->at(ican);
       teop_trkemc_dphi = vec_track_emcal_residual_phi.at(index);
       teop_trkemc_dz = vec_track_emcal_residual_z.at(index);
       teop_track12_dca_2d = _epem_DCA_2d->at(ican);

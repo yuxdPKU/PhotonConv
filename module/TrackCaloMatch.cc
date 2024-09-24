@@ -179,6 +179,7 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
     }
   }
 
+/*
   if(m_rejectLaserEvent)
   {
     if(!laserEventInfo)
@@ -197,6 +198,7 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
       return Fun4AllReturnCodes::EVENT_OK;
     }
   }
+*/
 
   double caloRadiusEMCal;
   if (m_use_emcal_radius)
