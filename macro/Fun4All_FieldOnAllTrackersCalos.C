@@ -69,6 +69,7 @@ void Fun4All_FieldOnAllTrackersCalos(
     vector<string> myInputLists = {
         "run46730_0000_trkr.txt",
         "run46730_calo.list"}, 
+    std::string outDir = "./",
     bool doTpcOnlyTracking = true,
     bool doEvtDisplay = false,
     bool doEMcalRadiusCorr = true,
@@ -84,9 +85,6 @@ void Fun4All_FieldOnAllTrackersCalos(
   std::pair<int, int> runseg = Fun4AllUtils::GetRunSegment(firstfile);
   int runnumber = runseg.first;
   int segment = runseg.second;
-
-  //The next set of lines figures out folder revisions, file numbers etc
-  string outDir = "/sphenix/u/xyu3/hftg01/PhotonConv/macro";
 
   Enable::DSTOUT = false;
   string outputRecoFileName = "TrackCalo_" + to_string(segment) + "_kfp.root";

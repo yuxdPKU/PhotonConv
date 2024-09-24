@@ -33,9 +33,7 @@ do
 done
 inputFiles=${inputFiles::-1}
 inputFiles+="}"
-DrawEvtDisplay="${!#}"
+outDir="${!#}"
 echo running: run_data.sh $*
-#valgrind --num-callers=30 --leak-check=full --suppressions=$ROOTSYS/etc/valgrind-root.supp root.exe -q -b Fun4All_Template.C\(${inputFiles},$nEvents\)
-#valgrind --num-callers=30 --leak-check=full --show-leak-kinds=all --track-origins=yes --suppressions=$ROOTSYS/root.supp root.exe -q -b Fun4All_Template.C\(${inputFiles},$nEvents\)
-root.exe -q -b Fun4All_FieldOnAllTrackersCalos.C\($nEvents,${inputFiles},true,${DrawEvtDisplay}\)
+root.exe -q -b Fun4All_FieldOnAllTrackersCalos.C\($nEvents,${inputFiles},\"${outDir}\"\)
 echo Script done
