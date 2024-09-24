@@ -440,7 +440,7 @@ void Fun4All_FieldOnAllTrackersCalos(
   tcm->setdzcut(10000);
   tcm->setTrackPtLowCut(1.0);
   tcm->setEmcalELowCut(0.5);
-  tcm->setRejectLaserEvent(true);
+  //tcm->setRejectLaserEvent(true);
   se->registerSubsystem(tcm);
 
   // begin KFParticle
@@ -457,7 +457,7 @@ void Fun4All_FieldOnAllTrackersCalos(
   ttc->setTrackPtLowCut(1.0);
   ttc->setEmcalELowCut(0.5);
   ttc->doTrkrCaloMatching_KFP();
-  ttc->setRejectLaserEvent(true);
+  //ttc->setRejectLaserEvent(true);
   se->registerSubsystem(ttc);
 
   if (Enable::DSTOUT)
