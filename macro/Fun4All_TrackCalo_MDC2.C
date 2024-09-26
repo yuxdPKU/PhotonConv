@@ -39,6 +39,9 @@
 #include <iostream>
 #include <filesystem>
 
+#include <decayfinder/DecayFinder.h>
+#include <hftrackefficiency/HFTrackEfficiency.h>
+
 #include "HFReco.C"
 
 R__LOAD_LIBRARY(libfun4all.so)
@@ -53,6 +56,8 @@ R__LOAD_LIBRARY(libTrackingDiagnostics.so)
 R__LOAD_LIBRARY(libtrack_reco.so)
 R__LOAD_LIBRARY(libtrack_to_calo.so)
 R__LOAD_LIBRARY(libcalo_reco.so)
+R__LOAD_LIBRARY(libdecayfinder.so)
+R__LOAD_LIBRARY(libhftrackefficiency.so)
 R__LOAD_LIBRARY(libkfparticle_sphenix.so)
 
 using namespace std;
@@ -62,16 +67,15 @@ namespace fs = std::filesystem;
 std::string GetFirstLine(std::string listname);
 bool is_directory_empty(const fs::path& dir_path);
 
-void Fun4All_TrackAnalysis(
+void Fun4All_TrackCalo_MDC2(
     const int nEvents = 10,
     vector<string> myInputLists = {
-        "run46730_0000_trkr_seed.txt",
-        "run46730_0000_trkr_cluster.txt",
-        "run46730_calo.list"}, 
-    bool doTpcOnlyTracking = true,
+        "dst_tracks.list",
+        "dst_trkr_cluster.list",
+        "dst_calo_cluster.list"}, 
+    std::string outDir = "./",
     bool doEvtDisplay = false,
-    bool doEMcalRadiusCorr = true,
-    const bool convertSeeds = false)
+    bool doEMcalRadiusCorr = true)
 {
   gSystem->Load("libg4dst.so");
 
@@ -84,18 +88,17 @@ void Fun4All_TrackAnalysis(
   int runnumber = runseg.first;
   int segment = runseg.second;
 
-  //The next set of lines figures out folder revisions, file numbers etc
-  string outDir = "/sphenix/u/xyu3/hftg01/PhotonConv/macro";
-
   Enable::DSTOUT = false;
   string outputRecoFileName = "TrackCalo_" + to_string(segment) + "_kfp.root";
   string outputAnaFileName = "TrackCalo_" + to_string(segment) + "_ana.root";
   string outputDstFileName = "TrackCalo_" + to_string(segment) + "_dst.root";
+  string outputHFEffFileName = "TrackCalo_" + to_string(segment) + "_hfeff.root";
 
   string outputRecoDir = outDir + "/inReconstruction/" + to_string(runnumber) + "/";
   string makeDirectory = "mkdir -p " + outputRecoDir;
   system(makeDirectory.c_str());
   outputRecoFile = outputRecoDir + outputRecoFileName; // defined in HFReco.h
+  outputHFEffFile = outputRecoDir + outputHFEffFileName; // defined in HFReco.h
   string outputAnaFile = outputRecoDir + outputAnaFileName;
   string outputDstFile = outputRecoDir + outputDstFileName;
 
@@ -104,6 +107,7 @@ void Fun4All_TrackAnalysis(
   system(makeDirectory2.c_str());
 
   std::cout << "Reco KFP file: " << outputRecoFile << std::endl;
+  std::cout << "Reco HF Eff file: " << outputHFEffFile << std::endl;
   std::cout << "Reco ANA file: " << outputAnaFile << std::endl;
   std::cout << "Dst file: " << outputDstFile << std::endl;
   std::cout << "Json file path: " << outputJsonDir << std::endl;
@@ -129,33 +133,34 @@ void Fun4All_TrackAnalysis(
     se->registerInputManager(infile);
   }
 
+  // Runs decay finder to trigger on your decay. Useful for signal cleaning
+  if (runTruthTrigger)
+  {
+    DecayFinder *myFinder = new DecayFinder("myFinder");
+    myFinder->Verbosity(0);
+    myFinder->setDecayDescriptor(decayDescriptor);
+    myFinder->saveDST(1);
+    myFinder->allowPi0(0);
+    myFinder->allowPhotons(0);
+    myFinder->triggerOnDecay(1);
+    myFinder->setPTmin(0.2); //Note: sPHENIX min pT is 0.2 GeV for tracking
+    myFinder->setEtaRange(-1.1, 1.1); //Note: sPHENIX acceptance is |eta| <= 1.1
+    myFinder->useDecaySpecificEtaRange(true); //true = calculate sPHENIX acceptance
+    se->registerSubsystem(myFinder);
+  }
+
   auto rc = recoConsts::instance();
   rc->set_IntFlag("RUNNUMBER", runnumber);
 
   Enable::CDB = true;
-  rc->set_StringFlag("CDB_GLOBALTAG", "ProdA_2024");
-  rc->set_uint64Flag("TIMESTAMP", runnumber);
+  rc->set_StringFlag("CDB_GLOBALTAG", "MDC2");
+  rc->set_uint64Flag("TIMESTAMP", 6);
 
   std::string geofile = CDBInterface::instance()->getUrl("Tracking_Geometry");
 
   Fun4AllRunNodeInputManager *ingeo = new Fun4AllRunNodeInputManager("GeoIn");
   ingeo->AddFile(geofile);
   se->registerInputManager(ingeo);
-
-  G4TPC::tpc_drift_velocity_reco = 0.00710;
-  CDBInterface *cdb = CDBInterface::instance();
-  std::string tpc_dv_calib_dir = cdb->getUrl("TPC_DRIFT_VELOCITY");
-  if (tpc_dv_calib_dir.empty())
-  {
-    std::cout << "No calibrated TPC drift velocity for Run " << runnumber << ". Use default value " << G4TPC::tpc_drift_velocity_reco << " cm/ns" << std::endl;
-  }
-  else
-  {
-    CDBTTree *cdbttree = new CDBTTree(tpc_dv_calib_dir);
-    cdbttree->LoadCalibrations();
-    G4TPC::tpc_drift_velocity_reco = cdbttree->GetSingleFloatValue("tpc_drift_velocity");
-    std::cout << "Use calibrated TPC drift velocity for Run " << runnumber << ": " << G4TPC::tpc_drift_velocity_reco << " cm/ns" << std::endl;
-  }
 
   G4TPC::ENABLE_MODULE_EDGE_CORRECTIONS = true;
   //to turn on the default static corrections, enable the two lines below
@@ -168,71 +173,17 @@ void Fun4All_TrackAnalysis(
 
   TrackingInit();
 
-  G4TRACKING::convert_seeds_to_svtxtracks = convertSeeds;
-  std::cout << "Converting to seeds : " << G4TRACKING::convert_seeds_to_svtxtracks << std::endl;
-
-  /*
-   * Either converts seeds to tracks with a straight line/helix fit
-   * or run the full Acts track kalman filter fit
-   */
-  if (G4TRACKING::convert_seeds_to_svtxtracks)
+  if (runTrackEff)
   {
-    auto converter = new TrackSeedTrackMapConverter;
-    // Option to use TpcTrackSeedContainer or SvtxTrackSeeds
-    // can be set to SiliconTrackSeedContainer for silicon-only track fit
-    if (doTpcOnlyTracking)
-    {
-      converter->setTrackSeedName("TpcTrackSeedContainer");
-    }
-    else
-    {
-      converter->setTrackSeedName("SvtxTrackSeeds");
-    }
-    converter->setFieldMap(G4MAGNET::magfield_tracking);
-    converter->Verbosity(0);
-    se->registerSubsystem(converter);
+    HFTrackEfficiency *myTrackEff = new HFTrackEfficiency("myTrackEff");
+    myTrackEff->Verbosity(0);
+    myTrackEff->setDFNodeName("myFinder");
+    myTrackEff->triggerOnDecay(1);
+    myTrackEff->writeSelectedTrackMap(true);
+    myTrackEff->writeOutputFile(true);
+    myTrackEff->setOutputFileName(outputHFEffFile);
+    se->registerSubsystem(myTrackEff);
   }
-  else
-  {
-    auto deltazcorr = new PHTpcDeltaZCorrection;
-    deltazcorr->Verbosity(0);
-    se->registerSubsystem(deltazcorr);
-
-    // perform final track fit with ACTS
-    auto actsFit = new PHActsTrkFitter;
-    actsFit->Verbosity(0);
-    actsFit->commissioning(G4TRACKING::use_alignment);
-    // in calibration mode, fit only Silicons and Micromegas hits
-    if (!doTpcOnlyTracking)
-    {
-      actsFit->fitSiliconMMs(G4TRACKING::SC_CALIBMODE);
-      actsFit->setUseMicromegas(G4TRACKING::SC_USE_MICROMEGAS);
-    }
-    actsFit->set_pp_mode(TRACKING::pp_mode);
-    actsFit->set_use_clustermover(true);  // default is true for now
-    actsFit->useActsEvaluator(false);
-    actsFit->useOutlierFinder(false);
-    actsFit->setFieldMap(G4MAGNET::magfield_tracking);
-    se->registerSubsystem(actsFit);
-  }
-
-  PHSimpleVertexFinder *finder = new PHSimpleVertexFinder;
-  finder->Verbosity(0);
-  finder->setDcaCut(0.5);
-  finder->setTrackPtCut(-99999.);
-  finder->setBeamLineCut(1);
-  finder->setTrackQualityCut(1000000000);
-  if (!doTpcOnlyTracking)
-  {
-    finder->setRequireMVTX(true);
-    finder->setNmvtxRequired(3);
-  }
-  else
-  {
-    finder->setRequireMVTX(false);
-  }
-  finder->setOutlierPairCut(0.1);
-  se->registerSubsystem(finder);
 
   Global_Reco();
 
@@ -287,12 +238,6 @@ void Fun4All_TrackAnalysis(
   ClusterBuilder2->set_R_shower(0.025);
   se->registerSubsystem(ClusterBuilder2);
 
-  //CaloOnly *co = new CaloOnly("CaloOnly", outputRecoFile);
-  //se->registerSubsystem(co);
-
-  //TrackOnly *to = new TrackOnly("TracksOnly", outputRecoFile);
-  //se->registerSubsystem(to);
-
   TrackCaloMatch *tcm = new TrackCaloMatch("Tracks_Calo_Match");
   tcm->SetMyTrackMapName("MySvtxTrackMap");
   tcm->writeEventDisplays(doEvtDisplay);
@@ -344,6 +289,17 @@ void Fun4All_TrackAnalysis(
     string makeDirectoryMove = "mkdir -p " + outputRecoDirMove;
     system(makeDirectoryMove.c_str());
     string moveOutput = "mv " + outputRecoFile + " " + outDir + "/Reconstructed/" + to_string(runnumber);
+    std::cout << "moveOutput: " << moveOutput << std::endl;
+    system(moveOutput.c_str());
+  }
+
+  ifstream file_hfeff(outputHFEffFile.c_str(), ios::binary | ios::ate);
+  if (file_hfeff.good() && (file_hfeff.tellg() > 100))
+  {
+    string outputRecoDirMove = outDir + "/Reconstructed/" + to_string(runnumber) + "/";
+    string makeDirectoryMove = "mkdir -p " + outputRecoDirMove;
+    system(makeDirectoryMove.c_str());
+    string moveOutput = "mv " + outputHFEffFile + " " + outDir + "/Reconstructed/" + to_string(runnumber);
     std::cout << "moveOutput: " << moveOutput << std::endl;
     system(moveOutput.c_str());
   }

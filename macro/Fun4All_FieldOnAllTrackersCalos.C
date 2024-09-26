@@ -41,6 +41,9 @@
 #include <iostream>
 #include <filesystem>
 
+#include <decayfinder/DecayFinder.h>
+#include <hftrackefficiency/HFTrackEfficiency.h>
+
 #include "HFReco.C"
 
 R__LOAD_LIBRARY(libfun4all.so)
@@ -55,6 +58,8 @@ R__LOAD_LIBRARY(libTrackingDiagnostics.so)
 R__LOAD_LIBRARY(libtrack_reco.so)
 R__LOAD_LIBRARY(libtrack_to_calo.so)
 R__LOAD_LIBRARY(libcalo_reco.so)
+R__LOAD_LIBRARY(libdecayfinder.so)
+R__LOAD_LIBRARY(libhftrackefficiency.so)
 R__LOAD_LIBRARY(libkfparticle_sphenix.so)
 
 using namespace std;
@@ -126,6 +131,22 @@ void Fun4All_FieldOnAllTrackersCalos(
     //infile->AddFile(myInputLists[i]);
     infile->AddListFile(myInputLists[i]);
     se->registerInputManager(infile);
+  }
+
+  // Runs decay finder to trigger on your decay. Useful for signal cleaning
+  if (runTruthTrigger)
+  {
+    DecayFinder *myFinder = new DecayFinder("myFinder");
+    myFinder->Verbosity(0);
+    myFinder->setDecayDescriptor(decayDescriptor);
+    myFinder->saveDST(1);
+    myFinder->allowPi0(0);
+    myFinder->allowPhotons(0);
+    myFinder->triggerOnDecay(1);
+    myFinder->setPTmin(0.2); //Note: sPHENIX min pT is 0.2 GeV for tracking
+    myFinder->setEtaRange(-1.1, 1.1); //Note: sPHENIX acceptance is |eta| <= 1.1
+    myFinder->useDecaySpecificEtaRange(true); //true = calculate sPHENIX acceptance
+    se->registerSubsystem(myFinder);
   }
 
   auto rc = recoConsts::instance();
@@ -380,6 +401,18 @@ void Fun4All_FieldOnAllTrackersCalos(
   finder->setOutlierPairCut(0.1);
   se->registerSubsystem(finder);
 
+  if (runTrackEff)
+  {
+    HFTrackEfficiency *myTrackEff = new HFTrackEfficiency("myTrackEff");
+    myTrackEff->Verbosity(0);
+    myTrackEff->setDFNodeName("myFinder");
+    myTrackEff->triggerOnDecay(1);
+    myTrackEff->writeSelectedTrackMap(true);
+    myTrackEff->writeOutputFile(true);
+    myTrackEff->setOutputFileName(outputHFEffFile);
+    se->registerSubsystem(myTrackEff);
+  }
+
   Global_Reco();
 
   auto projection = new PHActsTrackProjection("CaloProjection");
@@ -392,6 +425,17 @@ void Fun4All_FieldOnAllTrackersCalos(
   }
   se->registerSubsystem(projection);
 
+  std::cout << "Building clusters" << std::endl;
+  RawClusterBuilderTemplate *ClusterBuilder = new RawClusterBuilderTemplate("EmcRawClusterBuilderTemplate");
+  ClusterBuilder->Detector("CEMC");
+  ClusterBuilder->set_threshold_energy(0.030);  // for when using basic calibration
+  std::string emc_prof = getenv("CALIBRATIONROOT");
+  emc_prof += "/EmcProfile/CEMCprof_Thresh30MeV.root";
+  ClusterBuilder->LoadProfile(emc_prof);
+  ClusterBuilder->set_UseTowerInfo(1);  // to use towerinfo objects rather than old RawTower
+  se->registerSubsystem(ClusterBuilder);
+
+/*
   RawClusterBuilderTopo* ClusterBuilder1 = new RawClusterBuilderTopo("EMcalRawClusterBuilderTopo1");
   ClusterBuilder1->Verbosity(verbosity);
   ClusterBuilder1->set_nodename("TOPOCLUSTER_EMCAL");
@@ -405,6 +449,7 @@ void Fun4All_FieldOnAllTrackersCalos(
   ClusterBuilder1->set_minE_local_max(1.0, 2.0, 0.5);
   ClusterBuilder1->set_R_shower(0.025);
   se->registerSubsystem(ClusterBuilder1);
+*/
 
   //For particle flow studies
   RawClusterBuilderTopo* ClusterBuilder2 = new RawClusterBuilderTopo("EMcalRawClusterBuilderTopo2");
@@ -438,7 +483,7 @@ void Fun4All_FieldOnAllTrackersCalos(
   tcm->setdzcut(10000);
   tcm->setTrackPtLowCut(1.0);
   tcm->setEmcalELowCut(0.5);
-  //tcm->setRejectLaserEvent(true);
+  tcm->setRawClusContEMName("CLUSTERINFO_CEMC");
   se->registerSubsystem(tcm);
 
   // begin KFParticle
@@ -449,20 +494,20 @@ void Fun4All_FieldOnAllTrackersCalos(
   ttc->setEMcalRadius(new_cemc_rad);
   ttc->setKFPtrackMapName("PhotonConv_SvtxTrackMap");
   ttc->setKFPContName("PhotonConv_KFParticle_Container");
-  ttc->doTrkrCaloMatching();
-  ttc->anaTrkrInfo();
-  ttc->anaCaloInfo();
+  //ttc->doTrkrCaloMatching();
+  //ttc->anaTrkrInfo();
+  //ttc->anaCaloInfo();
   ttc->setTrackPtLowCut(1.0);
   ttc->setEmcalELowCut(0.5);
   ttc->doTrkrCaloMatching_KFP();
-  //ttc->setRejectLaserEvent(true);
+  ttc->setRawClusContEMName("CLUSTERINFO_CEMC");
   se->registerSubsystem(ttc);
 
   if (Enable::DSTOUT)
   {
     Fun4AllDstOutputManager *out = new Fun4AllDstOutputManager("DSTOUT", outputDstFile);
-    out->StripNode("RUN");
-    out->AddNode("Sync");
+    //out->StripNode("RUN");
+    //out->AddNode("Sync");
     out->SaveRunNode(0);
     se->registerOutputManager(out);
   }

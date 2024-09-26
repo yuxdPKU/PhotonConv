@@ -18,7 +18,6 @@
 #include <calobase/TowerInfoContainer.h>
 #include <trackbase/TrkrHitSetContainer.h>
 #include <trackbase/TrkrClusterContainer.h>
-//#include <tpc/LaserEventInfo.h>
 
 #include <string>
 #include <vector>
@@ -91,8 +90,6 @@ class TrackCaloMatch : public SubsysReco
   void setdphicut(float a) {m_dphi_cut = a;};
   void setdzcut(float a) {m_dz_cut = a;};
 
-  //void setRejectLaserEvent(bool value) {m_rejectLaserEvent = value;}
-
  private:
    int m_runNumber = 0;
    int m_evtNumber = 0;
@@ -117,7 +114,6 @@ class TrackCaloMatch : public SubsysReco
    RawTowerGeomContainer* EMCalGeo = nullptr;
    RawTowerGeomContainer* IHCalGeo = nullptr;
    RawTowerGeomContainer* OHCalGeo = nullptr;
-   //LaserEventInfo* laserEventInfo = nullptr;
 
    std::string m_trackMapName = "SvtxTrackMap";
    std::string m_trackMapName_new = "MySvtxTrackMap";
@@ -134,8 +130,6 @@ class TrackCaloMatch : public SubsysReco
    int m_ntpc_low_cut = 22;
    float m_dphi_cut = 0.1;
    float m_dz_cut = 20;
-
-   //bool m_rejectLaserEvent = false;
 };
 
 #endif

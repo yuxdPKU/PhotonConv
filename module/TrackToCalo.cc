@@ -487,27 +487,6 @@ int TrackToCalo::process_event(PHCompositeNode *topNode)
     }
   }
 
-/*
-  if(m_rejectLaserEvent)
-  {
-    if(!laserEventInfo)
-    {
-      laserEventInfo = findNode::getClass<LaserEventInfo>(topNode, "LaserEventInfo");
-      if(!laserEventInfo)
-      {
-        std::cout << "LaserEventInfo not found! Aborting!" << std::endl;
-        return Fun4AllReturnCodes::ABORTEVENT;
-      }
-    }
-
-    if (laserEventInfo->isLaserEvent())
-    {
-      std::cout << "This is a laser event!" << std::endl;
-      return Fun4AllReturnCodes::EVENT_OK;
-    }
-  }
-*/
-
   if (m_doTrkrCaloMatching)
   {
     ResetTreeVectors();

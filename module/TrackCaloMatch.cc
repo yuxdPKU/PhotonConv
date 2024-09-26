@@ -179,23 +179,50 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
     }
   }
 
-/*
-  if(m_rejectLaserEvent)
+  if(!m_truthinfo)
   {
-    if(!laserEventInfo)
+    m_truthinfo = findNode::getClass<PHG4TruthInfoContainer>(topNode, "G4TruthInfo");
+    if(!m_truthinfo)
     {
-      laserEventInfo = findNode::getClass<LaserEventInfo>(topNode, "LaserEventInfo");
-      if(!laserEventInfo)
-      {
-        std::cout << "LaserEventInfo not found! Aborting!" << std::endl;
-        return Fun4AllReturnCodes::ABORTEVENT;
-      }
+      std::cout << "G4TruthInfo not found!" << std::endl;
     }
+  }
 
-    if (laserEventInfo->isLaserEvent())
+  if(!m_geneventmap)
+  {
+    m_geneventmap = findNode::getClass<PHHepMCGenEventMap>(topNode, "PHHepMCGenEventMap");
+    if(!m_geneventmap)
     {
-      std::cout << "This is a laser event!" << std::endl;
-      return Fun4AllReturnCodes::EVENT_OK;
+      std::cout << "PHHepMCGenEventMap not found!" << std::endl;
+    }
+  }
+
+/*
+  if (m_truthinfo)
+  {
+    PHG4TruthInfoContainer::ConstRange range = m_truthinfo->GetParticleRange();
+    //std::cout << "m_truthinfo size = " << m_truthinfo->size() << std::endl;
+    for (PHG4TruthInfoContainer::ConstIterator iter = range.first; iter != range.second; ++iter)
+    {
+      PHG4Particle* g4particle = iter->second;
+      int this_pid = g4particle->get_pid();
+      if (this_pid == -11 || this_pid == 11)
+      {
+        std::cout << "found daughter particle e+/e-" << std::endl;
+
+        PHG4Particle* mother = nullptr;
+        if (g4particle->get_parent_id() != 0)
+        {
+          mother = m_truthinfo->GetParticle(g4particle->get_parent_id());
+          if (abs(mother->get_pid())==22)
+          {
+            float mother_e = mother->get_e();
+            float mother_pt = sqrt( (mother->get_px())*(mother->get_px()) + (mother->get_py())*(mother->get_py()));
+            float mother_eta = asinh(mother->get_pz()/sqrt(mother->get_px()*mother->get_px() + mother->get_py()*mother->get_py()));
+            std::cout << "daughter pid = " << this_pid << " track id = " << g4particle->get_track_id() << " mother is gamma track id= " << mother->get_track_id() << " E = " << mother_e << " pT = " << mother_pt << " eta = " << mother_eta << std::endl;
+          }
+        }
+      }
     }
   }
 */
