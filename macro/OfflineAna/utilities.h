@@ -219,6 +219,37 @@ float hcal_radius = 177.423;
   std::vector<float> *_epem_DCA_2d = 0;
   std::vector<float> *_epem_DCA_3d = 0;
 
+  int _true_numCan;
+  std::vector<float> *_true_gamma_phi = 0;
+  std::vector<float> *_true_gamma_eta = 0;
+  std::vector<float> *_true_gamma_px = 0;
+  std::vector<float> *_true_gamma_py = 0;
+  std::vector<float> *_true_gamma_pz = 0;
+  std::vector<float> *_true_gamma_pE = 0;
+  std::vector<float> *_true_gamma_x = 0;
+  std::vector<float> *_true_gamma_y = 0;
+  std::vector<float> *_true_gamma_z = 0;
+
+  std::vector<float> *_true_ep_phi = 0;
+  std::vector<float> *_true_ep_eta = 0;
+  std::vector<float> *_true_ep_px = 0;
+  std::vector<float> *_true_ep_py = 0;
+  std::vector<float> *_true_ep_pz = 0;
+  std::vector<float> *_true_ep_pE = 0;
+  std::vector<float> *_true_ep_x = 0;
+  std::vector<float> *_true_ep_y = 0;
+  std::vector<float> *_true_ep_z = 0;
+
+  std::vector<float> *_true_em_phi = 0;
+  std::vector<float> *_true_em_eta = 0;
+  std::vector<float> *_true_em_px = 0;
+  std::vector<float> *_true_em_py = 0;
+  std::vector<float> *_true_em_pz = 0;
+  std::vector<float> *_true_em_pE = 0;
+  std::vector<float> *_true_em_x = 0;
+  std::vector<float> *_true_em_y = 0;
+  std::vector<float> *_true_em_z = 0;
+
 void setBranch(TTree* tree)
 {
   tree->SetBranchAddress("_runNumber", &_runNumber);
@@ -522,6 +553,39 @@ void setBranch_kfp(TChain* tree)
   tree->SetBranchAddress("_emcal_e", &_emcal_e);
   tree->SetBranchAddress("_epem_DCA_2d", &_epem_DCA_2d);
   tree->SetBranchAddress("_epem_DCA_3d", &_epem_DCA_3d);
+
+  tree->SetBranchAddress("_true_numCan", &_true_numCan);
+  tree->SetBranchAddress("_true_gamma_phi", &_true_gamma_phi);
+  tree->SetBranchAddress("_true_gamma_eta", &_true_gamma_eta);
+  tree->SetBranchAddress("_true_gamma_px", &_true_gamma_px);
+  tree->SetBranchAddress("_true_gamma_py", &_true_gamma_py);
+  tree->SetBranchAddress("_true_gamma_pz", &_true_gamma_pz);
+  tree->SetBranchAddress("_true_gamma_pz", &_true_gamma_pz);
+  tree->SetBranchAddress("_true_gamma_pE", &_true_gamma_pE);
+  tree->SetBranchAddress("_true_gamma_x", &_true_gamma_x);
+  tree->SetBranchAddress("_true_gamma_y", &_true_gamma_y);
+  tree->SetBranchAddress("_true_gamma_z", &_true_gamma_z);
+
+  tree->SetBranchAddress("_true_ep_phi", &_true_ep_phi);
+  tree->SetBranchAddress("_true_ep_eta", &_true_ep_eta);
+  tree->SetBranchAddress("_true_ep_px", &_true_ep_px);
+  tree->SetBranchAddress("_true_ep_py", &_true_ep_py);
+  tree->SetBranchAddress("_true_ep_pz", &_true_ep_pz);
+  tree->SetBranchAddress("_true_ep_pE", &_true_ep_pE);
+  tree->SetBranchAddress("_true_ep_x", &_true_ep_x);
+  tree->SetBranchAddress("_true_ep_y", &_true_ep_y);
+  tree->SetBranchAddress("_true_ep_z", &_true_ep_z);
+
+  tree->SetBranchAddress("_true_em_phi", &_true_em_phi);
+  tree->SetBranchAddress("_true_em_eta", &_true_em_eta);
+  tree->SetBranchAddress("_true_em_px", &_true_em_px);
+  tree->SetBranchAddress("_true_em_py", &_true_em_py);
+  tree->SetBranchAddress("_true_em_pz", &_true_em_pz);
+  tree->SetBranchAddress("_true_em_pE", &_true_em_pE);
+  tree->SetBranchAddress("_true_em_x", &_true_em_x);
+  tree->SetBranchAddress("_true_em_y", &_true_em_y);
+  tree->SetBranchAddress("_true_em_z", &_true_em_z);
+
 }
 
 float PiRange(float deltaPhi)
@@ -621,4 +685,24 @@ double customsqrt(double x) {
     } else {
         return std::sqrt(x);
     }
+}
+
+std::vector<int> readNumberFromText(std::string infile) {
+
+    std::vector<int> vector;
+    vector.clear();
+
+    std::ifstream inputFile(infile);
+    if (!inputFile.is_open()) {
+        std::cerr << "Can not open file!" << std::endl;
+        return vector;
+    }
+
+    int number;
+    while (inputFile >> number) {
+        vector.push_back(number);
+    }
+
+    inputFile.close();
+    return vector;
 }
