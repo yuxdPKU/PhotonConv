@@ -179,6 +179,7 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
     }
   }
 
+/*
   if(!m_truthinfo)
   {
     m_truthinfo = findNode::getClass<PHG4TruthInfoContainer>(topNode, "G4TruthInfo");
@@ -197,7 +198,6 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
     }
   }
 
-/*
   if (m_truthinfo)
   {
     PHG4TruthInfoContainer::ConstRange range = m_truthinfo->GetParticleRange();

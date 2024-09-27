@@ -30,9 +30,24 @@
 #include <kfparticle_sphenix/KFParticle_Tools.h>
 #include <kfparticle_sphenix/KFParticle_truthAndDetTools.h>
 #include <kfparticle_sphenix/KFParticle_nTuple.h>
+#include <decayfinder/DecayFinderContainer_v1.h>  // for DecayFinderContainer_v1
+
+#include <g4main/PHG4Particle.h>
+#include <g4main/PHG4TruthInfoContainer.h>
+#include <g4main/PHG4VtxPoint.h>
+#include <phhepmc/PHHepMCGenEvent.h>
+#include <phhepmc/PHHepMCGenEventMap.h>
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#include <HepMC/GenEvent.h>
+#include <HepMC/GenVertex.h>  // for GenVertex::particle_iterator
+#pragma GCC diagnostic pop
 
 #include <string>
 #include <vector>
+
+#include <TDatabasePDG.h>
 
 class PHCompositeNode;
 class TH1;
@@ -40,6 +55,10 @@ class TH2;
 class TFile;
 class TTree;
 class KFParticle_sPHENIX;
+class PHG4TruthInfoContainer;
+class PHG4Particle;
+class PHHepMCGenEvent;
+class PHHepMCGenEventMap;
 
 class TrackToCalo : public SubsysReco
 {
@@ -94,285 +113,329 @@ class TrackToCalo : public SubsysReco
 
   void doTrkrCaloMatching() {m_doTrkrCaloMatching = true;}
   void doTrkrCaloMatching_KFP() {m_doTrkrCaloMatching_KFP = true;}
+  void doTruthMatching() {m_doTruthMatching = true;}
 
   void anaTrkrInfo() {m_doTrackOnly = true;}
   void anaCaloInfo() {m_doCaloOnly = true;}
 
+  void setDFNodeName(const std::string &name) { m_df_module_name = name; }
+
  private:
-   int cnt = 0;
-   bool m_use_emcal_radius = false;
-   bool m_use_ihcal_radius = false;
-   bool m_use_ohcal_radius = false;
-   float m_emcal_radius_user = 93.5;
-   float m_ihcal_radius_user = 117;
-   float m_ohcal_radius_user = 177.423;
-   std::string _outfilename;
-   TFile *_outfile = nullptr;
-   TTree *_tree = nullptr;
-   TTree *_tree_KFP = nullptr;
+  using Decay = std::vector<std::pair<std::pair<int, int>, int>>;
+  float getParticleMass(const int PDGID) { return TDatabasePDG::Instance()->GetParticle(PDGID)->Mass(); }
 
-   std::string m_RawClusCont_EM_name = "TOPOCLUSTER_EMCAL";
-   std::string m_RawClusCont_HAD_name = "TOPOCLUSTER_HCAL";
+  int cnt = 0;
+  bool m_use_emcal_radius = false;
+  bool m_use_ihcal_radius = false;
+  bool m_use_ohcal_radius = false;
+  float m_emcal_radius_user = 93.5;
+  float m_ihcal_radius_user = 117;
+  float m_ohcal_radius_user = 177.423;
+  std::string _outfilename;
+  TFile *_outfile = nullptr;
+  TTree *_tree = nullptr;
+  TTree *_tree_KFP = nullptr;
 
-   std::string m_KFPCont_name = "KFParticle_Container";
-   std::string m_KFPtrackMap_name = "SvtxTrackMap";
+  std::string m_RawClusCont_EM_name = "TOPOCLUSTER_EMCAL";
+  std::string m_RawClusCont_HAD_name = "TOPOCLUSTER_HCAL";
 
-   int _runNumber;
-   int _eventNumber;
-   std::vector<int> _vertex_id;
-   std::vector<int> _vertex_crossing;
-   std::vector<int> _vertex_ntracks;
-   std::vector<float> _vertex_x;
-   std::vector<float> _vertex_y;
-   std::vector<float> _vertex_z;
-   std::vector<float> _cluster_x;
-   std::vector<float> _cluster_y;
-   std::vector<float> _cluster_z;
-   std::vector<int> _track_id;
-   std::vector<int> _track_bc;
-   std::vector<float> _track_phi;
-   std::vector<float> _track_eta;
-   std::vector<float> _track_pcax;
-   std::vector<float> _track_pcay;
-   std::vector<float> _track_pcaz;
-   std::vector<float> _track_crossing;
-   std::vector<float> _track_vx;
-   std::vector<float> _track_vy;
-   std::vector<float> _track_vz;
-   std::vector<float> _track_quality;
-   std::vector<float> _track_dcaxy;
-   std::vector<float> _track_dcaz;
-   std::vector<int> _track_nc_mvtx;
-   std::vector<int> _track_nc_intt;
-   std::vector<int> _track_nc_tpc;
-   std::vector<float> _track_ptq;
-   std::vector<float> _track_px;
-   std::vector<float> _track_py;
-   std::vector<float> _track_pz;
-   std::vector<float> _track_phi_origin;
-   std::vector<float> _track_eta_origin;
-   std::vector<float> _track_px_origin;
-   std::vector<float> _track_py_origin;
-   std::vector<float> _track_pz_origin;
-   std::vector<float> _track_x_origin;
-   std::vector<float> _track_y_origin;
-   std::vector<float> _track_z_origin;
-   std::vector<float> _track_phi_emc;
-   std::vector<float> _track_eta_emc;
-   std::vector<float> _track_px_emc;
-   std::vector<float> _track_py_emc;
-   std::vector<float> _track_pz_emc;
-   std::vector<float> _track_x_emc;
-   std::vector<float> _track_y_emc;
-   std::vector<float> _track_z_emc;
-   std::vector<float> _track_phi_ihc;
-   std::vector<float> _track_eta_ihc;
-   std::vector<float> _track_px_ihc;
-   std::vector<float> _track_py_ihc;
-   std::vector<float> _track_pz_ihc;
-   std::vector<float> _track_x_ihc;
-   std::vector<float> _track_y_ihc;
-   std::vector<float> _track_z_ihc;
-   std::vector<float> _track_phi_ohc;
-   std::vector<float> _track_eta_ohc;
-   std::vector<float> _track_px_ohc;
-   std::vector<float> _track_py_ohc;
-   std::vector<float> _track_pz_ohc;
-   std::vector<float> _track_x_ohc;
-   std::vector<float> _track_y_ohc;
-   std::vector<float> _track_z_ohc;
+  std::string m_KFPCont_name = "KFParticle_Container";
+  std::string m_KFPtrackMap_name = "SvtxTrackMap";
 
-   std::vector<int> _trClus_track_id;
-   std::vector<int> _trClus_type;
-   std::vector<float> _trClus_x;
-   std::vector<float> _trClus_y;
-   std::vector<float> _trClus_z;
+  int _runNumber;
+  int _eventNumber;
+  std::vector<int> _vertex_id;
+  std::vector<int> _vertex_crossing;
+  std::vector<int> _vertex_ntracks;
+  std::vector<float> _vertex_x;
+  std::vector<float> _vertex_y;
+  std::vector<float> _vertex_z;
+  std::vector<float> _cluster_x;
+  std::vector<float> _cluster_y;
+  std::vector<float> _cluster_z;
+  std::vector<int> _track_id;
+  std::vector<int> _track_bc;
+  std::vector<float> _track_phi;
+  std::vector<float> _track_eta;
+  std::vector<float> _track_pcax;
+  std::vector<float> _track_pcay;
+  std::vector<float> _track_pcaz;
+  std::vector<float> _track_crossing;
+  std::vector<float> _track_vx;
+  std::vector<float> _track_vy;
+  std::vector<float> _track_vz;
+  std::vector<float> _track_quality;
+  std::vector<float> _track_dcaxy;
+  std::vector<float> _track_dcaz;
+  std::vector<int> _track_nc_mvtx;
+  std::vector<int> _track_nc_intt;
+  std::vector<int> _track_nc_tpc;
+  std::vector<float> _track_ptq;
+  std::vector<float> _track_px;
+  std::vector<float> _track_py;
+  std::vector<float> _track_pz;
+  std::vector<float> _track_phi_origin;
+  std::vector<float> _track_eta_origin;
+  std::vector<float> _track_px_origin;
+  std::vector<float> _track_py_origin;
+  std::vector<float> _track_pz_origin;
+  std::vector<float> _track_x_origin;
+  std::vector<float> _track_y_origin;
+  std::vector<float> _track_z_origin;
+  std::vector<float> _track_phi_emc;
+  std::vector<float> _track_eta_emc;
+  std::vector<float> _track_px_emc;
+  std::vector<float> _track_py_emc;
+  std::vector<float> _track_pz_emc;
+  std::vector<float> _track_x_emc;
+  std::vector<float> _track_y_emc;
+  std::vector<float> _track_z_emc;
+  std::vector<float> _track_phi_ihc;
+  std::vector<float> _track_eta_ihc;
+  std::vector<float> _track_px_ihc;
+  std::vector<float> _track_py_ihc;
+  std::vector<float> _track_pz_ihc;
+  std::vector<float> _track_x_ihc;
+  std::vector<float> _track_y_ihc;
+  std::vector<float> _track_z_ihc;
+  std::vector<float> _track_phi_ohc;
+  std::vector<float> _track_eta_ohc;
+  std::vector<float> _track_px_ohc;
+  std::vector<float> _track_py_ohc;
+  std::vector<float> _track_pz_ohc;
+  std::vector<float> _track_x_ohc;
+  std::vector<float> _track_y_ohc;
+  std::vector<float> _track_z_ohc;
 
-   std::vector<int> _emcal_id;
-   std::vector<float> _emcal_phi;
-   std::vector<float> _emcal_eta;
-   std::vector<float> _emcal_x;
-   std::vector<float> _emcal_y;
-   std::vector<float> _emcal_z;
-   std::vector<float> _emcal_e;
-   std::vector<float> _emcal_ecore;
-   std::vector<float> _emcal_chi2;
-   std::vector<float> _emcal_prob;
-   std::vector<int> _emcal_tower_cluster_id;
-   std::vector<float> _emcal_tower_e;
-   std::vector<float> _emcal_tower_phi;
-   std::vector<float> _emcal_tower_eta;
-   std::vector<int> _emcal_tower_status;
+  std::vector<int> _trClus_track_id;
+  std::vector<int> _trClus_type;
+  std::vector<float> _trClus_x;
+  std::vector<float> _trClus_y;
+  std::vector<float> _trClus_z;
 
-   std::vector<int> _hcal_id;
-   std::vector<float> _hcal_phi;
-   std::vector<float> _hcal_eta;
-   std::vector<float> _hcal_x;
-   std::vector<float> _hcal_y;
-   std::vector<float> _hcal_z;
-   std::vector<float> _hcal_e;
-   std::vector<int> _hcal_tower_cluster_id;
-   std::vector<float> _hcal_tower_e;
-   std::vector<float> _hcal_tower_phi;
-   std::vector<float> _hcal_tower_eta;
-   std::vector<int> _hcal_tower_status;
-   std::vector<int> _hcal_tower_io;
+  std::vector<int> _emcal_id;
+  std::vector<float> _emcal_phi;
+  std::vector<float> _emcal_eta;
+  std::vector<float> _emcal_x;
+  std::vector<float> _emcal_y;
+  std::vector<float> _emcal_z;
+  std::vector<float> _emcal_e;
+  std::vector<float> _emcal_ecore;
+  std::vector<float> _emcal_chi2;
+  std::vector<float> _emcal_prob;
+  std::vector<int> _emcal_tower_cluster_id;
+  std::vector<float> _emcal_tower_e;
+  std::vector<float> _emcal_tower_phi;
+  std::vector<float> _emcal_tower_eta;
+  std::vector<int> _emcal_tower_status;
 
-   std::vector<float> _mbd_x;
-   std::vector<float> _mbd_y;
-   std::vector<float> _mbd_z;
+  std::vector<int> _hcal_id;
+  std::vector<float> _hcal_phi;
+  std::vector<float> _hcal_eta;
+  std::vector<float> _hcal_x;
+  std::vector<float> _hcal_y;
+  std::vector<float> _hcal_z;
+  std::vector<float> _hcal_e;
+  std::vector<int> _hcal_tower_cluster_id;
+  std::vector<float> _hcal_tower_e;
+  std::vector<float> _hcal_tower_phi;
+  std::vector<float> _hcal_tower_eta;
+  std::vector<int> _hcal_tower_status;
+  std::vector<int> _hcal_tower_io;
 
-   std::vector<int> _triggers;
+  std::vector<float> _mbd_x;
+  std::vector<float> _mbd_y;
+  std::vector<float> _mbd_z;
 
-   std::vector<int> _ntracks;
+  std::vector<int> _triggers;
 
-   int _numCan;
+  std::vector<int> _ntracks;
 
-   std::vector<float> _gamma_mass;
-   std::vector<float> _gamma_massErr;
-   std::vector<float> _gamma_x;
-   std::vector<float> _gamma_y;
-   std::vector<float> _gamma_z;
-   std::vector<float> _gamma_px;
-   std::vector<float> _gamma_py;
-   std::vector<float> _gamma_pz;
-   std::vector<float> _gamma_pE;
-   std::vector<float> _gamma_pT;
-   std::vector<float> _gamma_pTErr;
-   std::vector<float> _gamma_p;
-   std::vector<float> _gamma_pErr;
-   std::vector<float> _gamma_pseudorapidity;
-   std::vector<float> _gamma_rapidity;
-   std::vector<float> _gamma_theta;
-   std::vector<float> _gamma_phi;
-   std::vector<float> _gamma_chi2;
-   std::vector<float> _gamma_nDoF;
-   std::vector<float> _gamma_vertex_volume;
-   std::vector<float> _gamma_SV_chi2_per_nDoF;
+  int _numCan;
 
-   std::vector<float> _ep_mass;
-   std::vector<float> _ep_x;
-   std::vector<float> _ep_y;
-   std::vector<float> _ep_z;
-   std::vector<float> _ep_px;
-   std::vector<float> _ep_py;
-   std::vector<float> _ep_pz;
-   std::vector<float> _ep_pE;
-   std::vector<float> _ep_pE_unmoved;
-   std::vector<float> _ep_pT;
-   std::vector<float> _ep_pTErr;
-   std::vector<float> _ep_pT_raw;
-   std::vector<float> _ep_pT_unmoved;
-   std::vector<float> _ep_p;
-   std::vector<float> _ep_pErr;
-   std::vector<float> _ep_p_raw;
-   std::vector<float> _ep_p_unmoved;
-   std::vector<float> _ep_pseudorapidity;
-   std::vector<float> _ep_rapidity;
-   std::vector<float> _ep_theta;
-   std::vector<float> _ep_phi;
-   std::vector<float> _ep_chi2;
-   std::vector<float> _ep_nDoF;
-   std::vector<float> _ep_crossing;
-   std::vector<int> _ep_clus_ican;
-   //std::vector<int> _ep_clus_type;
-   std::vector<float> _ep_clus_x;
-   std::vector<float> _ep_clus_y;
-   std::vector<float> _ep_clus_z;
+  std::vector<float> _gamma_mass;
+  std::vector<float> _gamma_massErr;
+  std::vector<float> _gamma_x;
+  std::vector<float> _gamma_y;
+  std::vector<float> _gamma_z;
+  std::vector<float> _gamma_px;
+  std::vector<float> _gamma_py;
+  std::vector<float> _gamma_pz;
+  std::vector<float> _gamma_pE;
+  std::vector<float> _gamma_pT;
+  std::vector<float> _gamma_pTErr;
+  std::vector<float> _gamma_p;
+  std::vector<float> _gamma_pErr;
+  std::vector<float> _gamma_pseudorapidity;
+  std::vector<float> _gamma_rapidity;
+  std::vector<float> _gamma_theta;
+  std::vector<float> _gamma_phi;
+  std::vector<float> _gamma_chi2;
+  std::vector<float> _gamma_nDoF;
+  std::vector<float> _gamma_vertex_volume;
+  std::vector<float> _gamma_SV_chi2_per_nDoF;
 
-   std::vector<float> _em_mass;
-   std::vector<float> _em_x;
-   std::vector<float> _em_y;
-   std::vector<float> _em_z;
-   std::vector<float> _em_px;
-   std::vector<float> _em_py;
-   std::vector<float> _em_pz;
-   std::vector<float> _em_pE;
-   std::vector<float> _em_pE_unmoved;
-   std::vector<float> _em_pT;
-   std::vector<float> _em_pTErr;
-   std::vector<float> _em_pT_raw;
-   std::vector<float> _em_pT_unmoved;
-   std::vector<float> _em_p;
-   std::vector<float> _em_pErr;
-   std::vector<float> _em_p_raw;
-   std::vector<float> _em_p_unmoved;
-   std::vector<float> _em_pseudorapidity;
-   std::vector<float> _em_rapidity;
-   std::vector<float> _em_theta;
-   std::vector<float> _em_phi;
-   std::vector<float> _em_chi2;
-   std::vector<float> _em_nDoF;
-   std::vector<float> _em_crossing;
-   std::vector<int> _em_clus_ican;
-   //std::vector<int> _em_clus_type;
-   std::vector<float> _em_clus_x;
-   std::vector<float> _em_clus_y;
-   std::vector<float> _em_clus_z;
+  std::vector<float> _ep_mass;
+  std::vector<float> _ep_x;
+  std::vector<float> _ep_y;
+  std::vector<float> _ep_z;
+  std::vector<float> _ep_px;
+  std::vector<float> _ep_py;
+  std::vector<float> _ep_pz;
+  std::vector<float> _ep_pE;
+  std::vector<float> _ep_pE_unmoved;
+  std::vector<float> _ep_pT;
+  std::vector<float> _ep_pTErr;
+  std::vector<float> _ep_pT_raw;
+  std::vector<float> _ep_pT_unmoved;
+  std::vector<float> _ep_p;
+  std::vector<float> _ep_pErr;
+  std::vector<float> _ep_p_raw;
+  std::vector<float> _ep_p_unmoved;
+  std::vector<float> _ep_pseudorapidity;
+  std::vector<float> _ep_rapidity;
+  std::vector<float> _ep_theta;
+  std::vector<float> _ep_phi;
+  std::vector<float> _ep_chi2;
+  std::vector<float> _ep_nDoF;
+  std::vector<float> _ep_crossing;
+  std::vector<int> _ep_clus_ican;
+  //std::vector<int> _ep_clus_type;
+  std::vector<float> _ep_clus_x;
+  std::vector<float> _ep_clus_y;
+  std::vector<float> _ep_clus_z;
 
-   std::vector<float> _ep_phi_emc;
-   std::vector<float> _ep_eta_emc;
-   std::vector<float> _ep_px_emc;
-   std::vector<float> _ep_py_emc;
-   std::vector<float> _ep_pz_emc;
-   std::vector<float> _ep_x_emc;
-   std::vector<float> _ep_y_emc;
-   std::vector<float> _ep_z_emc;
+  std::vector<float> _em_mass;
+  std::vector<float> _em_x;
+  std::vector<float> _em_y;
+  std::vector<float> _em_z;
+  std::vector<float> _em_px;
+  std::vector<float> _em_py;
+  std::vector<float> _em_pz;
+  std::vector<float> _em_pE;
+  std::vector<float> _em_pE_unmoved;
+  std::vector<float> _em_pT;
+  std::vector<float> _em_pTErr;
+  std::vector<float> _em_pT_raw;
+  std::vector<float> _em_pT_unmoved;
+  std::vector<float> _em_p;
+  std::vector<float> _em_pErr;
+  std::vector<float> _em_p_raw;
+  std::vector<float> _em_p_unmoved;
+  std::vector<float> _em_pseudorapidity;
+  std::vector<float> _em_rapidity;
+  std::vector<float> _em_theta;
+  std::vector<float> _em_phi;
+  std::vector<float> _em_chi2;
+  std::vector<float> _em_nDoF;
+  std::vector<float> _em_crossing;
+  std::vector<int> _em_clus_ican;
+  //std::vector<int> _em_clus_type;
+  std::vector<float> _em_clus_x;
+  std::vector<float> _em_clus_y;
+  std::vector<float> _em_clus_z;
 
-   std::vector<float> _em_phi_emc;
-   std::vector<float> _em_eta_emc;
-   std::vector<float> _em_px_emc;
-   std::vector<float> _em_py_emc;
-   std::vector<float> _em_pz_emc;
-   std::vector<float> _em_x_emc;
-   std::vector<float> _em_y_emc;
-   std::vector<float> _em_z_emc;
+  std::vector<float> _ep_phi_emc;
+  std::vector<float> _ep_eta_emc;
+  std::vector<float> _ep_px_emc;
+  std::vector<float> _ep_py_emc;
+  std::vector<float> _ep_pz_emc;
+  std::vector<float> _ep_x_emc;
+  std::vector<float> _ep_y_emc;
+  std::vector<float> _ep_z_emc;
 
-   std::vector<float> _epem_DCA_2d;
-   std::vector<float> _epem_DCA_3d;
+  std::vector<float> _em_phi_emc;
+  std::vector<float> _em_eta_emc;
+  std::vector<float> _em_px_emc;
+  std::vector<float> _em_py_emc;
+  std::vector<float> _em_pz_emc;
+  std::vector<float> _em_x_emc;
+  std::vector<float> _em_y_emc;
+  std::vector<float> _em_z_emc;
 
-   GlobalVertexMap *vertexmap = nullptr;
-   SvtxVertexMap *vertexMap = nullptr;
-   Gl1Packet *gl1Packet = nullptr;
-   SvtxTrackMap *trackMap = nullptr;
-   SvtxTrackMap *KFP_trackMap = nullptr;
-   KFParticle_Container *KFP_Container = nullptr;
-   ActsGeometry *acts_Geometry = nullptr;
-   RawClusterContainer *clustersEM = nullptr;
-   RawClusterContainer *clustersHAD = nullptr;
-   RawClusterContainer *EMCAL_RawClusters = nullptr;
-   TowerInfoContainer *EMCAL_Container = nullptr;
-   TowerInfoContainer *IHCAL_Container = nullptr;
-   TowerInfoContainer *OHCAL_Container = nullptr;
-   TrkrHitSetContainer *trkrHitSet = nullptr;
-   TrkrClusterContainer *trkrContainer = nullptr;
-   RawTowerGeomContainer *EMCalGeo = nullptr;
-   RawTowerGeomContainer *IHCalGeo = nullptr;
-   RawTowerGeomContainer *OHCalGeo = nullptr;
+  std::vector<float> _epem_DCA_2d;
+  std::vector<float> _epem_DCA_3d;
 
-   SvtxTrackState *thisState = nullptr;
-   SvtxTrack *track = nullptr;
-   TrackSeed *seed = nullptr;
-   TrackSeed *tpc_seed = nullptr;
-   TrkrCluster *trkrCluster = nullptr;
+  int _true_numCan;
+  std::vector<float> _true_gamma_phi;
+  std::vector<float> _true_gamma_eta;
+  std::vector<float> _true_gamma_px;
+  std::vector<float> _true_gamma_py;
+  std::vector<float> _true_gamma_pz;
+  std::vector<float> _true_gamma_pE;
+  std::vector<float> _true_gamma_x;
+  std::vector<float> _true_gamma_y;
+  std::vector<float> _true_gamma_z;
 
-   KFParticle* kfp_mother = nullptr;
-   KFParticle* kfp_daughter = nullptr;
-   KFParticle* kfp_ep = nullptr;
-   KFParticle* kfp_em = nullptr;
+  std::vector<float> _true_ep_phi;
+  std::vector<float> _true_ep_eta;
+  std::vector<float> _true_ep_px;
+  std::vector<float> _true_ep_py;
+  std::vector<float> _true_ep_pz;
+  std::vector<float> _true_ep_pE;
+  std::vector<float> _true_ep_x;
+  std::vector<float> _true_ep_y;
+  std::vector<float> _true_ep_z;
 
-   float m_track_pt_low_cut = 0.5;
-   float m_emcal_e_low_cut = 0.2;
-   float m_vx, m_vy, m_vz;
+  std::vector<float> _true_em_phi;
+  std::vector<float> _true_em_eta;
+  std::vector<float> _true_em_px;
+  std::vector<float> _true_em_py;
+  std::vector<float> _true_em_pz;
+  std::vector<float> _true_em_pE;
+  std::vector<float> _true_em_x;
+  std::vector<float> _true_em_y;
+  std::vector<float> _true_em_z;
 
-   double caloRadiusEMCal;
-   double caloRadiusIHCal;
-   double caloRadiusOHCal;
+  GlobalVertexMap *vertexmap = nullptr;
+  SvtxVertexMap *vertexMap = nullptr;
+  Gl1Packet *gl1Packet = nullptr;
+  SvtxTrackMap *trackMap = nullptr;
+  SvtxTrackMap *KFP_trackMap = nullptr;
+  KFParticle_Container *KFP_Container = nullptr;
+  ActsGeometry *acts_Geometry = nullptr;
+  RawClusterContainer *clustersEM = nullptr;
+  RawClusterContainer *clustersHAD = nullptr;
+  RawClusterContainer *EMCAL_RawClusters = nullptr;
+  TowerInfoContainer *EMCAL_Container = nullptr;
+  TowerInfoContainer *IHCAL_Container = nullptr;
+  TowerInfoContainer *OHCAL_Container = nullptr;
+  TrkrHitSetContainer *trkrHitSet = nullptr;
+  TrkrClusterContainer *trkrContainer = nullptr;
+  RawTowerGeomContainer *EMCalGeo = nullptr;
+  RawTowerGeomContainer *IHCalGeo = nullptr;
+  RawTowerGeomContainer *OHCalGeo = nullptr;
+  DecayFinderContainer_v1 *m_decayMap = nullptr;
+  std::string m_df_module_name;
 
-   bool m_doTrkrCaloMatching = false;
-   bool m_doTrkrCaloMatching_KFP = false;
-   bool m_doTrackOnly = false;
-   bool m_doCaloOnly = false;
+  SvtxTrackState *thisState = nullptr;
+  SvtxTrack *track = nullptr;
+  TrackSeed *seed = nullptr;
+  TrackSeed *tpc_seed = nullptr;
+  TrkrCluster *trkrCluster = nullptr;
+
+  KFParticle* kfp_mother = nullptr;
+  KFParticle* kfp_daughter = nullptr;
+  KFParticle* kfp_ep = nullptr;
+  KFParticle* kfp_em = nullptr;
+
+  float m_track_pt_low_cut = 0.5;
+  float m_emcal_e_low_cut = 0.2;
+  float m_vx, m_vy, m_vz;
+
+  double caloRadiusEMCal;
+  double caloRadiusIHCal;
+  double caloRadiusOHCal;
+
+  bool m_doTrkrCaloMatching = false;
+  bool m_doTrkrCaloMatching_KFP = false;
+  bool m_doTruthMatching = false;
+  bool m_doTrackOnly = false;
+  bool m_doCaloOnly = false;
+
+  PHG4TruthInfoContainer *m_truthInfo = nullptr;
+  PHHepMCGenEventMap *m_geneventmap = nullptr;
+  PHHepMCGenEvent *m_genevt = nullptr;
 };
 
 #endif // TRACKTOCALO_H

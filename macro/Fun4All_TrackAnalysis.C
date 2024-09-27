@@ -305,6 +305,8 @@ void Fun4All_TrackAnalysis(
   tcm->setTrackPtLowCut(1.0);
   tcm->setEmcalELowCut(0.5);
   tcm->setRawClusContEMName("CLUSTERINFO_CEMC");
+  ttc->setDFNodeName("myFinder");
+  //ttc->doTruthMatching();
   se->registerSubsystem(tcm);
 
   // begin KFParticle

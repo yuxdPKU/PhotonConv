@@ -91,45 +91,45 @@ class TrackCaloMatch : public SubsysReco
   void setdzcut(float a) {m_dz_cut = a;};
 
  private:
-   int m_runNumber = 0;
-   int m_evtNumber = 0;
-   int m_event = 0;
-   bool m_use_emcal_radius = false;
-   bool m_use_ihcal_radius = false;
-   bool m_use_ohcal_radius = false;
-   float m_emcal_radius_user = 93.5;
-   float m_ihcal_radius_user = 117;
-   float m_ohcal_radius_user = 177.423;
-   SvtxTrackMap* trackMap = nullptr;
-   SvtxTrackMap_v2* trackMap_new = nullptr;
-   ActsGeometry* acts_Geometry = nullptr;
-   RawClusterContainer* clustersEM = nullptr;
-   RawClusterContainer* clustersHAD = nullptr;
-   RawClusterContainer* EMCAL_RawClusters = nullptr;
-   TowerInfoContainer* EMCAL_Container = nullptr;
-   TowerInfoContainer* IHCAL_Container = nullptr;
-   TowerInfoContainer* OHCAL_Container = nullptr;
-   TrkrHitSetContainer* trkrHitSet = nullptr;
-   TrkrClusterContainer* trkrContainer = nullptr;
-   RawTowerGeomContainer* EMCalGeo = nullptr;
-   RawTowerGeomContainer* IHCalGeo = nullptr;
-   RawTowerGeomContainer* OHCalGeo = nullptr;
+  int m_runNumber = 0;
+  int m_evtNumber = 0;
+  int m_event = 0;
+  bool m_use_emcal_radius = false;
+  bool m_use_ihcal_radius = false;
+  bool m_use_ohcal_radius = false;
+  float m_emcal_radius_user = 93.5;
+  float m_ihcal_radius_user = 117;
+  float m_ohcal_radius_user = 177.423;
+  SvtxTrackMap* trackMap = nullptr;
+  SvtxTrackMap_v2* trackMap_new = nullptr;
+  ActsGeometry* acts_Geometry = nullptr;
+  RawClusterContainer* clustersEM = nullptr;
+  RawClusterContainer* clustersHAD = nullptr;
+  RawClusterContainer* EMCAL_RawClusters = nullptr;
+  TowerInfoContainer* EMCAL_Container = nullptr;
+  TowerInfoContainer* IHCAL_Container = nullptr;
+  TowerInfoContainer* OHCAL_Container = nullptr;
+  TrkrHitSetContainer* trkrHitSet = nullptr;
+  TrkrClusterContainer* trkrContainer = nullptr;
+  RawTowerGeomContainer* EMCalGeo = nullptr;
+  RawTowerGeomContainer* IHCalGeo = nullptr;
+  RawTowerGeomContainer* OHCalGeo = nullptr;
 
-   std::string m_trackMapName = "SvtxTrackMap";
-   std::string m_trackMapName_new = "MySvtxTrackMap";
+  std::string m_trackMapName = "SvtxTrackMap";
+  std::string m_trackMapName_new = "MySvtxTrackMap";
 
-   std::string m_RawClusCont_EM_name = "TOPOCLUSTER_EMCAL";
-   std::string m_RawClusCont_HAD_name = "TOPOCLUSTER_HCAL";
+  std::string m_RawClusCont_EM_name = "TOPOCLUSTER_EMCAL";
+  std::string m_RawClusCont_HAD_name = "TOPOCLUSTER_HCAL";
 
-   bool m_write_evt_display;
-   std::string m_evt_display_path;
-   std::string m_run_date;
+  bool m_write_evt_display;
+  std::string m_evt_display_path;
+  std::string m_run_date;
 
-   float m_track_pt_low_cut = 1.5;
-   float m_emcal_e_low_cut = 1;
-   int m_ntpc_low_cut = 22;
-   float m_dphi_cut = 0.1;
-   float m_dz_cut = 20;
+  float m_track_pt_low_cut = 1.5;
+  float m_emcal_e_low_cut = 1;
+  int m_ntpc_low_cut = 22;
+  float m_dphi_cut = 0.1;
+  float m_dz_cut = 20;
 };
 
 #endif

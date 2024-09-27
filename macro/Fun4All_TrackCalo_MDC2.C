@@ -267,6 +267,8 @@ void Fun4All_TrackCalo_MDC2(
   ttc->setEmcalELowCut(0.5);
   ttc->doTrkrCaloMatching_KFP();
   ttc->setRawClusContEMName("CLUSTERINFO_CEMC");
+  ttc->setDFNodeName("myFinder");
+  //ttc->doTruthMatching();
   se->registerSubsystem(ttc);
 
   if (Enable::DSTOUT)

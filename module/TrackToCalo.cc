@@ -60,6 +60,8 @@
 #include <TTree.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TLorentzVector.h>
+#include <TVector3.h>
 
 #include <kfparticle_sphenix/KFParticle_Tools.h>
 KFParticle_Tools kf_tools;
@@ -324,6 +326,38 @@ void TrackToCalo::createBranches_KFP()
   _tree_KFP->Branch("_emcal_e", &_emcal_e);
   _tree_KFP->Branch("_epem_DCA_2d", &_epem_DCA_2d);
   _tree_KFP->Branch("_epem_DCA_3d", &_epem_DCA_3d);
+
+  _tree_KFP->Branch("_true_numCan", &_true_numCan);
+
+  _tree_KFP->Branch("_true_gamma_phi", &_true_gamma_phi);
+  _tree_KFP->Branch("_true_gamma_eta", &_true_gamma_eta);
+  _tree_KFP->Branch("_true_gamma_px", &_true_gamma_px);
+  _tree_KFP->Branch("_true_gamma_py", &_true_gamma_py);
+  _tree_KFP->Branch("_true_gamma_pz", &_true_gamma_pz);
+  _tree_KFP->Branch("_true_gamma_pE", &_true_gamma_pE);
+  _tree_KFP->Branch("_true_gamma_x", &_true_gamma_x);
+  _tree_KFP->Branch("_true_gamma_y", &_true_gamma_y);
+  _tree_KFP->Branch("_true_gamma_z", &_true_gamma_z);
+
+  _tree_KFP->Branch("_true_ep_phi", &_true_ep_phi);
+  _tree_KFP->Branch("_true_ep_eta", &_true_ep_eta);
+  _tree_KFP->Branch("_true_ep_px", &_true_ep_px);
+  _tree_KFP->Branch("_true_ep_py", &_true_ep_py);
+  _tree_KFP->Branch("_true_ep_pz", &_true_ep_pz);
+  _tree_KFP->Branch("_true_ep_pE", &_true_ep_pE);
+  _tree_KFP->Branch("_true_ep_x", &_true_ep_x);
+  _tree_KFP->Branch("_true_ep_y", &_true_ep_y);
+  _tree_KFP->Branch("_true_ep_z", &_true_ep_z);
+
+  _tree_KFP->Branch("_true_em_phi", &_true_em_phi);
+  _tree_KFP->Branch("_true_em_eta", &_true_em_eta);
+  _tree_KFP->Branch("_true_em_px", &_true_em_px);
+  _tree_KFP->Branch("_true_em_py", &_true_em_py);
+  _tree_KFP->Branch("_true_em_pz", &_true_em_pz);
+  _tree_KFP->Branch("_true_em_pE", &_true_em_pE);
+  _tree_KFP->Branch("_true_em_x", &_true_em_x);
+  _tree_KFP->Branch("_true_em_y", &_true_em_y);
+  _tree_KFP->Branch("_true_em_z", &_true_em_z);
 }
 
 //____________________________________________________________________________..
@@ -485,6 +519,28 @@ int TrackToCalo::process_event(PHCompositeNode *topNode)
     {
       std::cout << "TrackToCalo::process_event: GL1Packet not found!!! (but not necessary)" << std::endl;
     }
+  }
+
+  if(!m_decayMap)
+  {
+    std::string df_node_name = m_df_module_name + "_DecayMap";
+    m_decayMap = findNode::getClass<DecayFinderContainer_v1>(topNode, df_node_name.c_str());
+    if(!m_decayMap)
+    {
+      std::cout << "TrackToCalo::process_event: cannot find DecayFinder container " << df_node_name.c_str() << "!!! can not do truth matching" << std::endl;
+    }
+  }
+
+  if (!m_geneventmap)
+  {
+    m_geneventmap = findNode::getClass<PHHepMCGenEventMap>(topNode, "PHHepMCGenEventMap");
+    std::cout << "TrackToCalo::process_event: cannot find PHHepMCGenEventMap!!! can not do truth matching" << std::endl;
+  }
+
+  if (!m_truthInfo)
+  {
+    m_truthInfo = findNode::getClass<PHG4TruthInfoContainer>(topNode, "G4TruthInfo");
+    std::cout << "TrackToCalo::process_event: cannot find G4TruthInfo!!! can not do truth matching" << std::endl;
   }
 
   if (m_doTrkrCaloMatching)
@@ -1748,6 +1804,149 @@ std::cout<<"begin candidate "<<i<<std::endl;
     _emcal_z.push_back(cluster->get_z());
   }
 
+std::cout<<"begin truth matching"<<std::endl;
+  if (m_doTruthMatching)
+  {
+    _true_numCan = m_decayMap->size();
+    for (auto &iter : *m_decayMap)
+    {
+      Decay decay = iter.second;
+
+      if (decay.size() % 3 != 0)
+      {
+        std::cout<<"Why Truth Container is not 3*n? Skip!"<<std::endl;
+        return;
+      }
+
+      TLorentzVector *motherTrueLV = new TLorentzVector();
+      TLorentzVector *daughterTrueLV = new TLorentzVector();
+      TVector3 *mother3Vector = new TVector3();
+      TVector3 *daughter3Vector = new TVector3();
+
+      HepMC::GenEvent *theEvent = nullptr;
+      if (m_geneventmap)
+      {
+//std::cout<<"decay[0].second = "<<decay[0].second<<std::endl;
+        m_genevt = m_geneventmap->get(decay[0].first.first);
+        assert(m_genevt);
+
+        theEvent = m_genevt->getEvent();
+
+        HepMC::GenParticle *motherHepMC = theEvent->barcode_to_particle(decay[0].first.second);
+        assert(motherHepMC);
+
+        motherTrueLV->SetPxPyPzE(motherHepMC->momentum().px(), motherHepMC->momentum().py(), motherHepMC->momentum().pz(), motherHepMC->momentum().e());
+
+        // Now get the production vertex position
+        HepMC::GenVertex *thisVtx = motherHepMC->production_vertex();
+
+        if (thisVtx != nullptr) {
+          mother3Vector->SetXYZ(thisVtx->point3d().x(), thisVtx->point3d().y(), thisVtx->point3d().z());
+        }
+        else {
+          mother3Vector->SetXYZ(-999,-999,-999);
+        }
+      }
+
+      for (unsigned int i = 1; i < decay.size(); ++i)
+      {
+//std::cout<<"decay["<<i<<"].second = "<<decay[i].second<<std::endl;
+        int pid = -999;
+        if (theEvent && decay[i].first.second > -1)
+        {
+//std::cout<<"theEvent && decay[i].first.second > -1"<<std::endl;
+          HepMC::GenParticle *daughterHepMC = theEvent->barcode_to_particle(decay[i].first.second);
+          daughterTrueLV->SetPxPyPzE(daughterHepMC->momentum().px(), daughterHepMC->momentum().py(), daughterHepMC->momentum().pz(), daughterHepMC->momentum().e());
+          pid = daughterHepMC->pdg_id();
+
+          // Now get the decay vertex position
+          HepMC::GenVertex *thisVtx = daughterHepMC->production_vertex();
+
+          daughter3Vector->SetXYZ(thisVtx->point3d().x(), thisVtx->point3d().y(), thisVtx->point3d().z());
+        }
+        else
+        {
+//std::cout<<"else!!! theEvent && decay[i].first.second > -1"<<std::endl;
+          PHG4TruthInfoContainer::ConstRange range = m_truthInfo->GetParticleRange();
+
+          for (PHG4TruthInfoContainer::ConstIterator iter2 = range.first; iter2 != range.second; ++iter2)
+          {
+            PHG4Particle *daughterG4 = iter2->second;
+
+            PHG4Particle *motherG4 = nullptr;
+            if (daughterG4->get_parent_id() != 0)
+            {
+              motherG4 = m_truthInfo->GetParticle(daughterG4->get_parent_id());
+            }
+            else
+            {
+              continue;
+            }
+
+            if (motherG4->get_pid() == decay[0].second && motherG4->get_barcode() == decay[0].first.second && daughterG4->get_pid() == decay[i].second && daughterG4->get_barcode() == decay[i].first.second)
+            {
+              pid = daughterG4->get_pid();
+
+              TVector3 *motherTrue3Vector = new TVector3(motherG4->get_px(), motherG4->get_py(), motherG4->get_pz());
+              motherTrueLV->SetVectM((*motherTrue3Vector), getParticleMass(decay[0].second));
+
+              PHG4VtxPoint *thisVtx = m_truthInfo->GetVtx(motherG4->get_vtx_id());
+              mother3Vector->SetXYZ(thisVtx->get_x(), thisVtx->get_y(), thisVtx->get_z());
+
+              daughterTrueLV->SetVectM(TVector3(daughterG4->get_px(), daughterG4->get_py(), daughterG4->get_pz()), getParticleMass(decay[i].second));
+
+              // Now get the decay vertex position
+              thisVtx = m_truthInfo->GetVtx(daughterG4->get_vtx_id());
+              daughter3Vector->SetXYZ(thisVtx->get_x(), thisVtx->get_y(), thisVtx->get_z());
+
+              delete motherTrue3Vector;
+            }
+          }
+        }
+
+        // e+ pdgid = -11, e- pdgid = 11
+        if (pid==-11)
+        {
+//std::cout<<"writing pid=-11"<<std::endl;
+          _true_ep_px.push_back(daughterTrueLV->Px());
+          _true_ep_py.push_back(daughterTrueLV->Py());
+          _true_ep_pz.push_back(daughterTrueLV->Pz());
+          _true_ep_pE.push_back(daughterTrueLV->E());
+          _true_ep_eta.push_back(daughterTrueLV->PseudoRapidity());
+          _true_ep_phi.push_back(daughterTrueLV->Phi());
+          _true_ep_x.push_back(daughter3Vector->X());
+          _true_ep_y.push_back(daughter3Vector->Y());
+          _true_ep_z.push_back(daughter3Vector->Z());
+        }
+        else if (pid==11)
+        {
+//std::cout<<"writing pid=11"<<std::endl;
+          _true_em_px.push_back(daughterTrueLV->Px());
+          _true_em_py.push_back(daughterTrueLV->Py());
+          _true_em_pz.push_back(daughterTrueLV->Pz());
+          _true_em_pE.push_back(daughterTrueLV->E());
+          _true_em_eta.push_back(daughterTrueLV->PseudoRapidity());
+          _true_em_phi.push_back(daughterTrueLV->Phi());
+          _true_em_x.push_back(daughter3Vector->X());
+          _true_em_y.push_back(daughter3Vector->Y());
+          _true_em_z.push_back(daughter3Vector->Z());
+        }
+
+      }
+
+      _true_gamma_px.push_back(motherTrueLV->Px());
+      _true_gamma_py.push_back(motherTrueLV->Py());
+      _true_gamma_pz.push_back(motherTrueLV->Pz());
+      _true_gamma_pE.push_back(motherTrueLV->E());
+      _true_gamma_eta.push_back(motherTrueLV->PseudoRapidity());
+      _true_gamma_phi.push_back(motherTrueLV->Phi());
+      _true_gamma_x.push_back(mother3Vector->X());
+      _true_gamma_y.push_back(mother3Vector->Y());
+      _true_gamma_z.push_back(mother3Vector->Z());
+    }
+
+  }
+
   _tree_KFP->Fill();
 
 }
@@ -1969,6 +2168,37 @@ void TrackToCalo::ResetTreeVectors_KFP()
   _emcal_e.clear();
   _epem_DCA_2d.clear();
   _epem_DCA_3d.clear();
+
+  _true_gamma_phi.clear();
+  _true_gamma_eta.clear();
+  _true_gamma_px.clear();
+  _true_gamma_py.clear();
+  _true_gamma_pz.clear();
+  _true_gamma_pE.clear();
+  _true_gamma_x.clear();
+  _true_gamma_y.clear();
+  _true_gamma_z.clear();
+
+  _true_ep_phi.clear();
+  _true_ep_eta.clear();
+  _true_ep_px.clear();
+  _true_ep_py.clear();
+  _true_ep_pz.clear();
+  _true_ep_pE.clear();
+  _true_ep_x.clear();
+  _true_ep_y.clear();
+  _true_ep_z.clear();
+
+  _true_em_phi.clear();
+  _true_em_eta.clear();
+  _true_em_px.clear();
+  _true_em_py.clear();
+  _true_em_pz.clear();
+  _true_em_pE.clear();
+  _true_em_x.clear();
+  _true_em_y.clear();
+  _true_em_z.clear();
+
 }
 
 void TrackToCalo::resetCaloRadius()
