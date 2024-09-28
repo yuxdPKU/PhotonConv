@@ -1773,8 +1773,6 @@ std::cout<<"begin candidate "<<i<<std::endl;
       }
 
     }
-    //float dz_epem = ep_z_emc - em_z_emc;
-    //std::cout<<"dz between e+e- = "<<dz_epem<<std::endl;
 
     _epem_DCA_2d.push_back(kfp_ep->GetDistanceFromParticleXY(*kfp_em));
     _epem_DCA_3d.push_back(kfp_ep->GetDistanceFromParticle(*kfp_em));
@@ -1826,7 +1824,6 @@ std::cout<<"begin truth matching"<<std::endl;
       HepMC::GenEvent *theEvent = nullptr;
       if (m_geneventmap)
       {
-//std::cout<<"decay[0].second = "<<decay[0].second<<std::endl;
         m_genevt = m_geneventmap->get(decay[0].first.first);
         assert(m_genevt);
 
@@ -1850,11 +1847,9 @@ std::cout<<"begin truth matching"<<std::endl;
 
       for (unsigned int i = 1; i < decay.size(); ++i)
       {
-//std::cout<<"decay["<<i<<"].second = "<<decay[i].second<<std::endl;
         int pid = -999;
         if (theEvent && decay[i].first.second > -1)
         {
-//std::cout<<"theEvent && decay[i].first.second > -1"<<std::endl;
           HepMC::GenParticle *daughterHepMC = theEvent->barcode_to_particle(decay[i].first.second);
           daughterTrueLV->SetPxPyPzE(daughterHepMC->momentum().px(), daughterHepMC->momentum().py(), daughterHepMC->momentum().pz(), daughterHepMC->momentum().e());
           pid = daughterHepMC->pdg_id();
@@ -1866,7 +1861,6 @@ std::cout<<"begin truth matching"<<std::endl;
         }
         else
         {
-//std::cout<<"else!!! theEvent && decay[i].first.second > -1"<<std::endl;
           PHG4TruthInfoContainer::ConstRange range = m_truthInfo->GetParticleRange();
 
           for (PHG4TruthInfoContainer::ConstIterator iter2 = range.first; iter2 != range.second; ++iter2)
@@ -1907,7 +1901,6 @@ std::cout<<"begin truth matching"<<std::endl;
         // e+ pdgid = -11, e- pdgid = 11
         if (pid==-11)
         {
-//std::cout<<"writing pid=-11"<<std::endl;
           _true_ep_px.push_back(daughterTrueLV->Px());
           _true_ep_py.push_back(daughterTrueLV->Py());
           _true_ep_pz.push_back(daughterTrueLV->Pz());
@@ -1920,7 +1913,6 @@ std::cout<<"begin truth matching"<<std::endl;
         }
         else if (pid==11)
         {
-//std::cout<<"writing pid=11"<<std::endl;
           _true_em_px.push_back(daughterTrueLV->Px());
           _true_em_py.push_back(daughterTrueLV->Py());
           _true_em_pz.push_back(daughterTrueLV->Pz());

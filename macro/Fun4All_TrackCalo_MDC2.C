@@ -70,7 +70,7 @@ bool is_directory_empty(const fs::path& dir_path);
 void Fun4All_TrackCalo_MDC2(
     const int nEvents = 10,
     vector<string> myInputLists = {
-        "dst_tracks.list",
+        "dst_trackseeds.list",
         "dst_trkr_cluster.list",
         "dst_calo_cluster.list"}, 
     std::string outDir = "./",
@@ -141,11 +141,11 @@ void Fun4All_TrackCalo_MDC2(
     myFinder->setDecayDescriptor(decayDescriptor);
     myFinder->saveDST(1);
     myFinder->allowPi0(0);
-    myFinder->allowPhotons(0);
+    myFinder->allowPhotons(1);
     myFinder->triggerOnDecay(1);
-    myFinder->setPTmin(0.2); //Note: sPHENIX min pT is 0.2 GeV for tracking
-    myFinder->setEtaRange(-1.1, 1.1); //Note: sPHENIX acceptance is |eta| <= 1.1
-    myFinder->useDecaySpecificEtaRange(true); //true = calculate sPHENIX acceptance
+    myFinder->setPTmin(0); //Note: sPHENIX min pT is 0.2 GeV for tracking
+    myFinder->setEtaRange(-FLT_MAX, FLT_MAX); //Note: sPHENIX acceptance is |eta| <= 1.1
+    myFinder->useDecaySpecificEtaRange(false); //true = calculate sPHENIX acceptance
     se->registerSubsystem(myFinder);
   }
 
@@ -172,6 +172,77 @@ void Fun4All_TrackCalo_MDC2(
   TRACKING::pp_mode = false;
 
   TrackingInit();
+
+  bool doTpcOnlyTracking = true;
+  G4TRACKING::convert_seeds_to_svtxtracks = false;
+  std::cout << "Converting to seeds : " << G4TRACKING::convert_seeds_to_svtxtracks << std::endl;
+
+  /*
+   * Either converts seeds to tracks with a straight line/helix fit
+   * or run the full Acts track kalman filter fit
+   */
+  if (G4TRACKING::convert_seeds_to_svtxtracks)
+  {
+    auto converter = new TrackSeedTrackMapConverter;
+    // Option to use TpcTrackSeedContainer or SvtxTrackSeeds
+    // can be set to SiliconTrackSeedContainer for silicon-only track fit
+    if (doTpcOnlyTracking)
+    {
+      converter->setTrackSeedName("TpcTrackSeedContainer");
+    }
+    else
+    {
+      converter->setTrackSeedName("SvtxTrackSeeds");
+    }
+    converter->setFieldMap(G4MAGNET::magfield_tracking);
+    converter->Verbosity(0);
+    se->registerSubsystem(converter);
+  }
+  else
+  {
+    auto deltazcorr = new PHTpcDeltaZCorrection;
+    deltazcorr->Verbosity(0);
+    se->registerSubsystem(deltazcorr);
+
+    // perform final track fit with ACTS
+    auto actsFit = new PHActsTrkFitter;
+    actsFit->Verbosity(0);
+    actsFit->commissioning(G4TRACKING::use_alignment);
+    // in calibration mode, fit only Silicons and Micromegas hits
+    if (!doTpcOnlyTracking)
+    {
+      actsFit->fitSiliconMMs(G4TRACKING::SC_CALIBMODE);
+      actsFit->setUseMicromegas(G4TRACKING::SC_USE_MICROMEGAS);
+    }
+    actsFit->set_pp_mode(TRACKING::pp_mode);
+    actsFit->set_use_clustermover(true);  // default is true for now
+    actsFit->useActsEvaluator(false);
+    actsFit->useOutlierFinder(false);
+    actsFit->setFieldMap(G4MAGNET::magfield_tracking);
+    se->registerSubsystem(actsFit);
+
+    auto cleaner = new PHTrackCleaner();
+    cleaner->Verbosity(0);
+    se->registerSubsystem(cleaner);
+  }
+
+  PHSimpleVertexFinder *finder = new PHSimpleVertexFinder;
+  finder->Verbosity(0);
+  finder->setDcaCut(0.5);
+  finder->setTrackPtCut(-99999.);
+  finder->setBeamLineCut(1);
+  finder->setTrackQualityCut(1000000000);
+  if (!doTpcOnlyTracking)
+  {
+    finder->setRequireMVTX(true);
+    finder->setNmvtxRequired(3);
+  }
+  else
+  {
+    finder->setRequireMVTX(false);
+  }
+  finder->setOutlierPairCut(0.1);
+  se->registerSubsystem(finder);
 
   if (runTrackEff)
   {

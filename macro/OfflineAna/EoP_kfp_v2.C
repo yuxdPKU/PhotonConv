@@ -34,8 +34,8 @@ void EoP_kfp_v2(int runnumber=0)
   float teop_em_pt, teop_em_eta, teop_em_phi, teop_em_pE;
   float teop_ep_pt_raw, teop_ep_p_raw;
   float teop_em_pt_raw, teop_em_p_raw;
-  float teop_ep_pt_unmoved, teop_ep_p_unmoved, teop_ep_e_unmoved;
-  float teop_em_pt_unmoved, teop_em_p_unmoved, teop_em_e_unmoved;
+  float teop_ep_pt_unmoved, teop_ep_p_unmoved, teop_ep_pE_unmoved;
+  float teop_em_pt_unmoved, teop_em_p_unmoved, teop_em_pE_unmoved;
   int teop_ep_charge, teop_ep_crossing;
   int teop_em_charge, teop_em_crossing;
   float teop_ep_mass_1, teop_ep_mass_2, teop_ep_mass_3;
@@ -47,7 +47,7 @@ void EoP_kfp_v2(int runnumber=0)
   float teop_eop_ep, teop_eop_em;
   std::vector<float> teop_ep_clus_x, teop_ep_clus_y, teop_ep_clus_z;
   std::vector<float> teop_em_clus_x, teop_em_clus_y, teop_em_clus_z;
-  std::vector<float> teop_true_gamma_mass, teop_true_gamma_pE;
+  std::vector<float> teop_true_gamma_mass, teop_true_gamma_pE, teop_true_gamma_eta;
   std::vector<float> teop_true_gamma_prod_radius, teop_true_gamma_prod_x, teop_true_gamma_prod_y, teop_true_gamma_prod_z;
   std::vector<float> teop_true_gamma_decay_radius, teop_true_gamma_decay_x, teop_true_gamma_decay_y, teop_true_gamma_decay_z;
   std::vector<float> teop_true_ep_pt, teop_true_ep_p, teop_true_ep_eta, teop_true_ep_phi, teop_true_ep_pE;
@@ -94,8 +94,8 @@ void EoP_kfp_v2(int runnumber=0)
   outputtree->Branch("_em_phi",&teop_em_phi,"_em_phi/F");
   outputtree->Branch("_ep_pE",&teop_ep_pE,"_ep_pE/F");
   outputtree->Branch("_em_pE",&teop_em_pE,"_em_pE/F");
-  outputtree->Branch("_ep_e_unmoved",&teop_ep_e_unmoved,"_ep_e_unmoved/F");
-  outputtree->Branch("_em_e_unmoved",&teop_em_e_unmoved,"_em_e_unmoved/F");
+  outputtree->Branch("_ep_pE_unmoved",&teop_ep_pE_unmoved,"_ep_pE_unmoved/F");
+  outputtree->Branch("_em_pE_unmoved",&teop_em_pE_unmoved,"_em_pE_unmoved/F");
   outputtree->Branch("_ep_mass_1",&teop_ep_mass_1,"_ep_mass_1/F");
   outputtree->Branch("_em_mass_1",&teop_em_mass_1,"_em_mass_1/F");
   outputtree->Branch("_ep_mass_2",&teop_ep_mass_2,"_ep_mass_2/F");
@@ -137,6 +137,7 @@ void EoP_kfp_v2(int runnumber=0)
 
   outputtree->Branch("_true_gamma_mass",&teop_true_gamma_mass);
   outputtree->Branch("_true_gamma_pE",&teop_true_gamma_pE);
+  outputtree->Branch("_true_gamma_eta",&teop_true_gamma_eta);
   outputtree->Branch("_true_gamma_prod_radius",&teop_true_gamma_prod_radius);
   outputtree->Branch("_true_gamma_prod_x",&teop_true_gamma_prod_x);
   outputtree->Branch("_true_gamma_prod_y",&teop_true_gamma_prod_y);
@@ -197,6 +198,7 @@ void EoP_kfp_v2(int runnumber=0)
     // get truth info
     teop_true_gamma_mass.clear();
     teop_true_gamma_pE.clear();
+    teop_true_gamma_eta.clear();
     teop_true_gamma_prod_radius.clear();
     teop_true_gamma_prod_x.clear();
     teop_true_gamma_prod_y.clear();
@@ -220,14 +222,26 @@ void EoP_kfp_v2(int runnumber=0)
       float m2 = pow(_true_gamma_pE->at(icant),2) - pow(_true_gamma_px->at(icant),2) - pow(_true_gamma_py->at(icant),2) - pow(_true_gamma_pz->at(icant),2);
       float mass = m2 > 0 ? sqrt(m2) : sqrt(-m2);
       float gamma_radius = sqrt( pow(_true_gamma_x->at(icant),2) + pow(_true_gamma_y->at(icant),2) );
+      float gamma_eta = cal_eta(_true_gamma_px->at(icant),_true_gamma_py->at(icant),_true_gamma_pz->at(icant));
+      float epem_radius = sqrt( pow(_true_ep_x->at(icant),2) + pow(_true_ep_y->at(icant),2) );
+      float ep_pt = sqrt( pow(_true_ep_px->at(icant),2) + pow(_true_ep_py->at(icant),2) );
+      float em_pt = sqrt( pow(_true_em_px->at(icant),2) + pow(_true_em_py->at(icant),2) );
+      float ep_p = sqrt( pow(_true_ep_px->at(icant),2) + pow(_true_ep_py->at(icant),2) + pow(_true_ep_pz->at(icant),2) );
+      float em_p = sqrt( pow(_true_em_px->at(icant),2) + pow(_true_em_py->at(icant),2) + pow(_true_em_pz->at(icant),2) );
+
+      if (!isInRange(-1.1,gamma_eta,1.1)) { continue;}
+      if (!isInRange(0,gamma_radius,1)) {continue;}
+      if (!isInRange(-20,_true_gamma_z->at(icant),20)) {continue;}
+      if (!isInRange(0,epem_radius->at(icant),25)) {continue;}
+
       teop_true_gamma_mass.push_back(mass);
       teop_true_gamma_pE.push_back(_true_gamma_pE->at(icant));
+      teop_true_gamma_eta.push_back( gamma_eta );
       teop_true_gamma_prod_radius.push_back(gamma_radius);
       teop_true_gamma_prod_x.push_back(_true_gamma_x->at(icant));
       teop_true_gamma_prod_y.push_back(_true_gamma_y->at(icant));
       teop_true_gamma_prod_z.push_back(_true_gamma_z->at(icant));
 
-      float epem_radius = sqrt( pow(_true_ep_x->at(icant),2) + pow(_true_ep_y->at(icant),2) );
       teop_true_gamma_decay_radius.push_back(epem_radius);
       teop_true_gamma_decay_x.push_back(_true_ep_x->at(icant));
       teop_true_gamma_decay_y.push_back(_true_ep_y->at(icant));
@@ -239,15 +253,13 @@ void EoP_kfp_v2(int runnumber=0)
       teop_true_em_eta.push_back(_true_em_eta->at(icant));
       teop_true_ep_pE.push_back(_true_ep_pE->at(icant));
       teop_true_em_pE.push_back(_true_em_pE->at(icant));
-      float ep_pt = sqrt( pow(_true_ep_px->at(icant),2) + pow(_true_ep_py->at(icant),2) );
-      float em_pt = sqrt( pow(_true_em_px->at(icant),2) + pow(_true_em_py->at(icant),2) );
-      float ep_p = sqrt( pow(_true_ep_px->at(icant),2) + pow(_true_ep_py->at(icant),2) + pow(_true_ep_pz->at(icant),2) );
-      float em_p = sqrt( pow(_true_em_px->at(icant),2) + pow(_true_em_py->at(icant),2) + pow(_true_em_pz->at(icant),2) );
+
       teop_true_ep_pt.push_back( ep_pt );
       teop_true_em_pt.push_back( em_pt );
       teop_true_ep_p.push_back( ep_p );
       teop_true_em_p.push_back( em_p );
     }
+    if (teop_true_em_p.size()==0) continue;
 
     for (int ican = 0; ican < _numCan; ican++)
     {
@@ -459,7 +471,7 @@ void EoP_kfp_v2(int runnumber=0)
       teop_ep_pt = _ep_pT->at(ican);
       teop_ep_pt_raw = _ep_pT_raw->at(ican);
       teop_ep_pt_unmoved = _ep_pT_unmoved->at(ican);
-      teop_ep_e_unmoved = _ep_pE_unmoved->at(ican);
+      teop_ep_pE_unmoved = _ep_pE_unmoved->at(ican);
       teop_ep_eta = _ep_pseudorapidity->at(ican);
       teop_ep_phi = _ep_phi->at(ican);
       teop_ep_pE = _ep_pE->at(ican);
@@ -480,7 +492,7 @@ void EoP_kfp_v2(int runnumber=0)
       teop_em_pt = _em_pT->at(ican);
       teop_em_pt_raw = _em_pT_raw->at(ican);
       teop_em_pt_unmoved = _em_pT_unmoved->at(ican);
-      teop_em_e_unmoved = _em_pE_unmoved->at(ican);
+      teop_em_pE_unmoved = _em_pE_unmoved->at(ican);
       teop_em_eta = _em_pseudorapidity->at(ican);
       teop_em_phi = _em_phi->at(ican);
       teop_em_pE = _em_pE->at(ican);

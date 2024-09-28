@@ -706,3 +706,10 @@ std::vector<int> readNumberFromText(std::string infile) {
     inputFile.close();
     return vector;
 }
+
+bool isInRange(float min, float value, float max)
+{
+  return min <= value && value <= max;
+}
+
+
