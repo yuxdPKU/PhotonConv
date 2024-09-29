@@ -110,6 +110,8 @@ class TrackToCalo : public SubsysReco
 
   void setTrackPtLowCut(float pt) {m_track_pt_low_cut = pt;}
   void setEmcalELowCut(float e) {m_emcal_e_low_cut = e;}
+  void setnTpcClusters(int n) {m_ntpc_low_cut = n;}
+  void setTrackQuality(float q) {m_track_quality = q;}
 
   void doTrkrCaloMatching() {m_doTrkrCaloMatching = true;}
   void doTrkrCaloMatching_KFP() {m_doTrkrCaloMatching_KFP = true;}
@@ -366,6 +368,8 @@ class TrackToCalo : public SubsysReco
   std::vector<float> _true_gamma_x;
   std::vector<float> _true_gamma_y;
   std::vector<float> _true_gamma_z;
+  std::vector<int> _true_gamma_mother_id;
+  std::vector<int> _true_gamma_embedding_id;
 
   std::vector<float> _true_ep_phi;
   std::vector<float> _true_ep_eta;
@@ -421,6 +425,8 @@ class TrackToCalo : public SubsysReco
 
   float m_track_pt_low_cut = 0.5;
   float m_emcal_e_low_cut = 0.2;
+  int m_ntpc_low_cut = 22;
+  float m_track_quality = 100;
   float m_vx, m_vy, m_vz;
 
   double caloRadiusEMCal;

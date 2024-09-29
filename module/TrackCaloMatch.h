@@ -87,6 +87,7 @@ class TrackCaloMatch : public SubsysReco
   void setTrackPtLowCut(float pt) {m_track_pt_low_cut = pt;}
   void setEmcalELowCut(float e) {m_emcal_e_low_cut = e;}
   void setnTpcClusters(int n) {m_ntpc_low_cut = n;}
+  void setTrackQuality(float q) {m_track_quality = q;}
   void setdphicut(float a) {m_dphi_cut = a;};
   void setdzcut(float a) {m_dz_cut = a;};
 
@@ -128,6 +129,7 @@ class TrackCaloMatch : public SubsysReco
   float m_track_pt_low_cut = 1.5;
   float m_emcal_e_low_cut = 1;
   int m_ntpc_low_cut = 22;
+  float m_track_quality = 100;
   float m_dphi_cut = 0.1;
   float m_dz_cut = 20;
 };

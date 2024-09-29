@@ -229,6 +229,8 @@ float hcal_radius = 177.423;
   std::vector<float> *_true_gamma_x = 0;
   std::vector<float> *_true_gamma_y = 0;
   std::vector<float> *_true_gamma_z = 0;
+  std::vector<int> *_true_gamma_mother_id = 0;
+  std::vector<int> *_true_gamma_embedding_id = 0;
 
   std::vector<float> *_true_ep_phi = 0;
   std::vector<float> *_true_ep_eta = 0;
@@ -711,5 +713,3 @@ bool isInRange(float min, float value, float max)
 {
   return min <= value && value <= max;
 }
-
-

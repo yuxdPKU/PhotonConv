@@ -50,8 +50,13 @@ void EoP_kfp_v2(int runnumber=0)
   std::vector<float> teop_true_gamma_mass, teop_true_gamma_pE, teop_true_gamma_eta;
   std::vector<float> teop_true_gamma_prod_radius, teop_true_gamma_prod_x, teop_true_gamma_prod_y, teop_true_gamma_prod_z;
   std::vector<float> teop_true_gamma_decay_radius, teop_true_gamma_decay_x, teop_true_gamma_decay_y, teop_true_gamma_decay_z;
+  std::vector<int> teop_true_gamma_mother_id;
   std::vector<float> teop_true_ep_pt, teop_true_ep_p, teop_true_ep_eta, teop_true_ep_phi, teop_true_ep_pE;
   std::vector<float> teop_true_em_pt, teop_true_em_p, teop_true_em_eta, teop_true_em_phi, teop_true_em_pE;
+  //for truth-reco matching test
+  std::vector<float> teop_ep_phi_recotruthDiff, teop_em_phi_recotruthDiff;
+  std::vector<float> teop_ep_eta_recotruthDiff, teop_em_eta_recotruthDiff;
+  std::vector<float> teop_SV_phi_recotruthDiff, teop_SV_z_recotruthDiff;
 
   outputtree->Branch("_runNumber",&_runNumber,"_runNumber/I");
   outputtree->Branch("_eventNumber",&_eventNumber,"_eventNumber/I");
@@ -146,6 +151,7 @@ void EoP_kfp_v2(int runnumber=0)
   outputtree->Branch("_true_gamma_decay_x",&teop_true_gamma_decay_x);
   outputtree->Branch("_true_gamma_decay_y",&teop_true_gamma_decay_y);
   outputtree->Branch("_true_gamma_decay_z",&teop_true_gamma_decay_z);
+  outputtree->Branch("_true_gamma_mother_id",&teop_true_gamma_mother_id);
   outputtree->Branch("_true_ep_pt",&teop_true_ep_pt);
   outputtree->Branch("_true_em_pt",&teop_true_em_pt);
   outputtree->Branch("_true_ep_p",&teop_true_ep_p);
@@ -156,6 +162,12 @@ void EoP_kfp_v2(int runnumber=0)
   outputtree->Branch("_true_em_phi",&teop_true_em_phi);
   outputtree->Branch("_true_ep_pE",&teop_true_ep_pE);
   outputtree->Branch("_true_em_pE",&teop_true_em_pE);
+  outputtree->Branch("_ep_phi_recotruthDiff",&teop_ep_phi_recotruthDiff);
+  outputtree->Branch("_em_phi_recotruthDiff",&teop_em_phi_recotruthDiff);
+  outputtree->Branch("_ep_eta_recotruthDiff",&teop_ep_eta_recotruthDiff);
+  outputtree->Branch("_em_eta_recotruthDiff",&teop_em_eta_recotruthDiff);
+  outputtree->Branch("_SV_phi_recotruthDiff",&teop_SV_phi_recotruthDiff);
+  outputtree->Branch("_SV_z_recotruthDiff",&teop_SV_z_recotruthDiff);
 
   std::vector<int> vec_ep_emcal_matched_index;
   std::vector<float> vec_ep_emcal_matched_e;
@@ -179,10 +191,12 @@ void EoP_kfp_v2(int runnumber=0)
 
   float ep_max_e = 0;
   float ep_min_dphi = 100;
+  float ep_min_distance = 100;
   int ep_index = -1;
 
   float em_max_e = 0;
   float em_min_dphi = 100;
+  float em_min_distance = 100;
   int em_index = -1;
 
   int nevent  = chain->GetEntries();
@@ -207,6 +221,7 @@ void EoP_kfp_v2(int runnumber=0)
     teop_true_gamma_decay_x.clear();
     teop_true_gamma_decay_y.clear();
     teop_true_gamma_decay_z.clear();
+    teop_true_gamma_mother_id.clear();
     teop_true_ep_pt.clear();
     teop_true_em_pt.clear();
     teop_true_ep_p.clear();
@@ -229,10 +244,11 @@ void EoP_kfp_v2(int runnumber=0)
       float ep_p = sqrt( pow(_true_ep_px->at(icant),2) + pow(_true_ep_py->at(icant),2) + pow(_true_ep_pz->at(icant),2) );
       float em_p = sqrt( pow(_true_em_px->at(icant),2) + pow(_true_em_py->at(icant),2) + pow(_true_em_pz->at(icant),2) );
 
+      if (_true_gamma_embedding_id->at(icant)!=1) {continue;}
       if (!isInRange(-1.1,gamma_eta,1.1)) { continue;}
       if (!isInRange(0,gamma_radius,1)) {continue;}
       if (!isInRange(-20,_true_gamma_z->at(icant),20)) {continue;}
-      if (!isInRange(0,epem_radius->at(icant),25)) {continue;}
+      if (!isInRange(0,epem_radius,25)) {continue;}
 
       teop_true_gamma_mass.push_back(mass);
       teop_true_gamma_pE.push_back(_true_gamma_pE->at(icant));
@@ -241,6 +257,7 @@ void EoP_kfp_v2(int runnumber=0)
       teop_true_gamma_prod_x.push_back(_true_gamma_x->at(icant));
       teop_true_gamma_prod_y.push_back(_true_gamma_y->at(icant));
       teop_true_gamma_prod_z.push_back(_true_gamma_z->at(icant));
+      teop_true_gamma_mother_id.push_back(_true_gamma_mother_id->at(icant));
 
       teop_true_gamma_decay_radius.push_back(epem_radius);
       teop_true_gamma_decay_x.push_back(_true_ep_x->at(icant));
@@ -338,7 +355,8 @@ void EoP_kfp_v2(int runnumber=0)
         float dz = _ep_z_emc->at(ican) - emcal_z;
 
         //matching
-        if (dphi>-0.2 && dphi<0.2) // no cut in all
+        //if (dphi>-0.2 && dphi<0.2) // no cut in all
+        if (isInRange(-0.03,dphi,0.03) && isInRange(-5,dz,5))
         {
           vec_ep_emcal_matched_index.push_back(iem);
           vec_ep_emcal_matched_e.push_back(_emcal_e->at(iem));
@@ -383,7 +401,8 @@ void EoP_kfp_v2(int runnumber=0)
         float dz = _em_z_emc->at(ican) - emcal_z;
 
         //matching
-        if (dphi>-0.2 && dphi<0.2) // no cut in all
+        //if (dphi>-0.2 && dphi<0.2) // no cut in all
+        if (isInRange(-0.03,dphi,0.03) && isInRange(-5,dz,5))
         {
           vec_em_emcal_matched_index.push_back(iem);
           vec_em_emcal_matched_e.push_back(_emcal_e->at(iem));
@@ -405,24 +424,48 @@ void EoP_kfp_v2(int runnumber=0)
 
       ep_max_e = 0;
       ep_min_dphi = 100;
+      ep_min_distance = 100;
       ep_index = -1;
       for(unsigned int iem = 0; iem < vec_ep_emcal_residual_phi.size(); iem++)
       {
-        if (fabs(vec_ep_emcal_residual_phi.at(iem))<ep_min_dphi)
+        //if (fabs(vec_ep_emcal_residual_phi.at(iem))<ep_min_dphi)
+        //{
+        //  ep_min_dphi = fabs(vec_ep_emcal_residual_phi.at(iem));
+        //  ep_index = iem;
+        //}
+        //if (fabs(vec_ep_emcal_matched_e.at(iem))>ep_max_e)
+        //{
+        //  ep_max_e = vec_ep_emcal_matched_e.at(iem);
+        //  ep_index = iem;
+        //}
+        float R = sqrt(pow(emcal_radius*vec_ep_emcal_residual_phi.at(iem), 2) + pow(vec_ep_emcal_residual_z.at(iem), 2));
+        if (R<ep_min_distance)
         {
-          ep_min_dphi = fabs(vec_ep_emcal_residual_phi.at(iem));
+          ep_min_distance = R;
           ep_index = iem;
         }
       }
 
       em_max_e = 0;
       em_min_dphi = 100;
+      em_min_distance = 100;
       em_index = -1;
       for(unsigned int iem = 0; iem < vec_em_emcal_residual_phi.size(); iem++)
       {
-        if (fabs(vec_em_emcal_residual_phi.at(iem))<em_min_dphi)
+        //if (fabs(vec_em_emcal_residual_phi.at(iem))<em_min_dphi)
+        //{
+        //  em_min_dphi = fabs(vec_em_emcal_residual_phi.at(iem));
+        //  em_index = iem;
+        //}
+        //if (fabs(vec_em_emcal_matched_e.at(iem))>em_max_e)
+        //{
+        //  em_max_e = vec_em_emcal_matched_e.at(iem);
+        //  em_index = iem;
+        //}
+        float R = sqrt(pow(emcal_radius*vec_em_emcal_residual_phi.at(iem), 2) + pow(vec_em_emcal_residual_z.at(iem), 2));
+        if (R<em_min_distance)
         {
-          em_min_dphi = fabs(vec_em_emcal_residual_phi.at(iem));
+          em_min_distance = R;
           em_index = iem;
         }
       }
@@ -463,7 +506,7 @@ void EoP_kfp_v2(int runnumber=0)
       teop_em_emcal_z = vec_em_emcal_matched_z.at(em_index);
       teop_em_emcal_eta = vec_em_emcal_matched_eta.at(em_index);
 
-      if (vec_ep_emcal_matched_index.at(ep_index)==vec_em_emcal_matched_index.at(em_index)) continue;
+      //if (vec_ep_emcal_matched_index.at(ep_index)==vec_em_emcal_matched_index.at(em_index)) continue;
 
       teop_ep_p = _ep_p->at(ican);
       teop_ep_p_raw = _ep_p_raw->at(ican);
@@ -537,6 +580,22 @@ void EoP_kfp_v2(int runnumber=0)
       else
       {
         teop_eop_ep = -1;
+      }
+
+      teop_ep_phi_recotruthDiff.clear();
+      teop_em_phi_recotruthDiff.clear();
+      teop_ep_eta_recotruthDiff.clear();
+      teop_em_eta_recotruthDiff.clear();
+      teop_SV_phi_recotruthDiff.clear();
+      teop_SV_z_recotruthDiff.clear();
+      for (int icant = 0; icant < (teop_true_gamma_decay_radius.size()); icant++)
+      {
+        teop_ep_phi_recotruthDiff.push_back(PiRange(teop_ep_phi - teop_true_ep_phi.at(icant)));
+        teop_em_phi_recotruthDiff.push_back(PiRange(teop_em_phi - teop_true_em_phi.at(icant)));
+        teop_ep_eta_recotruthDiff.push_back(teop_ep_eta - teop_true_ep_eta.at(icant));
+        teop_em_eta_recotruthDiff.push_back(teop_em_eta - teop_true_em_eta.at(icant));
+        teop_SV_phi_recotruthDiff.push_back(PiRange(atan2(teop_gamma_y,teop_gamma_x) - atan2(teop_true_gamma_decay_y.at(icant),teop_true_gamma_decay_x.at(icant))));
+        teop_SV_z_recotruthDiff.push_back(teop_gamma_z - teop_true_gamma_decay_z.at(icant));
       }
 
       outputtree->Fill();

@@ -261,6 +261,11 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
       continue;
     }
 
+    if(track->get_quality() > m_track_quality)
+    {
+      continue;
+    }
+
     int n_tpc_clusters = 0;
 
     tpc_seed = track->get_tpc_seed();

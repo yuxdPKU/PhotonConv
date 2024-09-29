@@ -338,6 +338,8 @@ void TrackToCalo::createBranches_KFP()
   _tree_KFP->Branch("_true_gamma_x", &_true_gamma_x);
   _tree_KFP->Branch("_true_gamma_y", &_true_gamma_y);
   _tree_KFP->Branch("_true_gamma_z", &_true_gamma_z);
+  _tree_KFP->Branch("_true_gamma_mother_id", &_true_gamma_mother_id);
+  _tree_KFP->Branch("_true_gamma_embedding_id", &_true_gamma_embedding_id);
 
   _tree_KFP->Branch("_true_ep_phi", &_true_ep_phi);
   _tree_KFP->Branch("_true_ep_eta", &_true_ep_eta);
@@ -791,7 +793,16 @@ void TrackToCalo::fillTree_TrackOnly()
 
     if(!track) continue;
 
-    if(track->get_pt() < m_track_pt_low_cut) continue;
+    if(track->get_pt() < m_track_pt_low_cut)
+    {
+      continue;
+    }
+//std::cout<<"pt = "<<track->get_pt()<<std::endl;
+
+    if(track->get_quality() > m_track_quality)
+    {
+      continue;
+    }
 
     seed = track->get_silicon_seed();
 
@@ -873,6 +884,11 @@ void TrackToCalo::fillTree_TrackOnly()
       }
     }
 
+    if(n_tpc_clusters < m_ntpc_low_cut) 
+    {
+      continue;
+    }
+
     unsigned int m_vertexid = track->get_vertex_id();
     bool track_have_vertex = false;
     if (vertexMap)
@@ -920,6 +936,7 @@ void TrackToCalo::fillTree_TrackOnly()
     _track_pcay.push_back(track->get_y());
     _track_pcaz.push_back(track->get_z());
     _track_crossing.push_back(track->get_crossing());
+//std::cout<<"ntpc = "<<n_tpc_clusters<<" px = "<<track->get_px()<<" py = "<<track->get_py()<<" pz = "<<track->get_pz()<<" phi = "<<track->get_phi()<<" eta = "<<track->get_eta()<<std::endl;
 
     if (!m_doCaloOnly) continue;
 
@@ -975,6 +992,7 @@ void TrackToCalo::fillTree_TrackOnly()
       _track_x_emc.push_back(thisState->get_x());
       _track_y_emc.push_back(thisState->get_y());
       _track_z_emc.push_back(thisState->get_z());
+//std::cout<<"proj x = "<<thisState->get_x()<<" , y = "<<thisState->get_y()<<" , z = "<<thisState->get_z()<<std::endl;
     }
 
     // project to R_IHCAL
@@ -1820,6 +1838,7 @@ std::cout<<"begin truth matching"<<std::endl;
       TLorentzVector *daughterTrueLV = new TLorentzVector();
       TVector3 *mother3Vector = new TVector3();
       TVector3 *daughter3Vector = new TVector3();
+      int grandmotherID = -9999;
 
       HepMC::GenEvent *theEvent = nullptr;
       if (m_geneventmap)
@@ -1839,9 +1858,14 @@ std::cout<<"begin truth matching"<<std::endl;
 
         if (thisVtx != nullptr) {
           mother3Vector->SetXYZ(thisVtx->point3d().x(), thisVtx->point3d().y(), thisVtx->point3d().z());
+          for (auto grandmother = thisVtx->particles_in_const_begin(); grandmother != thisVtx->particles_in_const_end(); grandmother++) {
+            grandmotherID = (*grandmother)->pdg_id();
+            //std::cout<<"HepMC grandmotherID = "<<grandmotherID<<std::endl;
+          }
         }
         else {
           mother3Vector->SetXYZ(-999,-999,-999);
+          //std::cout<<"No grandmotherID in HepMC, because no production vertex."<<std::endl;
         }
       }
 
@@ -1868,9 +1892,14 @@ std::cout<<"begin truth matching"<<std::endl;
             PHG4Particle *daughterG4 = iter2->second;
 
             PHG4Particle *motherG4 = nullptr;
+            PHG4Particle *grandmotherG4 = nullptr;
             if (daughterG4->get_parent_id() != 0)
             {
               motherG4 = m_truthInfo->GetParticle(daughterG4->get_parent_id());
+              if (motherG4->get_parent_id() != 0)
+              {
+                grandmotherG4 = m_truthInfo->GetParticle(motherG4->get_parent_id());
+              }
             }
             else
             {
@@ -1892,6 +1921,16 @@ std::cout<<"begin truth matching"<<std::endl;
               // Now get the decay vertex position
               thisVtx = m_truthInfo->GetVtx(daughterG4->get_vtx_id());
               daughter3Vector->SetXYZ(thisVtx->get_x(), thisVtx->get_y(), thisVtx->get_z());
+
+              if (grandmotherG4)
+              {
+                grandmotherID = grandmotherG4->get_pid();
+                //std::cout<<"G4 grandmotherID = "<<grandmotherID<<std::endl;
+              }
+              else
+              {
+                //std::cout<<"No grandmotherID in G4."<<std::endl;
+              }
 
               delete motherTrue3Vector;
             }
@@ -1935,6 +1974,8 @@ std::cout<<"begin truth matching"<<std::endl;
       _true_gamma_x.push_back(mother3Vector->X());
       _true_gamma_y.push_back(mother3Vector->Y());
       _true_gamma_z.push_back(mother3Vector->Z());
+      _true_gamma_mother_id.push_back(grandmotherID);
+      _true_gamma_embedding_id.push_back(decay[0].first.first);
     }
 
   }
@@ -2170,6 +2211,8 @@ void TrackToCalo::ResetTreeVectors_KFP()
   _true_gamma_x.clear();
   _true_gamma_y.clear();
   _true_gamma_z.clear();
+  _true_gamma_mother_id.clear();
+  _true_gamma_embedding_id.clear();
 
   _true_ep_phi.clear();
   _true_ep_eta.clear();
