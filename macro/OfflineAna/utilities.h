@@ -567,6 +567,8 @@ void setBranch_kfp(TChain* tree)
   tree->SetBranchAddress("_true_gamma_x", &_true_gamma_x);
   tree->SetBranchAddress("_true_gamma_y", &_true_gamma_y);
   tree->SetBranchAddress("_true_gamma_z", &_true_gamma_z);
+  tree->SetBranchAddress("_true_gamma_mother_id", &_true_gamma_mother_id);
+  tree->SetBranchAddress("_true_gamma_embedding_id", &_true_gamma_embedding_id);
 
   tree->SetBranchAddress("_true_ep_phi", &_true_ep_phi);
   tree->SetBranchAddress("_true_ep_eta", &_true_ep_eta);
