@@ -644,7 +644,7 @@ void EvtDisplayAligned(int runnumber)
     gr_tpc_proj_emcal_matched->SetMarkerColor(kRed);
     gr_tpc_proj_emcal_matched->Draw("P*,same");
 
-    TGraph *gr_emcal_unmatched = new TGraph(unmatched_emcal_cluster_R.at(index).size(), unmatched_emcal_cluster_z.at(index).data(), matched_emcal_cluster_R.at(index).data());
+    TGraph *gr_emcal_unmatched = new TGraph(unmatched_emcal_cluster_R.at(index).size(), unmatched_emcal_cluster_z.at(index).data(), unmatched_emcal_cluster_R.at(index).data());
     gr_emcal_unmatched->SetMarkerColor(kBlue);
     gr_emcal_unmatched->SetMarkerStyle(22);
     gr_emcal_unmatched->Draw("P,same");

@@ -304,6 +304,8 @@ void Fun4All_TrackAnalysis(
   tcm->setdzcut(10000);
   tcm->setTrackPtLowCut(1.0);
   tcm->setEmcalELowCut(0.5);
+  tcm->setnTpcClusters(30);
+  tcm->setTrackQuality(100);
   tcm->setRawClusContEMName("CLUSTERINFO_CEMC");
   ttc->setDFNodeName("myFinder");
   //ttc->doTruthMatching();
@@ -322,6 +324,8 @@ void Fun4All_TrackAnalysis(
   //ttc->anaCaloInfo();
   ttc->setTrackPtLowCut(1.0);
   ttc->setEmcalELowCut(0.5);
+  ttc->setnTpcClusters(30);
+  ttc->setTrackQuality(100);
   ttc->doTrkrCaloMatching_KFP();
   ttc->setRawClusContEMName("CLUSTERINFO_CEMC");
   se->registerSubsystem(ttc);

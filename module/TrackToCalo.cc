@@ -281,6 +281,18 @@ void TrackToCalo::createBranches_KFP()
   _tree_KFP->Branch("_ep_x_emc", &_ep_x_emc);
   _tree_KFP->Branch("_ep_y_emc", &_ep_y_emc);
   _tree_KFP->Branch("_ep_z_emc", &_ep_z_emc);
+  _tree_KFP->Branch("_ep_has_truthmatching", &_ep_has_truthmatching);
+  _tree_KFP->Branch("_ep_true_id", &_ep_true_id);
+  _tree_KFP->Branch("_ep_true_px", &_ep_true_px);
+  _tree_KFP->Branch("_ep_true_py", &_ep_true_py);
+  _tree_KFP->Branch("_ep_true_pz", &_ep_true_pz);
+  _tree_KFP->Branch("_ep_true_vertex_x", &_ep_true_vertex_x);
+  _tree_KFP->Branch("_ep_true_vertex_y", &_ep_true_vertex_y);
+  _tree_KFP->Branch("_ep_true_vertex_z", &_ep_true_vertex_z);
+  _tree_KFP->Branch("_ep_true_vertex_x_method2", &_ep_true_vertex_x_method2);
+  _tree_KFP->Branch("_ep_true_vertex_y_method2", &_ep_true_vertex_y_method2);
+  _tree_KFP->Branch("_ep_true_vertex_z_method2", &_ep_true_vertex_z_method2);
+
   _tree_KFP->Branch("_em_mass", &_em_mass);
   _tree_KFP->Branch("_em_x", &_em_x);
   _tree_KFP->Branch("_em_y", &_em_y);
@@ -318,12 +330,25 @@ void TrackToCalo::createBranches_KFP()
   _tree_KFP->Branch("_em_x_emc", &_em_x_emc);
   _tree_KFP->Branch("_em_y_emc", &_em_y_emc);
   _tree_KFP->Branch("_em_z_emc", &_em_z_emc);
+  _tree_KFP->Branch("_em_has_truthmatching", &_em_has_truthmatching);
+  _tree_KFP->Branch("_em_true_id", &_em_true_id);
+  _tree_KFP->Branch("_em_true_px", &_em_true_px);
+  _tree_KFP->Branch("_em_true_py", &_em_true_py);
+  _tree_KFP->Branch("_em_true_pz", &_em_true_pz);
+  _tree_KFP->Branch("_em_true_vertex_x", &_em_true_vertex_x);
+  _tree_KFP->Branch("_em_true_vertex_y", &_em_true_vertex_y);
+  _tree_KFP->Branch("_em_true_vertex_z", &_em_true_vertex_z);
+  _tree_KFP->Branch("_em_true_vertex_x_method2", &_em_true_vertex_x_method2);
+  _tree_KFP->Branch("_em_true_vertex_y_method2", &_em_true_vertex_y_method2);
+  _tree_KFP->Branch("_em_true_vertex_z_method2", &_em_true_vertex_z_method2);
+
   _tree_KFP->Branch("_emcal_phi", &_emcal_phi);
   _tree_KFP->Branch("_emcal_eta", &_emcal_eta);
   _tree_KFP->Branch("_emcal_x", &_emcal_x);
   _tree_KFP->Branch("_emcal_y", &_emcal_y);
   _tree_KFP->Branch("_emcal_z", &_emcal_z);
   _tree_KFP->Branch("_emcal_e", &_emcal_e);
+
   _tree_KFP->Branch("_epem_DCA_2d", &_epem_DCA_2d);
   _tree_KFP->Branch("_epem_DCA_3d", &_epem_DCA_3d);
 
@@ -536,14 +561,49 @@ int TrackToCalo::process_event(PHCompositeNode *topNode)
   if (!m_geneventmap)
   {
     m_geneventmap = findNode::getClass<PHHepMCGenEventMap>(topNode, "PHHepMCGenEventMap");
-    std::cout << "TrackToCalo::process_event: cannot find PHHepMCGenEventMap!!! can not do truth matching" << std::endl;
+    if (!m_geneventmap)
+    {
+      std::cout << "TrackToCalo::process_event: cannot find PHHepMCGenEventMap!!! can not do truth matching" << std::endl;
+    }
   }
 
   if (!m_truthInfo)
   {
     m_truthInfo = findNode::getClass<PHG4TruthInfoContainer>(topNode, "G4TruthInfo");
-    std::cout << "TrackToCalo::process_event: cannot find G4TruthInfo!!! can not do truth matching" << std::endl;
+    if (!m_truthInfo)
+    {
+      std::cout << "TrackToCalo::process_event: cannot find G4TruthInfo!!! can not do truth matching" << std::endl;
+    }
   }
+
+  PHNode *svtxg4Node = dynamic_cast<PHNode *>(nodeIter.findFirst("SvtxPHG4ParticleMap"));
+  //if (svtxg4Node && false)
+  if (svtxg4Node)
+  {
+    svtxg4Node = dynamic_cast<PHNode *>(nodeIter.findFirst("G4TruthInfo"));
+    if (svtxg4Node)
+    {
+      m_truthInfo = findNode::getClass<PHG4TruthInfoContainer>(topNode, "G4TruthInfo");
+    }
+    else
+    {
+      std::cout << "TrackToCalo truth matching: G4TruthInfo does not exist" << std::endl;
+    }
+
+    dst_reco_truth_map = findNode::getClass<SvtxPHG4ParticleMap_v1>(topNode, "SvtxPHG4ParticleMap");
+  }
+
+  if (!m_svtx_evalstack)
+  {
+    m_svtx_evalstack = new SvtxEvalStack(topNode);
+    // clustereval = m_svtx_evalstack->get_cluster_eval();
+    // hiteval = m_svtx_evalstack->get_hit_eval();
+    trackeval = m_svtx_evalstack->get_track_eval();
+    trutheval = m_svtx_evalstack->get_truth_eval();
+    vertexeval = m_svtx_evalstack->get_vertex_eval();
+  }
+
+  m_svtx_evalstack->next_event(topNode);
 
   if (m_doTrkrCaloMatching)
   {
@@ -1635,6 +1695,48 @@ std::cout<<"begin candidate "<<i<<std::endl;
       std::advance(it_kfp_trackmap, 3 * i + j);
       track = it_kfp_trackmap->second;
 
+      bool isParticleValid = false;
+      int true_id = 0;
+      float true_px = 0, true_py = 0, true_pz = 0;
+      float true_daughter_vertex_x = 0, true_daughter_vertex_y = 0, true_daughter_vertex_z = 0;
+      float true_daughter_vertex_x_method2 = 0, true_daughter_vertex_y_method2 = 0, true_daughter_vertex_z_method2 = 0;
+      if (m_doTruthMatching)
+      {
+        g4particle = getTruthTrack(track);
+
+        isParticleValid = g4particle == nullptr ? false : true;
+
+        true_id = isParticleValid ? g4particle->get_pid() : 0;
+        true_px = isParticleValid ? (Float_t) g4particle->get_px() : 0.;
+        true_py = isParticleValid ? (Float_t) g4particle->get_py() : 0.;
+        true_pz = isParticleValid ? (Float_t) g4particle->get_pz() : 0.;
+
+        if (isParticleValid)
+        {
+          g4vertex_point = trutheval->get_vertex(g4particle);
+        }
+
+        true_daughter_vertex_x = isParticleValid ? g4vertex_point->get_x() : 0.;
+        true_daughter_vertex_y = isParticleValid ? g4vertex_point->get_y() : 0.;
+        true_daughter_vertex_z = isParticleValid ? g4vertex_point->get_z() : 0.;
+
+        if (g4particle)
+        {
+          // Now get the decay vertex position
+          PHG4VtxPoint *thisVtx = m_truthInfo->GetVtx(g4particle->get_vtx_id());
+          true_daughter_vertex_x_method2 = thisVtx->get_x();
+          true_daughter_vertex_y_method2 = thisVtx->get_y();
+          true_daughter_vertex_z_method2 = thisVtx->get_z();
+//std::cout<<"g4particle->get_pid() = "<<g4particle->get_pid()<<" , g4particle->get_barcode() = "<<g4particle->get_barcode()<<" , thisVtx->get_x() = "<<thisVtx->get_x()<<std::endl;
+        }
+        else
+        {
+          true_daughter_vertex_x_method2 = 0;
+          true_daughter_vertex_y_method2 = 0;
+          true_daughter_vertex_z_method2 = 0;
+        }
+      }
+
       // project to R_EMCAL
       thisState = track->get_state(caloRadiusEMCal);
 
@@ -1668,6 +1770,21 @@ std::cout<<"begin candidate "<<i<<std::endl;
         _em_chi2.push_back(kfp_daughter->GetChi2());
         _em_nDoF.push_back(kfp_daughter->GetNDF());
         _em_crossing.push_back(track->get_crossing());
+
+        if (m_doTruthMatching)
+        {
+          _em_has_truthmatching.push_back(isParticleValid);
+          _em_true_id.push_back(true_id);
+          _em_true_px.push_back(true_px);
+          _em_true_py.push_back(true_py);
+          _em_true_pz.push_back(true_pz);
+          _em_true_vertex_x.push_back(true_daughter_vertex_x);
+          _em_true_vertex_y.push_back(true_daughter_vertex_y);
+          _em_true_vertex_z.push_back(true_daughter_vertex_z);
+          _em_true_vertex_x_method2.push_back(true_daughter_vertex_x_method2);
+          _em_true_vertex_y_method2.push_back(true_daughter_vertex_y_method2);
+          _em_true_vertex_z_method2.push_back(true_daughter_vertex_z_method2);
+        }
 
         tpc_seed = track->get_tpc_seed();
         if(tpc_seed)
@@ -1742,6 +1859,21 @@ std::cout<<"begin candidate "<<i<<std::endl;
         _ep_chi2.push_back(kfp_daughter->GetChi2());
         _ep_nDoF.push_back(kfp_daughter->GetNDF());
         _ep_crossing.push_back(track->get_crossing());
+
+        if (m_doTruthMatching)
+        {
+          _ep_has_truthmatching.push_back(isParticleValid);
+          _ep_true_id.push_back(true_id);
+          _ep_true_px.push_back(true_px);
+          _ep_true_py.push_back(true_py);
+          _ep_true_pz.push_back(true_pz);
+          _ep_true_vertex_x.push_back(true_daughter_vertex_x);
+          _ep_true_vertex_y.push_back(true_daughter_vertex_y);
+          _ep_true_vertex_z.push_back(true_daughter_vertex_z);
+          _ep_true_vertex_x_method2.push_back(true_daughter_vertex_x_method2);
+          _ep_true_vertex_y_method2.push_back(true_daughter_vertex_y_method2);
+          _ep_true_vertex_z_method2.push_back(true_daughter_vertex_z_method2);
+        }
 
         tpc_seed = track->get_tpc_seed();
         if(tpc_seed)
@@ -1921,6 +2053,7 @@ std::cout<<"begin truth matching"<<std::endl;
               // Now get the decay vertex position
               thisVtx = m_truthInfo->GetVtx(daughterG4->get_vtx_id());
               daughter3Vector->SetXYZ(thisVtx->get_x(), thisVtx->get_y(), thisVtx->get_z());
+//std::cout<<"daughterG4->get_pid() = "<<daughterG4->get_pid()<<" , daughterG4->get_barcode() = "<<daughterG4->get_barcode()<<" , thisVtx->get_x() = "<<thisVtx->get_x()<<std::endl;
 
               if (grandmotherG4)
               {
@@ -2202,6 +2335,30 @@ void TrackToCalo::ResetTreeVectors_KFP()
   _epem_DCA_2d.clear();
   _epem_DCA_3d.clear();
 
+  _em_has_truthmatching.clear();
+  _em_true_id.clear();
+  _em_true_px.clear();
+  _em_true_py.clear();
+  _em_true_pz.clear();
+  _em_true_vertex_x.clear();
+  _em_true_vertex_y.clear();
+  _em_true_vertex_z.clear();
+  _em_true_vertex_x_method2.clear();
+  _em_true_vertex_y_method2.clear();
+  _em_true_vertex_z_method2.clear();
+
+  _ep_has_truthmatching.clear();
+  _ep_true_id.clear();
+  _ep_true_px.clear();
+  _ep_true_py.clear();
+  _ep_true_pz.clear();
+  _ep_true_vertex_x.clear();
+  _ep_true_vertex_y.clear();
+  _ep_true_vertex_z.clear();
+  _ep_true_vertex_x_method2.clear();
+  _ep_true_vertex_y_method2.clear();
+  _ep_true_vertex_z_method2.clear();
+
   _true_gamma_phi.clear();
   _true_gamma_eta.clear();
   _true_gamma_px.clear();
@@ -2269,4 +2426,29 @@ void TrackToCalo::resetCaloRadius()
   {
     caloRadiusOHCal = OHCalGeo->get_radius();
   }
+}
+
+PHG4Particle *TrackToCalo::getTruthTrack(SvtxTrack *thisTrack)
+{
+  /*
+   * There are two methods for getting the truth rack from the reco track
+   * 1. (recommended) Use the reco -> truth tables (requires SvtxPHG4ParticleMap). Introduced Summer of 2022
+   * 2. Get truth track via nClusters. Older method and will work with older DSTs
+   */
+
+  PHG4Particle *particle = nullptr;
+
+  if (dst_reco_truth_map)
+  {
+    std::map<float, std::set<int>> truth_set = dst_reco_truth_map->get(thisTrack->get_id());
+    const auto &best_weight = truth_set.rbegin();
+    int best_truth_id = *best_weight->second.rbegin();
+    particle = m_truthInfo->GetParticle(best_truth_id);
+  }
+  else
+  {
+    std::cout << __FILE__ << ": SvtxPHG4ParticleMap not found, reverting to max_truth_particle_by_nclusters()" << std::endl;
+    particle = trackeval->max_truth_particle_by_nclusters(thisTrack);
+  }
+  return particle;
 }

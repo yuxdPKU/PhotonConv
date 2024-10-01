@@ -14,6 +14,8 @@
 #include <globalvertex/GlobalVertexMap.h>
 #include <globalvertex/SvtxVertexMap.h>
 #include <ffarawobjects/Gl1Packet.h>
+#include <trackbase_historic/SvtxPHG4ParticleMap_v1.h>
+#include <trackbase_historic/SvtxTrack.h>
 #include <trackbase_historic/SvtxTrackMap.h>
 #include <trackbase_historic/SvtxTrackState_v1.h>
 #include <trackbase_historic/TrackSeed.h>
@@ -31,6 +33,11 @@
 #include <kfparticle_sphenix/KFParticle_truthAndDetTools.h>
 #include <kfparticle_sphenix/KFParticle_nTuple.h>
 #include <decayfinder/DecayFinderContainer_v1.h>  // for DecayFinderContainer_v1
+
+#include <g4eval/SvtxEvalStack.h>   // for SvtxEvalStack
+#include <g4eval/SvtxTrackEval.h>   // for SvtxTrackEval
+#include <g4eval/SvtxTruthEval.h>   // for SvtxTruthEval
+#include <g4eval/SvtxVertexEval.h>  // for SvtxVertexEval
 
 #include <g4main/PHG4Particle.h>
 #include <g4main/PHG4TruthInfoContainer.h>
@@ -121,6 +128,8 @@ class TrackToCalo : public SubsysReco
   void anaCaloInfo() {m_doCaloOnly = true;}
 
   void setDFNodeName(const std::string &name) { m_df_module_name = name; }
+
+  PHG4Particle *getTruthTrack(SvtxTrack *thisTrack);
 
  private:
   using Decay = std::vector<std::pair<std::pair<int, int>, int>>;
@@ -306,6 +315,17 @@ class TrackToCalo : public SubsysReco
   std::vector<float> _ep_clus_x;
   std::vector<float> _ep_clus_y;
   std::vector<float> _ep_clus_z;
+  std::vector<int> _ep_has_truthmatching;
+  std::vector<int> _ep_true_id;
+  std::vector<float> _ep_true_px;
+  std::vector<float> _ep_true_py;
+  std::vector<float> _ep_true_pz;
+  std::vector<float> _ep_true_vertex_x;
+  std::vector<float> _ep_true_vertex_y;
+  std::vector<float> _ep_true_vertex_z;
+  std::vector<float> _ep_true_vertex_x_method2;
+  std::vector<float> _ep_true_vertex_y_method2;
+  std::vector<float> _ep_true_vertex_z_method2;
 
   std::vector<float> _em_mass;
   std::vector<float> _em_x;
@@ -336,6 +356,17 @@ class TrackToCalo : public SubsysReco
   std::vector<float> _em_clus_x;
   std::vector<float> _em_clus_y;
   std::vector<float> _em_clus_z;
+  std::vector<int> _em_has_truthmatching;
+  std::vector<int> _em_true_id;
+  std::vector<float> _em_true_px;
+  std::vector<float> _em_true_py;
+  std::vector<float> _em_true_pz;
+  std::vector<float> _em_true_vertex_x;
+  std::vector<float> _em_true_vertex_y;
+  std::vector<float> _em_true_vertex_z;
+  std::vector<float> _em_true_vertex_x_method2;
+  std::vector<float> _em_true_vertex_y_method2;
+  std::vector<float> _em_true_vertex_z_method2;
 
   std::vector<float> _ep_phi_emc;
   std::vector<float> _ep_eta_emc;
@@ -414,6 +445,8 @@ class TrackToCalo : public SubsysReco
 
   SvtxTrackState *thisState = nullptr;
   SvtxTrack *track = nullptr;
+  PHG4Particle *g4particle = nullptr;
+  PHG4VtxPoint *g4vertex_point = nullptr;
   TrackSeed *seed = nullptr;
   TrackSeed *tpc_seed = nullptr;
   TrkrCluster *trkrCluster = nullptr;
@@ -442,6 +475,11 @@ class TrackToCalo : public SubsysReco
   PHG4TruthInfoContainer *m_truthInfo = nullptr;
   PHHepMCGenEventMap *m_geneventmap = nullptr;
   PHHepMCGenEvent *m_genevt = nullptr;
+  SvtxPHG4ParticleMap_v1 *dst_reco_truth_map = nullptr;
+  SvtxEvalStack *m_svtx_evalstack = nullptr;
+  SvtxTrackEval *trackeval = nullptr;
+  SvtxTruthEval *trutheval = nullptr;
+  SvtxVertexEval *vertexeval = nullptr;
 };
 
 #endif // TRACKTOCALO_H

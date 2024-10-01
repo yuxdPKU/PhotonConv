@@ -317,9 +317,11 @@ void Fun4All_TrackCalo_MDC2(
   tcm->EMcalRadiusUser(doEMcalRadiusCorr);
   tcm->setEMcalRadius(new_cemc_rad);
   tcm->setdphicut(0.2);
-  tcm->setdzcut(10000);
+  tcm->setdzcut(20);
   tcm->setTrackPtLowCut(1.0);
   tcm->setEmcalELowCut(0.5);
+  tcm->setnTpcClusters(30);
+  tcm->setTrackQuality(100);
   tcm->setRawClusContEMName("CLUSTERINFO_CEMC");
   se->registerSubsystem(tcm);
 
@@ -336,6 +338,8 @@ void Fun4All_TrackCalo_MDC2(
   //ttc->anaCaloInfo();
   ttc->setTrackPtLowCut(1.0);
   ttc->setEmcalELowCut(0.5);
+  ttc->setnTpcClusters(30);
+  ttc->setTrackQuality(100);
   ttc->doTrkrCaloMatching_KFP();
   ttc->setRawClusContEMName("CLUSTERINFO_CEMC");
   ttc->setDFNodeName("myFinder");

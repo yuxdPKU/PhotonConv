@@ -180,6 +180,18 @@ float hcal_radius = 177.423;
   std::vector<float> *_ep_x_emc = 0;
   std::vector<float> *_ep_y_emc = 0;
   std::vector<float> *_ep_z_emc = 0;
+  std::vector<int> *_ep_has_truthmatching = 0;
+  std::vector<int> *_ep_true_id = 0;
+  std::vector<float> *_ep_true_px = 0;
+  std::vector<float> *_ep_true_py = 0;
+  std::vector<float> *_ep_true_pz = 0;
+  std::vector<float> *_ep_true_vertex_x = 0;
+  std::vector<float> *_ep_true_vertex_y = 0;
+  std::vector<float> *_ep_true_vertex_z = 0;
+  std::vector<float> *_ep_true_vertex_x_method2 = 0;
+  std::vector<float> *_ep_true_vertex_y_method2 = 0;
+  std::vector<float> *_ep_true_vertex_z_method2 = 0;
+
   std::vector<float> *_em_mass = 0;
   std::vector<float> *_em_x = 0;
   std::vector<float> *_em_y = 0;
@@ -216,6 +228,18 @@ float hcal_radius = 177.423;
   std::vector<float> *_em_x_emc = 0;
   std::vector<float> *_em_y_emc = 0;
   std::vector<float> *_em_z_emc = 0;
+  std::vector<int> *_em_has_truthmatching = 0;
+  std::vector<int> *_em_true_id = 0;
+  std::vector<float> *_em_true_px = 0;
+  std::vector<float> *_em_true_py = 0;
+  std::vector<float> *_em_true_pz = 0;
+  std::vector<float> *_em_true_vertex_x = 0;
+  std::vector<float> *_em_true_vertex_y = 0;
+  std::vector<float> *_em_true_vertex_z = 0;
+  std::vector<float> *_em_true_vertex_x_method2 = 0;
+  std::vector<float> *_em_true_vertex_y_method2 = 0;
+  std::vector<float> *_em_true_vertex_z_method2 = 0;
+
   std::vector<float> *_epem_DCA_2d = 0;
   std::vector<float> *_epem_DCA_3d = 0;
 
@@ -511,6 +535,22 @@ void setBranch_kfp(TChain* tree)
   tree->SetBranchAddress("_ep_x_emc", &_ep_x_emc);
   tree->SetBranchAddress("_ep_y_emc", &_ep_y_emc);
   tree->SetBranchAddress("_ep_z_emc", &_ep_z_emc);
+  tree->SetBranchAddress("_ep_has_truthmatching", &_ep_has_truthmatching);
+  tree->SetBranchAddress("_ep_true_id", &_ep_true_id);
+  tree->SetBranchAddress("_ep_true_px", &_ep_true_px);
+  tree->SetBranchAddress("_ep_true_py", &_ep_true_py);
+  tree->SetBranchAddress("_ep_true_pz", &_ep_true_pz);
+  tree->SetBranchAddress("_ep_true_vertex_x", &_ep_true_vertex_x);
+  tree->SetBranchAddress("_ep_true_vertex_y", &_ep_true_vertex_y);
+  tree->SetBranchAddress("_ep_true_vertex_z", &_ep_true_vertex_z);
+  tree->SetBranchAddress("_ep_true_vertex_x_method2", &_ep_true_vertex_x_method2);
+  tree->SetBranchAddress("_ep_true_vertex_y_method2", &_ep_true_vertex_y_method2);
+  tree->SetBranchAddress("_ep_true_vertex_z_method2", &_ep_true_vertex_z_method2);
+
+  std::vector<float> *_ep_true_vertex_x_method2 = 0;
+  std::vector<float> *_ep_true_vertex_y_method2 = 0;
+  std::vector<float> *_ep_true_vertex_z_method2 = 0;
+
   tree->SetBranchAddress("_em_mass", &_em_mass);
   tree->SetBranchAddress("_em_x", &_em_x);
   tree->SetBranchAddress("_em_y", &_em_y);
@@ -547,12 +587,25 @@ void setBranch_kfp(TChain* tree)
   tree->SetBranchAddress("_em_x_emc", &_em_x_emc);
   tree->SetBranchAddress("_em_y_emc", &_em_y_emc);
   tree->SetBranchAddress("_em_z_emc", &_em_z_emc);
+  tree->SetBranchAddress("_em_has_truthmatching", &_em_has_truthmatching);
+  tree->SetBranchAddress("_em_true_id", &_em_true_id);
+  tree->SetBranchAddress("_em_true_px", &_em_true_px);
+  tree->SetBranchAddress("_em_true_py", &_em_true_py);
+  tree->SetBranchAddress("_em_true_pz", &_em_true_pz);
+  tree->SetBranchAddress("_em_true_vertex_x", &_em_true_vertex_x);
+  tree->SetBranchAddress("_em_true_vertex_y", &_em_true_vertex_y);
+  tree->SetBranchAddress("_em_true_vertex_z", &_em_true_vertex_z);
+  tree->SetBranchAddress("_em_true_vertex_x_method2", &_em_true_vertex_x_method2);
+  tree->SetBranchAddress("_em_true_vertex_y_method2", &_em_true_vertex_y_method2);
+  tree->SetBranchAddress("_em_true_vertex_z_method2", &_em_true_vertex_z_method2);
+
   tree->SetBranchAddress("_emcal_phi", &_emcal_phi);
   tree->SetBranchAddress("_emcal_eta", &_emcal_eta);
   tree->SetBranchAddress("_emcal_x", &_emcal_x);
   tree->SetBranchAddress("_emcal_y", &_emcal_y);
   tree->SetBranchAddress("_emcal_z", &_emcal_z);
   tree->SetBranchAddress("_emcal_e", &_emcal_e);
+
   tree->SetBranchAddress("_epem_DCA_2d", &_epem_DCA_2d);
   tree->SetBranchAddress("_epem_DCA_3d", &_epem_DCA_3d);
 
@@ -714,4 +767,34 @@ std::vector<int> readNumberFromText(std::string infile) {
 bool isInRange(float min, float value, float max)
 {
   return min <= value && value <= max;
+}
+
+float calRadius(float pt, int q = 1)
+{
+  // R [cm] = pt [GeV/c] / (0.3 * q [e] * B [T]);
+  float R = pt / (0.3 * q * 1.4);
+  return R;
+}
+
+void moveSV(float ep_px, float ep_py, float ep_pz, float em_px, float em_py, float em_pz, float radius_old, float& radius_new, float& phi)
+{
+  float ep_phi = atan2(ep_py, ep_px);
+  float em_phi = atan2(em_py, em_px);
+
+  float ep_pt = sqrt(ep_px*ep_px+ep_py*ep_py);
+  float em_pt = sqrt(em_px*em_px+em_py*em_py);
+
+  float ep_r = calRadius(ep_pt);
+  float em_r = calRadius(em_pt);
+
+  // arc length l in time t: l = pt * t
+  // convert to radian: phi = l / R
+  // phi = t * 0.3 * q * B -> independent with pt
+  float dphi = em_phi - ep_phi;
+  float ep_l = dphi / 2. * ep_r;
+  float em_l = dphi / 2. * em_r;
+  float l = (ep_l+em_l) / 2.;
+
+  radius_new = radius_old - l;
+  phi = ep_phi + dphi / 2.;
 }

@@ -21,9 +21,10 @@ void EoP_kfp_v2(int runnumber=0)
   TFile* outputfile = new TFile(Form("./eop_%d_kfp_v2.root",runnumber),"recreate");
   TTree* outputtree = new TTree("tree","tree with eop info");
 
-  float teop_gamma_mass, teop_gamma_radius;
+  float teop_gamma_mass, teop_gamma_radius, teop_gamma_radius_corr;
   float teop_gamma_x, teop_gamma_y, teop_gamma_z;
   float teop_gamma_pE;
+  float teop_gamma_phi_corr;
   float teop_gamma_vertex_volume, teop_gamma_SV_chi2_per_nDoF;
   float teop_gamma_quality, teop_ep_quality, teop_em_quality;
   float teop_ep_emcal_e, teop_ep_emcal_phi, teop_ep_emcal_x, teop_ep_emcal_y, teop_ep_emcal_z, teop_ep_emcal_eta;
@@ -32,6 +33,7 @@ void EoP_kfp_v2(int runnumber=0)
   float teop_em_p, teop_em_phi_projemc, teop_em_x_projemc, teop_em_y_projemc, teop_em_z_projemc;
   float teop_ep_pt, teop_ep_eta, teop_ep_phi, teop_ep_pE;
   float teop_em_pt, teop_em_eta, teop_em_phi, teop_em_pE;
+  float teop_ep_radius, teop_em_radius;
   float teop_ep_pt_raw, teop_ep_p_raw;
   float teop_em_pt_raw, teop_em_p_raw;
   float teop_ep_pt_unmoved, teop_ep_p_unmoved, teop_ep_pE_unmoved;
@@ -53,6 +55,14 @@ void EoP_kfp_v2(int runnumber=0)
   std::vector<int> teop_true_gamma_mother_id;
   std::vector<float> teop_true_ep_pt, teop_true_ep_p, teop_true_ep_eta, teop_true_ep_phi, teop_true_ep_pE;
   std::vector<float> teop_true_em_pt, teop_true_em_p, teop_true_em_eta, teop_true_em_phi, teop_true_em_pE;
+  int teop_em_has_truthmatching, teop_em_true_id;
+  int teop_ep_has_truthmatching, teop_ep_true_id;
+  float teop_em_true_px, teop_em_true_py, teop_em_true_pz;
+  float teop_ep_true_px, teop_ep_true_py, teop_ep_true_pz;
+  float teop_em_true_vertex_x, teop_em_true_vertex_y, teop_em_true_vertex_z;
+  float teop_ep_true_vertex_x, teop_ep_true_vertex_y, teop_ep_true_vertex_z;
+  float teop_em_true_vertex_x_method2, teop_em_true_vertex_y_method2, teop_em_true_vertex_z_method2;
+  float teop_ep_true_vertex_x_method2, teop_ep_true_vertex_y_method2, teop_ep_true_vertex_z_method2;
   //for truth-reco matching test
   std::vector<float> teop_ep_phi_recotruthDiff, teop_em_phi_recotruthDiff;
   std::vector<float> teop_ep_eta_recotruthDiff, teop_em_eta_recotruthDiff;
@@ -62,6 +72,8 @@ void EoP_kfp_v2(int runnumber=0)
   outputtree->Branch("_eventNumber",&_eventNumber,"_eventNumber/I");
   outputtree->Branch("_gamma_mass",&teop_gamma_mass,"_gamma_mass/F");
   outputtree->Branch("_gamma_radius",&teop_gamma_radius,"_gamma_radius/F");
+  outputtree->Branch("_gamma_radius_corr",&teop_gamma_radius_corr,"_gamma_radius_corr/F");
+  outputtree->Branch("_gamma_phi_corr",&teop_gamma_phi_corr,"_gamma_phi_corr/F");
   outputtree->Branch("_gamma_x",&teop_gamma_x,"_gamma_x/F");
   outputtree->Branch("_gamma_y",&teop_gamma_y,"_gamma_y/F");
   outputtree->Branch("_gamma_z",&teop_gamma_z,"_gamma_z/F");
@@ -101,6 +113,8 @@ void EoP_kfp_v2(int runnumber=0)
   outputtree->Branch("_em_pE",&teop_em_pE,"_em_pE/F");
   outputtree->Branch("_ep_pE_unmoved",&teop_ep_pE_unmoved,"_ep_pE_unmoved/F");
   outputtree->Branch("_em_pE_unmoved",&teop_em_pE_unmoved,"_em_pE_unmoved/F");
+  outputtree->Branch("_ep_radius",&teop_ep_radius,"_ep_radius/F");
+  outputtree->Branch("_em_radius",&teop_em_radius,"_em_radius/F");
   outputtree->Branch("_ep_mass_1",&teop_ep_mass_1,"_ep_mass_1/F");
   outputtree->Branch("_em_mass_1",&teop_em_mass_1,"_em_mass_1/F");
   outputtree->Branch("_ep_mass_2",&teop_ep_mass_2,"_ep_mass_2/F");
@@ -140,6 +154,31 @@ void EoP_kfp_v2(int runnumber=0)
   outputtree->Branch("_eop_ep",&teop_eop_ep,"_eop_ep/F");
   outputtree->Branch("_eop_em",&teop_eop_em,"_eop_em/F");
 
+  // reco-truth matching by using g4truthinfo / recotruthmap
+  outputtree->Branch("_ep_has_truthmatching",&teop_ep_has_truthmatching);
+  outputtree->Branch("_em_has_truthmatching",&teop_em_has_truthmatching);
+  outputtree->Branch("_ep_true_id",&teop_ep_true_id);
+  outputtree->Branch("_em_true_id",&teop_em_true_id);
+  outputtree->Branch("_ep_true_px",&teop_ep_true_px);
+  outputtree->Branch("_em_true_px",&teop_em_true_px);
+  outputtree->Branch("_ep_true_py",&teop_ep_true_py);
+  outputtree->Branch("_em_true_py",&teop_em_true_py);
+  outputtree->Branch("_ep_true_pz",&teop_ep_true_pz);
+  outputtree->Branch("_em_true_pz",&teop_em_true_pz);
+  outputtree->Branch("_ep_true_vertex_x",&teop_ep_true_vertex_x);
+  outputtree->Branch("_em_true_vertex_x",&teop_em_true_vertex_x);
+  outputtree->Branch("_ep_true_vertex_y",&teop_ep_true_vertex_y);
+  outputtree->Branch("_em_true_vertex_y",&teop_em_true_vertex_y);
+  outputtree->Branch("_ep_true_vertex_z",&teop_ep_true_vertex_z);
+  outputtree->Branch("_em_true_vertex_z",&teop_em_true_vertex_z);
+  outputtree->Branch("_ep_true_vertex_x_method2",&teop_ep_true_vertex_x_method2);
+  outputtree->Branch("_em_true_vertex_x_method2",&teop_em_true_vertex_x_method2);
+  outputtree->Branch("_ep_true_vertex_y_method2",&teop_ep_true_vertex_y_method2);
+  outputtree->Branch("_em_true_vertex_y_method2",&teop_em_true_vertex_y_method2);
+  outputtree->Branch("_ep_true_vertex_z_method2",&teop_ep_true_vertex_z_method2);
+  outputtree->Branch("_em_true_vertex_z_method2",&teop_em_true_vertex_z_method2);
+
+  //pure truth info (do not match with reco)
   outputtree->Branch("_true_gamma_mass",&teop_true_gamma_mass);
   outputtree->Branch("_true_gamma_pE",&teop_true_gamma_pE);
   outputtree->Branch("_true_gamma_eta",&teop_true_gamma_eta);
@@ -162,6 +201,8 @@ void EoP_kfp_v2(int runnumber=0)
   outputtree->Branch("_true_em_phi",&teop_true_em_phi);
   outputtree->Branch("_true_ep_pE",&teop_true_ep_pE);
   outputtree->Branch("_true_em_pE",&teop_true_em_pE);
+
+  // reco truth difference (do not match in truth level)
   outputtree->Branch("_ep_phi_recotruthDiff",&teop_ep_phi_recotruthDiff);
   outputtree->Branch("_em_phi_recotruthDiff",&teop_em_phi_recotruthDiff);
   outputtree->Branch("_ep_eta_recotruthDiff",&teop_ep_eta_recotruthDiff);
@@ -316,6 +357,7 @@ void EoP_kfp_v2(int runnumber=0)
 
       teop_gamma_mass = _gamma_mass->at(ican);
       teop_gamma_radius = gamma_r;
+      moveSV(_ep_px->at(ican) , _ep_py->at(ican), _ep_pz->at(ican), _em_px->at(ican) , _em_py->at(ican), _em_pz->at(ican), teop_gamma_radius, teop_gamma_radius_corr, teop_gamma_phi_corr);
       teop_gamma_x = _gamma_x->at(ican);
       teop_gamma_y = _gamma_y->at(ican);
       teop_gamma_z = _gamma_z->at(ican);
@@ -518,6 +560,8 @@ void EoP_kfp_v2(int runnumber=0)
       teop_ep_eta = _ep_pseudorapidity->at(ican);
       teop_ep_phi = _ep_phi->at(ican);
       teop_ep_pE = _ep_pE->at(ican);
+      teop_ep_radius = sqrt(pow(_ep_x->at(ican),2)+pow(_ep_y->at(ican),2));
+      teop_em_radius = sqrt(pow(_em_x->at(ican),2)+pow(_em_y->at(ican),2));
       teop_ep_mass_1 = _ep_mass->at(ican);
       teop_ep_mass_2 = customsqrt( pow(_ep_pE->at(ican),2) - pow(_ep_p->at(ican),2) );
       teop_ep_mass_3 = customsqrt( pow(_ep_pE_unmoved->at(ican),2) - pow(_ep_p_unmoved->at(ican),2) );
@@ -549,6 +593,29 @@ void EoP_kfp_v2(int runnumber=0)
       teop_em_quality = _em_chi2->at(ican) / _em_nDoF->at(ican);
       teop_em_charge = -1;
       teop_em_crossing = _em_crossing->at(ican);
+
+      teop_ep_has_truthmatching = _ep_has_truthmatching->at(ican);
+      teop_em_has_truthmatching = _em_has_truthmatching->at(ican);
+      teop_ep_true_id = _ep_true_id->at(ican);
+      teop_em_true_id = _em_true_id->at(ican);
+      teop_ep_true_px = _ep_true_px->at(ican);
+      teop_em_true_px = _em_true_px->at(ican);
+      teop_ep_true_py = _ep_true_py->at(ican);
+      teop_em_true_py = _em_true_py->at(ican);
+      teop_ep_true_pz = _ep_true_pz->at(ican);
+      teop_em_true_pz = _em_true_pz->at(ican);
+      teop_ep_true_vertex_x = _ep_true_vertex_x->at(ican);
+      teop_em_true_vertex_x = _em_true_vertex_x->at(ican);
+      teop_ep_true_vertex_y = _ep_true_vertex_y->at(ican);
+      teop_em_true_vertex_y = _em_true_vertex_y->at(ican);
+      teop_ep_true_vertex_z = _ep_true_vertex_z->at(ican);
+      teop_em_true_vertex_z = _em_true_vertex_z->at(ican);
+      teop_ep_true_vertex_x_method2 = _ep_true_vertex_x_method2->at(ican);
+      teop_em_true_vertex_x_method2 = _em_true_vertex_x_method2->at(ican);
+      teop_ep_true_vertex_y_method2 = _ep_true_vertex_y_method2->at(ican);
+      teop_em_true_vertex_y_method2 = _em_true_vertex_y_method2->at(ican);
+      teop_ep_true_vertex_z_method2 = _ep_true_vertex_z_method2->at(ican);
+      teop_em_true_vertex_z_method2 = _em_true_vertex_z_method2->at(ican);
 
       teop_track12_deta = _ep_pseudorapidity->at(ican) - _em_pseudorapidity->at(ican);
       teop_track12_dphi = _ep_phi->at(ican) - _em_phi->at(ican);
