@@ -727,17 +727,20 @@ m_truthInfo->identify();
     dst_reco_truth_map = findNode::getClass<SvtxPHG4ParticleMap_v1>(topNode, "SvtxPHG4ParticleMap");
   }
 
-  if (!m_svtx_evalstack)
+  if (m_truthInfo)
   {
-    m_svtx_evalstack = new SvtxEvalStack(topNode);
-    // clustereval = m_svtx_evalstack->get_cluster_eval();
-    // hiteval = m_svtx_evalstack->get_hit_eval();
-    trackeval = m_svtx_evalstack->get_track_eval();
-    trutheval = m_svtx_evalstack->get_truth_eval();
-    vertexeval = m_svtx_evalstack->get_vertex_eval();
-  }
+    if (!m_svtx_evalstack)
+    {
+      m_svtx_evalstack = new SvtxEvalStack(topNode);
+      // clustereval = m_svtx_evalstack->get_cluster_eval();
+      // hiteval = m_svtx_evalstack->get_hit_eval();
+      trackeval = m_svtx_evalstack->get_track_eval();
+      trutheval = m_svtx_evalstack->get_truth_eval();
+      vertexeval = m_svtx_evalstack->get_vertex_eval();
+    }
 
-  m_svtx_evalstack->next_event(topNode);
+    m_svtx_evalstack->next_event(topNode);
+  }
 
   if (m_doTrkrCaloMatching)
   {

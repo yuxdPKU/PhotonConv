@@ -866,24 +866,22 @@ void buildSV(float ep_pcax, float ep_pcay, float ep_px, float ep_py, float em_pc
   float ep_phi = atan2(ep_py, ep_px);
   float em_phi = atan2(em_py, em_px);
 
-//cout<<"e+ momentum at pca: px = "<<ep_px<<" py = "<<ep_py<<" phi = "<<ep_phi<<endl;
-//cout<<"e- momentum at pca: px = "<<em_px<<" py = "<<em_py<<" phi = "<<em_phi<<endl;
-//cout<<"e+ pca: x = "<<ep_pcax<<" y = "<<ep_pcay<<endl;
-//cout<<"e- pca: x = "<<em_pcax<<" y = "<<em_pcay<<endl;
-
   float ep_pt = sqrt(ep_px*ep_px+ep_py*ep_py);
   float em_pt = sqrt(em_px*em_px+em_py*em_py);
-//cout<<"ep_pt = "<<ep_pt<<endl;
-//cout<<"em_pt = "<<em_pt<<endl;
 
   float ep_r = calRadius(ep_pt);
   float em_r = calRadius(em_pt);
-//cout<<"ep_r = "<<ep_r<<endl;
-//cout<<"em_r = "<<em_r<<endl;
 
+  bool forward_or_backward;
+  if (PiRange(em_phi - ep_phi)<0)
+  {
+    forward_or_backward = 0;
+  }
+  else
+  {
+    forward_or_backward = 1;
+  }
   float dphi = fabs(PiRange(em_phi - ep_phi));
-//cout<<"ep_l = "<<dphi / 2. * ep_r<<endl;
-//cout<<"em_l = "<<dphi / 2. * em_r<<endl;
 
   // after rotating dphi/2 angle, phi angle difference between e+ e- is zero
   // calculate the length dl from the position after rotation to PCA
@@ -891,14 +889,31 @@ void buildSV(float ep_pcax, float ep_pcay, float ep_px, float ep_py, float em_pc
   float em_dl = 2 * em_r * sin(dphi / 4.);
 
   // phi angle of dl vector
-  float ep_dl_phi = em_phi + dphi / 4.;
-  float em_dl_phi = ep_phi - dphi / 4.;
+  float ep_dl_phi, em_dl_phi;
+  if (forward_or_backward==0)
+  {
+    ep_dl_phi = ep_phi - dphi / 4.;
+    em_dl_phi = em_phi + dphi / 4.;
+  }
+  else if (forward_or_backward==1)
+  {
+    ep_dl_phi = ep_phi - (TMath::Pi() - dphi / 4.);
+    em_dl_phi = em_phi + (TMath::Pi() - dphi / 4.);
+  }
 
   // calculate sv position
   ep_svx = ep_pcax + ep_dl * cos(ep_dl_phi);
   em_svx = em_pcax + em_dl * cos(em_dl_phi);
   ep_svy = ep_pcay + ep_dl * sin(ep_dl_phi);
   em_svy = em_pcay + em_dl * sin(em_dl_phi);
-  ep_phi_new = ep_phi + dphi / 2.;
-  em_phi_new = em_phi - dphi / 2.;
+  if (forward_or_backward==0)
+  {
+    ep_phi_new = ep_phi - dphi / 2.;
+    em_phi_new = em_phi + dphi / 2.;
+  }
+  else if (forward_or_backward==1)
+  {
+    ep_phi_new = ep_phi + dphi / 2.;
+    em_phi_new = em_phi - dphi / 2.;
+  }
 }
