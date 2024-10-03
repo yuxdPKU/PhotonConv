@@ -9,6 +9,8 @@ void EoP_kfp_v2(int runnumber=0)
 {
   int verbosity = 0;
 
+  bool doTruthMatching = false;
+
   SetsPhenixStyle();
   //gStyle->SetOptStat(0);
 
@@ -21,21 +23,28 @@ void EoP_kfp_v2(int runnumber=0)
   TFile* outputfile = new TFile(Form("./eop_%d_kfp_v2.root",runnumber),"recreate");
   TTree* outputtree = new TTree("tree","tree with eop info");
 
-  float teop_gamma_mass, teop_gamma_radius, teop_gamma_radius_corr;
+  float teop_gamma_mass, teop_gamma_radius;
   float teop_gamma_x, teop_gamma_y, teop_gamma_z;
   float teop_gamma_pE;
-  float teop_gamma_phi_corr;
   float teop_gamma_vertex_volume, teop_gamma_SV_chi2_per_nDoF;
   float teop_gamma_quality, teop_ep_quality, teop_em_quality;
   float teop_ep_emcal_e, teop_ep_emcal_phi, teop_ep_emcal_x, teop_ep_emcal_y, teop_ep_emcal_z, teop_ep_emcal_eta;
   float teop_em_emcal_e, teop_em_emcal_phi, teop_em_emcal_x, teop_em_emcal_y, teop_em_emcal_z, teop_em_emcal_eta;
   float teop_ep_p, teop_ep_phi_projemc, teop_ep_x_projemc, teop_ep_y_projemc, teop_ep_z_projemc;
   float teop_em_p, teop_em_phi_projemc, teop_em_x_projemc, teop_em_y_projemc, teop_em_z_projemc;
-  float teop_ep_pt, teop_ep_eta, teop_ep_phi, teop_ep_pE;
-  float teop_em_pt, teop_em_eta, teop_em_phi, teop_em_pE;
-  float teop_ep_radius, teop_em_radius;
-  float teop_ep_pt_raw, teop_ep_p_raw;
-  float teop_em_pt_raw, teop_em_p_raw;
+  float teop_ep_px, teop_ep_py, teop_ep_pz, teop_ep_pt, teop_ep_eta, teop_ep_phi, teop_ep_pE, teop_ep_phi_corr, teop_ep_phi_corr2;
+  float teop_em_px, teop_em_py, teop_em_pz, teop_em_pt, teop_em_eta, teop_em_phi, teop_em_pE, teop_em_phi_corr, teop_em_phi_corr2;
+  float teop_ep_x, teop_ep_y, teop_ep_z, teop_ep_radius;
+  float teop_em_x, teop_em_y, teop_em_z, teop_em_radius;
+  float teop_SV_x, teop_SV_y, teop_SV_z, teop_SV_radius;
+  float teop_SV_radius_corr; // simple correction by using momentum at SV from KFP
+  // correction from tracking pca
+  float teop_ep_x_corr2, teop_ep_y_corr2, teop_ep_radius_corr2;
+  float teop_em_x_corr2, teop_em_y_corr2, teop_em_radius_corr2;
+  float teop_SV_x_corr2, teop_SV_y_corr2, teop_SV_z_corr2, teop_SV_radius_corr2;
+  float teop_track12_distance_2d_corr2;
+  float teop_ep_px_raw, teop_ep_py_raw, teop_ep_pz_raw, teop_ep_pt_raw, teop_ep_p_raw, teop_ep_eta_raw, teop_ep_phi_raw;
+  float teop_em_px_raw, teop_em_py_raw, teop_em_pz_raw, teop_em_pt_raw, teop_em_p_raw, teop_em_eta_raw, teop_em_phi_raw;
   float teop_ep_pt_unmoved, teop_ep_p_unmoved, teop_ep_pE_unmoved;
   float teop_em_pt_unmoved, teop_em_p_unmoved, teop_em_pE_unmoved;
   int teop_ep_charge, teop_ep_crossing;
@@ -52,6 +61,7 @@ void EoP_kfp_v2(int runnumber=0)
   std::vector<float> teop_true_gamma_mass, teop_true_gamma_pE, teop_true_gamma_eta;
   std::vector<float> teop_true_gamma_prod_radius, teop_true_gamma_prod_x, teop_true_gamma_prod_y, teop_true_gamma_prod_z;
   std::vector<float> teop_true_gamma_decay_radius, teop_true_gamma_decay_x, teop_true_gamma_decay_y, teop_true_gamma_decay_z;
+  std::vector<float> teop_true_ep_radius, teop_true_em_radius;
   std::vector<int> teop_true_gamma_mother_id;
   std::vector<float> teop_true_ep_pt, teop_true_ep_p, teop_true_ep_eta, teop_true_ep_phi, teop_true_ep_pE;
   std::vector<float> teop_true_em_pt, teop_true_em_p, teop_true_em_eta, teop_true_em_phi, teop_true_em_pE;
@@ -65,15 +75,15 @@ void EoP_kfp_v2(int runnumber=0)
   float teop_ep_true_vertex_x_method2, teop_ep_true_vertex_y_method2, teop_ep_true_vertex_z_method2;
   //for truth-reco matching test
   std::vector<float> teop_ep_phi_recotruthDiff, teop_em_phi_recotruthDiff;
-  std::vector<float> teop_ep_eta_recotruthDiff, teop_em_eta_recotruthDiff;
-  std::vector<float> teop_SV_phi_recotruthDiff, teop_SV_z_recotruthDiff;
+  std::vector<float> teop_ep_phi_raw_recotruthDiff, teop_em_phi_raw_recotruthDiff;
+  std::vector<float> teop_ep_phi_corr_recotruthDiff, teop_em_phi_corr_recotruthDiff;
+  std::vector<float> teop_ep_phi_corr2_recotruthDiff, teop_em_phi_corr2_recotruthDiff;
+  std::vector<float> teop_SV_phi_recotruthDiff;
 
   outputtree->Branch("_runNumber",&_runNumber,"_runNumber/I");
   outputtree->Branch("_eventNumber",&_eventNumber,"_eventNumber/I");
   outputtree->Branch("_gamma_mass",&teop_gamma_mass,"_gamma_mass/F");
   outputtree->Branch("_gamma_radius",&teop_gamma_radius,"_gamma_radius/F");
-  outputtree->Branch("_gamma_radius_corr",&teop_gamma_radius_corr,"_gamma_radius_corr/F");
-  outputtree->Branch("_gamma_phi_corr",&teop_gamma_phi_corr,"_gamma_phi_corr/F");
   outputtree->Branch("_gamma_x",&teop_gamma_x,"_gamma_x/F");
   outputtree->Branch("_gamma_y",&teop_gamma_y,"_gamma_y/F");
   outputtree->Branch("_gamma_z",&teop_gamma_z,"_gamma_z/F");
@@ -99,6 +109,18 @@ void EoP_kfp_v2(int runnumber=0)
   outputtree->Branch("_em_p_raw",&teop_em_p_raw,"_em_p_raw/F");
   outputtree->Branch("_ep_p_unmoved",&teop_ep_p_unmoved,"_ep_p_unmoved/F");
   outputtree->Branch("_em_p_unmoved",&teop_em_p_unmoved,"_em_p_unmoved/F");
+  outputtree->Branch("_ep_px",&teop_ep_px,"_ep_px/F");
+  outputtree->Branch("_em_px",&teop_em_px,"_em_px/F");
+  outputtree->Branch("_ep_px_raw",&teop_ep_px_raw,"_ep_px_raw/F");
+  outputtree->Branch("_em_px_raw",&teop_em_px_raw,"_em_px_raw/F");
+  outputtree->Branch("_ep_py",&teop_ep_py,"_ep_py/F");
+  outputtree->Branch("_em_py",&teop_em_py,"_em_py/F");
+  outputtree->Branch("_ep_py_raw",&teop_ep_py_raw,"_ep_py_raw/F");
+  outputtree->Branch("_em_py_raw",&teop_em_py_raw,"_em_py_raw/F");
+  outputtree->Branch("_ep_pz",&teop_ep_pz,"_ep_pz/F");
+  outputtree->Branch("_em_pz",&teop_em_pz,"_em_pz/F");
+  outputtree->Branch("_ep_pz_raw",&teop_ep_pz_raw,"_ep_pz_raw/F");
+  outputtree->Branch("_em_pz_raw",&teop_em_pz_raw,"_em_pz_raw/F");
   outputtree->Branch("_ep_pt",&teop_ep_pt,"_ep_pt/F");
   outputtree->Branch("_em_pt",&teop_em_pt,"_em_pt/F");
   outputtree->Branch("_ep_pt_raw",&teop_ep_pt_raw,"_ep_pt_raw/F");
@@ -107,14 +129,44 @@ void EoP_kfp_v2(int runnumber=0)
   outputtree->Branch("_em_pt_unmoved",&teop_em_pt_unmoved,"_em_pt_unmoved/F");
   outputtree->Branch("_ep_eta",&teop_ep_eta,"_ep_eta/F");
   outputtree->Branch("_em_eta",&teop_em_eta,"_em_eta/F");
+  outputtree->Branch("_ep_eta_raw",&teop_ep_eta_raw,"_ep_eta_raw/F");
+  outputtree->Branch("_em_eta_raw",&teop_em_eta_raw,"_em_eta_raw/F");
   outputtree->Branch("_ep_phi",&teop_ep_phi,"_ep_phi/F");
+  outputtree->Branch("_ep_phi_corr",&teop_ep_phi_corr,"_ep_phi_corr/F");
+  outputtree->Branch("_ep_phi_corr2",&teop_ep_phi_corr2,"_ep_phi_corr2/F");
   outputtree->Branch("_em_phi",&teop_em_phi,"_em_phi/F");
+  outputtree->Branch("_em_phi_corr",&teop_em_phi_corr,"_em_phi_corr/F");
+  outputtree->Branch("_em_phi_corr2",&teop_em_phi_corr2,"_em_phi_corr2/F");
+  outputtree->Branch("_ep_phi_raw",&teop_ep_phi_raw,"_ep_phi_raw/F");
+  outputtree->Branch("_em_phi_raw",&teop_em_phi_raw,"_em_phi_raw/F");
   outputtree->Branch("_ep_pE",&teop_ep_pE,"_ep_pE/F");
   outputtree->Branch("_em_pE",&teop_em_pE,"_em_pE/F");
   outputtree->Branch("_ep_pE_unmoved",&teop_ep_pE_unmoved,"_ep_pE_unmoved/F");
   outputtree->Branch("_em_pE_unmoved",&teop_em_pE_unmoved,"_em_pE_unmoved/F");
+  outputtree->Branch("_ep_x",&teop_ep_x,"_ep_x/F");
+  outputtree->Branch("_em_x",&teop_em_x,"_em_x/F");
+  outputtree->Branch("_ep_y",&teop_ep_y,"_ep_y/F");
+  outputtree->Branch("_em_y",&teop_em_y,"_em_y/F");
+  outputtree->Branch("_ep_z",&teop_ep_z,"_ep_z/F");
+  outputtree->Branch("_em_z",&teop_em_z,"_em_z/F");
   outputtree->Branch("_ep_radius",&teop_ep_radius,"_ep_radius/F");
   outputtree->Branch("_em_radius",&teop_em_radius,"_em_radius/F");
+  outputtree->Branch("_SV_x",&teop_SV_x,"_SV_x/F");
+  outputtree->Branch("_SV_y",&teop_SV_y,"_SV_y/F");
+  outputtree->Branch("_SV_z",&teop_SV_z,"_SV_z/F");
+  outputtree->Branch("_SV_radius",&teop_SV_radius,"_SV_radius/F");
+  outputtree->Branch("_SV_radius_corr",&teop_SV_radius_corr,"_SV_radius_corr/F");
+  outputtree->Branch("_ep_x_corr2",&teop_ep_x_corr2,"_ep_x_corr2/F");
+  outputtree->Branch("_ep_y_corr2",&teop_ep_y_corr2,"_ep_y_corr2/F");
+  outputtree->Branch("_ep_radius_corr2",&teop_ep_radius_corr2,"_ep_radius_corr2/F");
+  outputtree->Branch("_em_x_corr2",&teop_em_x_corr2,"_em_x_corr2/F");
+  outputtree->Branch("_em_y_corr2",&teop_em_y_corr2,"_em_y_corr2/F");
+  outputtree->Branch("_em_radius_corr2",&teop_em_radius_corr2,"_em_radius_corr2/F");
+  outputtree->Branch("_SV_x_corr2",&teop_SV_x_corr2,"_SV_x_corr2/F");
+  outputtree->Branch("_SV_y_corr2",&teop_SV_y_corr2,"_SV_y_corr2/F");
+  outputtree->Branch("_SV_z_corr2",&teop_SV_z_corr2,"_SV_z_corr2/F");
+  outputtree->Branch("_SV_radius_corr2",&teop_SV_radius_corr2,"_SV_radius_corr2/F");
+  outputtree->Branch("_track12_distance_2d_corr2",&teop_track12_distance_2d_corr2,"_track12_distance_2d_corr2/F");
   outputtree->Branch("_ep_mass_1",&teop_ep_mass_1,"_ep_mass_1/F");
   outputtree->Branch("_em_mass_1",&teop_em_mass_1,"_em_mass_1/F");
   outputtree->Branch("_ep_mass_2",&teop_ep_mass_2,"_ep_mass_2/F");
@@ -191,6 +243,8 @@ void EoP_kfp_v2(int runnumber=0)
   outputtree->Branch("_true_gamma_decay_y",&teop_true_gamma_decay_y);
   outputtree->Branch("_true_gamma_decay_z",&teop_true_gamma_decay_z);
   outputtree->Branch("_true_gamma_mother_id",&teop_true_gamma_mother_id);
+  outputtree->Branch("_true_ep_radius",&teop_true_ep_radius);
+  outputtree->Branch("_true_em_radius",&teop_true_em_radius);
   outputtree->Branch("_true_ep_pt",&teop_true_ep_pt);
   outputtree->Branch("_true_em_pt",&teop_true_em_pt);
   outputtree->Branch("_true_ep_p",&teop_true_ep_p);
@@ -204,11 +258,14 @@ void EoP_kfp_v2(int runnumber=0)
 
   // reco truth difference (do not match in truth level)
   outputtree->Branch("_ep_phi_recotruthDiff",&teop_ep_phi_recotruthDiff);
+  outputtree->Branch("_ep_phi_raw_recotruthDiff",&teop_ep_phi_raw_recotruthDiff);
+  outputtree->Branch("_ep_phi_corr_recotruthDiff",&teop_ep_phi_corr_recotruthDiff);
+  outputtree->Branch("_ep_phi_corr2_recotruthDiff",&teop_ep_phi_corr2_recotruthDiff);
   outputtree->Branch("_em_phi_recotruthDiff",&teop_em_phi_recotruthDiff);
-  outputtree->Branch("_ep_eta_recotruthDiff",&teop_ep_eta_recotruthDiff);
-  outputtree->Branch("_em_eta_recotruthDiff",&teop_em_eta_recotruthDiff);
+  outputtree->Branch("_em_phi_raw_recotruthDiff",&teop_em_phi_raw_recotruthDiff);
+  outputtree->Branch("_em_phi_corr_recotruthDiff",&teop_em_phi_corr_recotruthDiff);
+  outputtree->Branch("_em_phi_corr2_recotruthDiff",&teop_em_phi_corr2_recotruthDiff);
   outputtree->Branch("_SV_phi_recotruthDiff",&teop_SV_phi_recotruthDiff);
-  outputtree->Branch("_SV_z_recotruthDiff",&teop_SV_z_recotruthDiff);
 
   std::vector<int> vec_ep_emcal_matched_index;
   std::vector<float> vec_ep_emcal_matched_e;
@@ -250,6 +307,8 @@ void EoP_kfp_v2(int runnumber=0)
     }
     chain->GetEntry(i);
 
+    if (doTruthMatching)
+    {
     // get truth info
     teop_true_gamma_mass.clear();
     teop_true_gamma_pE.clear();
@@ -263,6 +322,8 @@ void EoP_kfp_v2(int runnumber=0)
     teop_true_gamma_decay_y.clear();
     teop_true_gamma_decay_z.clear();
     teop_true_gamma_mother_id.clear();
+    teop_true_ep_radius.clear();
+    teop_true_em_radius.clear();
     teop_true_ep_pt.clear();
     teop_true_em_pt.clear();
     teop_true_ep_p.clear();
@@ -280,6 +341,8 @@ void EoP_kfp_v2(int runnumber=0)
       float gamma_radius = sqrt( pow(_true_gamma_x->at(icant),2) + pow(_true_gamma_y->at(icant),2) );
       float gamma_eta = cal_eta(_true_gamma_px->at(icant),_true_gamma_py->at(icant),_true_gamma_pz->at(icant));
       float epem_radius = sqrt( pow(_true_ep_x->at(icant),2) + pow(_true_ep_y->at(icant),2) );
+      float ep_radius = sqrt( pow(_true_ep_x->at(icant),2) + pow(_true_ep_y->at(icant),2) );
+      float em_radius = sqrt( pow(_true_em_x->at(icant),2) + pow(_true_em_y->at(icant),2) );
       float ep_pt = sqrt( pow(_true_ep_px->at(icant),2) + pow(_true_ep_py->at(icant),2) );
       float em_pt = sqrt( pow(_true_em_px->at(icant),2) + pow(_true_em_py->at(icant),2) );
       float ep_p = sqrt( pow(_true_ep_px->at(icant),2) + pow(_true_ep_py->at(icant),2) + pow(_true_ep_pz->at(icant),2) );
@@ -305,6 +368,9 @@ void EoP_kfp_v2(int runnumber=0)
       teop_true_gamma_decay_y.push_back(_true_ep_y->at(icant));
       teop_true_gamma_decay_z.push_back(_true_ep_z->at(icant));
 
+      teop_true_ep_radius.push_back(ep_radius);
+      teop_true_em_radius.push_back(em_radius);
+
       teop_true_ep_phi.push_back(_true_ep_phi->at(icant));
       teop_true_em_phi.push_back(_true_em_phi->at(icant));
       teop_true_ep_eta.push_back(_true_ep_eta->at(icant));
@@ -318,6 +384,7 @@ void EoP_kfp_v2(int runnumber=0)
       teop_true_em_p.push_back( em_p );
     }
     if (teop_true_em_p.size()==0) continue;
+    }
 
     for (int ican = 0; ican < _numCan; ican++)
     {
@@ -357,7 +424,6 @@ void EoP_kfp_v2(int runnumber=0)
 
       teop_gamma_mass = _gamma_mass->at(ican);
       teop_gamma_radius = gamma_r;
-      moveSV(_ep_px->at(ican) , _ep_py->at(ican), _ep_pz->at(ican), _em_px->at(ican) , _em_py->at(ican), _em_pz->at(ican), teop_gamma_radius, teop_gamma_radius_corr, teop_gamma_phi_corr);
       teop_gamma_x = _gamma_x->at(ican);
       teop_gamma_y = _gamma_y->at(ican);
       teop_gamma_z = _gamma_z->at(ican);
@@ -553,15 +619,21 @@ void EoP_kfp_v2(int runnumber=0)
       teop_ep_p = _ep_p->at(ican);
       teop_ep_p_raw = _ep_p_raw->at(ican);
       teop_ep_p_unmoved = _ep_p_unmoved->at(ican);
+      teop_ep_px = _ep_px->at(ican);
+      teop_ep_px_raw = _ep_px_raw->at(ican);
+      teop_ep_py = _ep_py->at(ican);
+      teop_ep_py_raw = _ep_py_raw->at(ican);
+      teop_ep_pz = _ep_pz->at(ican);
+      teop_ep_pz_raw = _ep_pz_raw->at(ican);
       teop_ep_pt = _ep_pT->at(ican);
       teop_ep_pt_raw = _ep_pT_raw->at(ican);
       teop_ep_pt_unmoved = _ep_pT_unmoved->at(ican);
       teop_ep_pE_unmoved = _ep_pE_unmoved->at(ican);
       teop_ep_eta = _ep_pseudorapidity->at(ican);
+      teop_ep_eta_raw = _ep_pseudorapidity_raw->at(ican);
       teop_ep_phi = _ep_phi->at(ican);
+      teop_ep_phi_raw = _ep_phi_raw->at(ican);
       teop_ep_pE = _ep_pE->at(ican);
-      teop_ep_radius = sqrt(pow(_ep_x->at(ican),2)+pow(_ep_y->at(ican),2));
-      teop_em_radius = sqrt(pow(_em_x->at(ican),2)+pow(_em_y->at(ican),2));
       teop_ep_mass_1 = _ep_mass->at(ican);
       teop_ep_mass_2 = customsqrt( pow(_ep_pE->at(ican),2) - pow(_ep_p->at(ican),2) );
       teop_ep_mass_3 = customsqrt( pow(_ep_pE_unmoved->at(ican),2) - pow(_ep_p_unmoved->at(ican),2) );
@@ -576,12 +648,20 @@ void EoP_kfp_v2(int runnumber=0)
       teop_em_p = _em_p->at(ican);
       teop_em_p_raw = _em_p_raw->at(ican);
       teop_em_p_unmoved = _em_p_unmoved->at(ican);
+      teop_em_px = _em_px->at(ican);
+      teop_em_px_raw = _em_px_raw->at(ican);
+      teop_em_py = _em_py->at(ican);
+      teop_em_py_raw = _em_py_raw->at(ican);
+      teop_em_pz = _em_pz->at(ican);
+      teop_em_pz_raw = _em_pz_raw->at(ican);
       teop_em_pt = _em_pT->at(ican);
       teop_em_pt_raw = _em_pT_raw->at(ican);
       teop_em_pt_unmoved = _em_pT_unmoved->at(ican);
       teop_em_pE_unmoved = _em_pE_unmoved->at(ican);
       teop_em_eta = _em_pseudorapidity->at(ican);
+      teop_em_eta_raw = _em_pseudorapidity_raw->at(ican);
       teop_em_phi = _em_phi->at(ican);
+      teop_em_phi_raw = _em_phi_raw->at(ican);
       teop_em_pE = _em_pE->at(ican);
       teop_em_mass_1 = _em_mass->at(ican);
       teop_em_mass_2 = customsqrt( pow(_em_pE->at(ican),2) - pow(_em_p->at(ican),2) );
@@ -594,6 +674,28 @@ void EoP_kfp_v2(int runnumber=0)
       teop_em_charge = -1;
       teop_em_crossing = _em_crossing->at(ican);
 
+      teop_ep_x = _ep_x->at(ican);
+      teop_ep_y = _ep_y->at(ican);
+      teop_ep_z = _ep_z->at(ican);
+      teop_ep_radius = sqrt(pow(_ep_x->at(ican),2)+pow(_ep_y->at(ican),2));
+      teop_em_x = _em_x->at(ican);
+      teop_em_y = _em_y->at(ican);
+      teop_em_z = _em_z->at(ican);
+      teop_em_radius = sqrt(pow(_em_x->at(ican),2)+pow(_em_y->at(ican),2));
+      teop_SV_x = (teop_ep_x + teop_em_x) / 2.;
+      teop_SV_y = (teop_ep_y + teop_em_y) / 2.;
+      teop_SV_z = (teop_ep_z + teop_em_z) / 2.;
+      teop_SV_radius = sqrt( pow(teop_SV_x,2) + pow(teop_SV_y,2) );
+      // SV correction 1
+      moveSV(_ep_px->at(ican) , _ep_py->at(ican), _ep_pz->at(ican), _em_px->at(ican) , _em_py->at(ican), _em_pz->at(ican), teop_SV_radius, teop_SV_radius_corr, teop_ep_phi_corr, teop_em_phi_corr);
+      // SV correction 2
+      buildSV(_ep_x_raw->at(ican), _ep_y_raw->at(ican), _ep_px_raw->at(ican), _ep_py_raw->at(ican), _em_x_raw->at(ican), _em_y_raw->at(ican), _em_px_raw->at(ican), _em_py_raw->at(ican), teop_ep_x_corr2, teop_ep_y_corr2, teop_em_x_corr2, teop_em_y_corr2, teop_ep_phi_corr2, teop_em_phi_corr2);
+      teop_SV_x_corr2 = (teop_ep_x_corr2+teop_em_x_corr2) / 2.;
+      teop_SV_y_corr2 = (teop_ep_y_corr2+teop_em_y_corr2) / 2.;
+      teop_ep_radius_corr2 = sqrt( pow(teop_ep_x_corr2,2) + pow(teop_ep_y_corr2,2) );
+      teop_em_radius_corr2 = sqrt( pow(teop_em_x_corr2,2) + pow(teop_em_y_corr2,2) );
+      teop_SV_radius_corr2 = sqrt( pow(teop_SV_x_corr2,2) + pow(teop_SV_y_corr2,2) );
+      teop_track12_distance_2d_corr2 = sqrt( pow((teop_ep_x_corr2-teop_em_x_corr2),2) + pow((teop_ep_y_corr2-teop_em_y_corr2),2) );
       teop_ep_has_truthmatching = _ep_has_truthmatching->at(ican);
       teop_em_has_truthmatching = _em_has_truthmatching->at(ican);
       teop_ep_true_id = _ep_true_id->at(ican);
@@ -649,20 +751,30 @@ void EoP_kfp_v2(int runnumber=0)
         teop_eop_ep = -1;
       }
 
+      if (doTruthMatching)
+      {
       teop_ep_phi_recotruthDiff.clear();
+      teop_ep_phi_raw_recotruthDiff.clear();
+      teop_ep_phi_corr_recotruthDiff.clear();
+      teop_ep_phi_corr2_recotruthDiff.clear();
       teop_em_phi_recotruthDiff.clear();
-      teop_ep_eta_recotruthDiff.clear();
-      teop_em_eta_recotruthDiff.clear();
+      teop_em_phi_raw_recotruthDiff.clear();
+      teop_em_phi_corr_recotruthDiff.clear();
+      teop_em_phi_corr2_recotruthDiff.clear();
       teop_SV_phi_recotruthDiff.clear();
-      teop_SV_z_recotruthDiff.clear();
+
       for (int icant = 0; icant < (teop_true_gamma_decay_radius.size()); icant++)
       {
         teop_ep_phi_recotruthDiff.push_back(PiRange(teop_ep_phi - teop_true_ep_phi.at(icant)));
+        teop_ep_phi_raw_recotruthDiff.push_back(PiRange(teop_ep_phi_raw - teop_true_ep_phi.at(icant)));
+        teop_ep_phi_corr_recotruthDiff.push_back(PiRange(teop_ep_phi_corr - teop_true_ep_phi.at(icant)));
+        teop_ep_phi_corr2_recotruthDiff.push_back(PiRange(teop_ep_phi_corr2 - teop_true_ep_phi.at(icant)));
         teop_em_phi_recotruthDiff.push_back(PiRange(teop_em_phi - teop_true_em_phi.at(icant)));
-        teop_ep_eta_recotruthDiff.push_back(teop_ep_eta - teop_true_ep_eta.at(icant));
-        teop_em_eta_recotruthDiff.push_back(teop_em_eta - teop_true_em_eta.at(icant));
+        teop_em_phi_raw_recotruthDiff.push_back(PiRange(teop_em_phi_raw - teop_true_em_phi.at(icant)));
+        teop_em_phi_corr_recotruthDiff.push_back(PiRange(teop_em_phi_corr - teop_true_em_phi.at(icant)));
+        teop_em_phi_corr2_recotruthDiff.push_back(PiRange(teop_em_phi_corr2 - teop_true_em_phi.at(icant)));
         teop_SV_phi_recotruthDiff.push_back(PiRange(atan2(teop_gamma_y,teop_gamma_x) - atan2(teop_true_gamma_decay_y.at(icant),teop_true_gamma_decay_x.at(icant))));
-        teop_SV_z_recotruthDiff.push_back(teop_gamma_z - teop_true_gamma_decay_z.at(icant));
+      }
       }
 
       outputtree->Fill();

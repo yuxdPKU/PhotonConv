@@ -244,13 +244,20 @@ void TrackToCalo::createBranches_KFP()
   _tree_KFP->Branch("_gamma_nDoF", &_gamma_nDoF);
   _tree_KFP->Branch("_gamma_vertex_volume", &_gamma_vertex_volume);
   _tree_KFP->Branch("_gamma_SV_chi2_per_nDoF", &_gamma_SV_chi2_per_nDoF);
+
   _tree_KFP->Branch("_ep_mass", &_ep_mass);
   _tree_KFP->Branch("_ep_x", &_ep_x);
+  _tree_KFP->Branch("_ep_x_raw", &_ep_x_raw);
   _tree_KFP->Branch("_ep_y", &_ep_y);
+  _tree_KFP->Branch("_ep_y_raw", &_ep_y_raw);
   _tree_KFP->Branch("_ep_z", &_ep_z);
+  _tree_KFP->Branch("_ep_z_raw", &_ep_z_raw);
   _tree_KFP->Branch("_ep_px", &_ep_px);
+  _tree_KFP->Branch("_ep_px_raw", &_ep_px_raw);
   _tree_KFP->Branch("_ep_py", &_ep_py);
+  _tree_KFP->Branch("_ep_py_raw", &_ep_py_raw);
   _tree_KFP->Branch("_ep_pz", &_ep_pz);
+  _tree_KFP->Branch("_ep_pz_raw", &_ep_pz_raw);
   _tree_KFP->Branch("_ep_pE", &_ep_pE);
   _tree_KFP->Branch("_ep_pE_unmoved", &_ep_pE_unmoved);
   _tree_KFP->Branch("_ep_pT", &_ep_pT);
@@ -262,11 +269,15 @@ void TrackToCalo::createBranches_KFP()
   _tree_KFP->Branch("_ep_p_raw", &_ep_p_raw);
   _tree_KFP->Branch("_ep_p_unmoved", &_ep_p_unmoved);
   _tree_KFP->Branch("_ep_pseudorapidity", &_ep_pseudorapidity);
+  _tree_KFP->Branch("_ep_pseudorapidity_raw", &_ep_pseudorapidity_raw);
   _tree_KFP->Branch("_ep_rapidity", &_ep_rapidity);
   _tree_KFP->Branch("_ep_theta", &_ep_theta);
   _tree_KFP->Branch("_ep_phi", &_ep_phi);
+  _tree_KFP->Branch("_ep_phi_raw", &_ep_phi_raw);
   _tree_KFP->Branch("_ep_chi2", &_ep_chi2);
+  _tree_KFP->Branch("_ep_chi2_raw", &_ep_chi2_raw);
   _tree_KFP->Branch("_ep_nDoF", &_ep_nDoF);
+  _tree_KFP->Branch("_ep_nDoF_raw", &_ep_nDoF_raw);
   _tree_KFP->Branch("_ep_crossing", &_ep_crossing);
   _tree_KFP->Branch("_ep_clus_ican", &_ep_clus_ican);
   //_tree_KFP->Branch("_ep_clus_type", &_ep_clus_type);
@@ -295,11 +306,17 @@ void TrackToCalo::createBranches_KFP()
 
   _tree_KFP->Branch("_em_mass", &_em_mass);
   _tree_KFP->Branch("_em_x", &_em_x);
+  _tree_KFP->Branch("_em_x_raw", &_em_x_raw);
   _tree_KFP->Branch("_em_y", &_em_y);
+  _tree_KFP->Branch("_em_y_raw", &_em_y_raw);
   _tree_KFP->Branch("_em_z", &_em_z);
+  _tree_KFP->Branch("_em_z_raw", &_em_z_raw);
   _tree_KFP->Branch("_em_px", &_em_px);
+  _tree_KFP->Branch("_em_px_raw", &_em_px_raw);
   _tree_KFP->Branch("_em_py", &_em_py);
+  _tree_KFP->Branch("_em_py_raw", &_em_py_raw);
   _tree_KFP->Branch("_em_pz", &_em_pz);
+  _tree_KFP->Branch("_em_pz_raw", &_em_pz_raw);
   _tree_KFP->Branch("_em_pE", &_em_pE);
   _tree_KFP->Branch("_em_pE_unmoved", &_em_pE_unmoved);
   _tree_KFP->Branch("_em_pT", &_em_pT);
@@ -311,11 +328,15 @@ void TrackToCalo::createBranches_KFP()
   _tree_KFP->Branch("_em_p_raw", &_em_p_raw);
   _tree_KFP->Branch("_em_p_unmoved", &_em_p_unmoved);
   _tree_KFP->Branch("_em_pseudorapidity", &_em_pseudorapidity);
+  _tree_KFP->Branch("_em_pseudorapidity_raw", &_em_pseudorapidity_raw);
   _tree_KFP->Branch("_em_rapidity", &_em_rapidity);
   _tree_KFP->Branch("_em_theta", &_em_theta);
   _tree_KFP->Branch("_em_phi", &_em_phi);
+  _tree_KFP->Branch("_em_phi_raw", &_em_phi_raw);
   _tree_KFP->Branch("_em_chi2", &_em_chi2);
+  _tree_KFP->Branch("_em_chi2_raw", &_em_chi2_raw);
   _tree_KFP->Branch("_em_nDoF", &_em_nDoF);
+  _tree_KFP->Branch("_em_nDoF_raw", &_em_nDoF_raw);
   _tree_KFP->Branch("_em_crossing", &_em_crossing);
   _tree_KFP->Branch("_em_clus_ican", &_em_clus_ican);
   //_tree_KFP->Branch("_em_clus_type", &_em_clus_type);
@@ -415,6 +436,32 @@ int TrackToCalo::process_event(PHCompositeNode *topNode)
       std::cout << "TrackToCalo::process_event: SvtxTrackMap not found!!!" << std::endl;
     }
   }
+
+/*
+std::cout<<"begin trackMap->identify()"<<std::endl;
+trackMap->identify();
+  for (auto &iter : *trackMap)
+  {
+    track = iter.second;
+
+    if(!track) continue;
+
+std::cout << " id " << track->get_id()
+          << " charge " << track->get_charge()
+          << " px " << track->get_px()
+          << " py " << track->get_py()
+          << " pz " << track->get_pz()
+          << " pt " << track->get_pt()
+          << " p " << track->get_p()
+          << " eta " << track->get_eta()
+          << " phi " << track->get_phi()
+          << " quality " << track->get_quality()
+          << " x = " << track->get_x()
+          << " y = " << track->get_y()
+          << " z = " << track->get_z()
+          << std::endl;
+  }
+*/
 
   if (!acts_Geometry)
   {
@@ -575,6 +622,93 @@ int TrackToCalo::process_event(PHCompositeNode *topNode)
       std::cout << "TrackToCalo::process_event: cannot find G4TruthInfo!!! can not do truth matching" << std::endl;
     }
   }
+
+/*
+std::cout<<"begin m_decayMap->identify()"<<std::endl;
+m_decayMap->identify();
+    for (auto &iter : *m_decayMap)
+    {
+      Decay decay = iter.second;
+
+      TLorentzVector *motherTrueLV = new TLorentzVector();
+      TLorentzVector *daughterTrueLV = new TLorentzVector();
+      TVector3 *mother3Vector = new TVector3();
+      TVector3 *daughter3Vector = new TVector3();
+
+      for (unsigned int i = 1; i < decay.size(); ++i)
+      {
+        int trackid = -999;
+        int pid = -999;
+        PHG4TruthInfoContainer::ConstRange range = m_truthInfo->GetParticleRange();
+        for (PHG4TruthInfoContainer::ConstIterator iter2 = range.first; iter2 != range.second; ++iter2)
+        {
+          PHG4Particle *daughterG4 = iter2->second;
+
+          PHG4Particle *motherG4 = nullptr;
+          if (daughterG4->get_parent_id() != 0)
+          {
+            motherG4 = m_truthInfo->GetParticle(daughterG4->get_parent_id());
+          }
+          else
+          {
+            continue;
+          }
+
+          if (motherG4->get_pid() == decay[0].second && motherG4->get_barcode() == decay[0].first.second && daughterG4->get_pid() == decay[i].second && daughterG4->get_barcode() == decay[i].first.second)
+          {
+            pid = daughterG4->get_pid();
+            trackid = daughterG4->get_track_id();
+
+            TVector3 *motherTrue3Vector = new TVector3(motherG4->get_px(), motherG4->get_py(), motherG4->get_pz());
+            motherTrueLV->SetVectM((*motherTrue3Vector), getParticleMass(decay[0].second));
+
+            PHG4VtxPoint *thisVtx = m_truthInfo->GetVtx(motherG4->get_vtx_id());
+            mother3Vector->SetXYZ(thisVtx->get_x(), thisVtx->get_y(), thisVtx->get_z());
+
+            daughterTrueLV->SetVectM(TVector3(daughterG4->get_px(), daughterG4->get_py(), daughterG4->get_pz()), getParticleMass(decay[i].second));
+
+            // Now get the decay vertex position
+            thisVtx = m_truthInfo->GetVtx(daughterG4->get_vtx_id());
+            daughter3Vector->SetXYZ(thisVtx->get_x(), thisVtx->get_y(), thisVtx->get_z());
+
+            delete motherTrue3Vector;
+          }
+        }
+
+std::cout << " id " << pid
+          << " trackid " << trackid
+          << " px " << daughterTrueLV->Px()
+          << " py " << daughterTrueLV->Py()
+          << " pz " << daughterTrueLV->Pz()
+          << " pt " << daughterTrueLV->Pt()
+          << " p " << daughterTrueLV->P()
+          << " e " << daughterTrueLV->E()
+          << " eta " << daughterTrueLV->PseudoRapidity()
+          << " phi " << daughterTrueLV->Phi()
+          << " vx = " << daughter3Vector->X()
+          << " vy = " << daughter3Vector->Y()
+          << " vz = " << daughter3Vector->Z()
+          << std::endl;
+      }
+
+std::cout << " id " << 22
+          << " px " << motherTrueLV->Px()
+          << " py " << motherTrueLV->Py()
+          << " pz " << motherTrueLV->Pz()
+          << " pt " << motherTrueLV->Pt()
+          << " p " << motherTrueLV->P()
+          << " e " << motherTrueLV->E()
+          << " eta " << motherTrueLV->PseudoRapidity()
+          << " phi " << motherTrueLV->Phi()
+          << " vx = " << mother3Vector->X()
+          << " vy = " << mother3Vector->Y()
+          << " vz = " << mother3Vector->Z()
+          << std::endl;
+    }
+
+std::cout<<"begin m_truthInfo->identify()"<<std::endl;
+m_truthInfo->identify();
+*/
 
   PHNode *svtxg4Node = dynamic_cast<PHNode *>(nodeIter.findFirst("SvtxPHG4ParticleMap"));
   //if (svtxg4Node && false)
@@ -1748,11 +1882,17 @@ std::cout<<"begin candidate "<<i<<std::endl;
         kfp_em = kfp_daughter;
         _em_mass.push_back(kfp_daughter->GetMass());
         _em_x.push_back(kfp_daughter->GetX());
+        _em_x_raw.push_back(track->get_x());
         _em_y.push_back(kfp_daughter->GetY());
+        _em_y_raw.push_back(track->get_y());
         _em_z.push_back(kfp_daughter->GetZ());
+        _em_z_raw.push_back(track->get_z());
         _em_px.push_back(kfp_daughter->GetPx());
+        _em_px_raw.push_back(track->get_px());
         _em_py.push_back(kfp_daughter->GetPy());
+        _em_py_raw.push_back(track->get_py());
         _em_pz.push_back(kfp_daughter->GetPz());
+        _em_pz_raw.push_back(track->get_pz());
         _em_pE.push_back(kfp_daughter->GetE());
         _em_pE_unmoved.push_back(e_daughter_unmoved);
         _em_pT.push_back(kfp_daughter->GetPt());
@@ -1764,11 +1904,15 @@ std::cout<<"begin candidate "<<i<<std::endl;
         _em_p_raw.push_back(track->get_p());
         _em_p_unmoved.push_back(p_daughter_unmoved);
         _em_pseudorapidity.push_back(kfp_daughter->GetEta());
+        _em_pseudorapidity_raw.push_back(track->get_eta());
         _em_rapidity.push_back(kfp_daughter->GetRapidity());
         _em_theta.push_back(kfp_daughter->GetTheta());
         _em_phi.push_back(kfp_daughter->GetPhi());
+        _em_phi_raw.push_back(track->get_phi());
         _em_chi2.push_back(kfp_daughter->GetChi2());
+        _em_chi2_raw.push_back(track->get_chisq());
         _em_nDoF.push_back(kfp_daughter->GetNDF());
+        _em_nDoF_raw.push_back(track->get_ndf());
         _em_crossing.push_back(track->get_crossing());
 
         if (m_doTruthMatching)
@@ -1837,11 +1981,17 @@ std::cout<<"begin candidate "<<i<<std::endl;
         kfp_ep = kfp_daughter;
         _ep_mass.push_back(kfp_daughter->GetMass());
         _ep_x.push_back(kfp_daughter->GetX());
+        _ep_x_raw.push_back(track->get_x());
         _ep_y.push_back(kfp_daughter->GetY());
+        _ep_y_raw.push_back(track->get_y());
         _ep_z.push_back(kfp_daughter->GetZ());
+        _ep_z_raw.push_back(track->get_z());
         _ep_px.push_back(kfp_daughter->GetPx());
+        _ep_px_raw.push_back(track->get_px());
         _ep_py.push_back(kfp_daughter->GetPy());
+        _ep_py_raw.push_back(track->get_py());
         _ep_pz.push_back(kfp_daughter->GetPz());
+        _ep_pz_raw.push_back(track->get_pz());
         _ep_pE.push_back(kfp_daughter->GetE());
         _ep_pE_unmoved.push_back(e_daughter_unmoved);
         _ep_pT.push_back(kfp_daughter->GetPt());
@@ -1853,11 +2003,15 @@ std::cout<<"begin candidate "<<i<<std::endl;
         _ep_p_raw.push_back(track->get_p());
         _ep_p_unmoved.push_back(p_daughter_unmoved);
         _ep_pseudorapidity.push_back(kfp_daughter->GetEta());
+        _ep_pseudorapidity_raw.push_back(track->get_eta());
         _ep_rapidity.push_back(kfp_daughter->GetRapidity());
         _ep_theta.push_back(kfp_daughter->GetTheta());
         _ep_phi.push_back(kfp_daughter->GetPhi());
+        _ep_phi_raw.push_back(track->get_phi());
         _ep_chi2.push_back(kfp_daughter->GetChi2());
+        _ep_chi2_raw.push_back(track->get_chisq());
         _ep_nDoF.push_back(kfp_daughter->GetNDF());
+        _ep_nDoF_raw.push_back(track->get_ndf());
         _ep_crossing.push_back(track->get_crossing());
 
         if (m_doTruthMatching)
@@ -2018,7 +2172,8 @@ std::cout<<"begin truth matching"<<std::endl;
         else
         {
           PHG4TruthInfoContainer::ConstRange range = m_truthInfo->GetParticleRange();
-
+//m_truthInfo->identify();
+//exit(1);
           for (PHG4TruthInfoContainer::ConstIterator iter2 = range.first; iter2 != range.second; ++iter2)
           {
             PHG4Particle *daughterG4 = iter2->second;
@@ -2256,11 +2411,17 @@ void TrackToCalo::ResetTreeVectors_KFP()
   _gamma_SV_chi2_per_nDoF.clear();
   _ep_mass.clear();
   _ep_x.clear();
+  _ep_x_raw.clear();
   _ep_y.clear();
+  _ep_y_raw.clear();
   _ep_z.clear();
+  _ep_z_raw.clear();
   _ep_px.clear();
+  _ep_px_raw.clear();
   _ep_py.clear();
+  _ep_py_raw.clear();
   _ep_pz.clear();
+  _ep_pz_raw.clear();
   _ep_pE.clear();
   _ep_pE_unmoved.clear();
   _ep_pT.clear();
@@ -2272,11 +2433,15 @@ void TrackToCalo::ResetTreeVectors_KFP()
   _ep_p_raw.clear();
   _ep_p_unmoved.clear();
   _ep_pseudorapidity.clear();
+  _ep_pseudorapidity_raw.clear();
   _ep_rapidity.clear();
   _ep_theta.clear();
   _ep_phi.clear();
+  _ep_phi_raw.clear();
   _ep_chi2.clear();
+  _ep_chi2_raw.clear();
   _ep_nDoF.clear();
+  _ep_nDoF_raw.clear();
   _ep_crossing.clear();
   _ep_clus_ican.clear();
   _ep_clus_x.clear();
@@ -2292,11 +2457,17 @@ void TrackToCalo::ResetTreeVectors_KFP()
   _ep_z_emc.clear();
   _em_mass.clear();
   _em_x.clear();
+  _em_x_raw.clear();
   _em_y.clear();
+  _em_y_raw.clear();
   _em_z.clear();
+  _em_z_raw.clear();
   _em_px.clear();
+  _em_px_raw.clear();
   _em_py.clear();
+  _em_py_raw.clear();
   _em_pz.clear();
+  _em_pz_raw.clear();
   _em_pE.clear();
   _em_pE_unmoved.clear();
   _em_pT.clear();
@@ -2308,11 +2479,15 @@ void TrackToCalo::ResetTreeVectors_KFP()
   _em_p_raw.clear();
   _em_p_unmoved.clear();
   _em_pseudorapidity.clear();
+  _em_pseudorapidity_raw.clear();
   _em_rapidity.clear();
   _em_theta.clear();
   _em_phi.clear();
+  _em_phi_raw.clear();
   _em_chi2.clear();
+  _em_chi2_raw.clear();
   _em_nDoF.clear();
+  _em_nDoF_raw.clear();
   _em_crossing.clear();
   _em_clus_ican.clear();
   _em_clus_x.clear();

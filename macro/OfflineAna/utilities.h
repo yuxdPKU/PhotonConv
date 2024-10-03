@@ -146,11 +146,17 @@ float hcal_radius = 177.423;
   std::vector<float> *_gamma_SV_chi2_per_nDoF = 0;
   std::vector<float> *_ep_mass = 0;
   std::vector<float> *_ep_x = 0;
+  std::vector<float> *_ep_x_raw = 0;
   std::vector<float> *_ep_y = 0;
+  std::vector<float> *_ep_y_raw = 0;
   std::vector<float> *_ep_z = 0;
+  std::vector<float> *_ep_z_raw = 0;
   std::vector<float> *_ep_px = 0;
+  std::vector<float> *_ep_px_raw = 0;
   std::vector<float> *_ep_py = 0;
+  std::vector<float> *_ep_py_raw = 0;
   std::vector<float> *_ep_pz = 0;
+  std::vector<float> *_ep_pz_raw = 0;
   std::vector<float> *_ep_pE = 0;
   std::vector<float> *_ep_pE_unmoved = 0;
   std::vector<float> *_ep_pT = 0;
@@ -162,11 +168,15 @@ float hcal_radius = 177.423;
   std::vector<float> *_ep_p_raw = 0;
   std::vector<float> *_ep_p_unmoved = 0;
   std::vector<float> *_ep_pseudorapidity = 0;
+  std::vector<float> *_ep_pseudorapidity_raw = 0;
   std::vector<float> *_ep_rapidity = 0;
   std::vector<float> *_ep_theta = 0;
   std::vector<float> *_ep_phi = 0;
+  std::vector<float> *_ep_phi_raw = 0;
   std::vector<float> *_ep_chi2 = 0;
+  std::vector<float> *_ep_chi2_raw = 0;
   std::vector<float> *_ep_nDoF = 0;
+  std::vector<float> *_ep_nDoF_raw = 0;
   std::vector<int> *_ep_crossing = 0;
   std::vector<int> *_ep_clus_ican = 0;
   std::vector<float> *_ep_clus_x = 0;
@@ -194,11 +204,17 @@ float hcal_radius = 177.423;
 
   std::vector<float> *_em_mass = 0;
   std::vector<float> *_em_x = 0;
+  std::vector<float> *_em_x_raw = 0;
   std::vector<float> *_em_y = 0;
+  std::vector<float> *_em_y_raw = 0;
   std::vector<float> *_em_z = 0;
+  std::vector<float> *_em_z_raw = 0;
   std::vector<float> *_em_px = 0;
+  std::vector<float> *_em_px_raw = 0;
   std::vector<float> *_em_py = 0;
+  std::vector<float> *_em_py_raw = 0;
   std::vector<float> *_em_pz = 0;
+  std::vector<float> *_em_pz_raw = 0;
   std::vector<float> *_em_pE = 0;
   std::vector<float> *_em_pE_unmoved = 0;
   std::vector<float> *_em_pT = 0;
@@ -210,11 +226,15 @@ float hcal_radius = 177.423;
   std::vector<float> *_em_p_raw = 0;
   std::vector<float> *_em_p_unmoved = 0;
   std::vector<float> *_em_pseudorapidity = 0;
+  std::vector<float> *_em_pseudorapidity_raw = 0;
   std::vector<float> *_em_rapidity = 0;
   std::vector<float> *_em_theta = 0;
   std::vector<float> *_em_phi = 0;
+  std::vector<float> *_em_phi_raw = 0;
   std::vector<float> *_em_chi2 = 0;
+  std::vector<float> *_em_chi2_raw = 0;
   std::vector<float> *_em_nDoF = 0;
+  std::vector<float> *_em_nDoF_raw = 0;
   std::vector<int> *_em_crossing = 0;
   std::vector<int> *_em_clus_ican = 0;
   std::vector<float> *_em_clus_x = 0;
@@ -501,11 +521,17 @@ void setBranch_kfp(TChain* tree)
   tree->SetBranchAddress("_gamma_SV_chi2_per_nDoF", &_gamma_SV_chi2_per_nDoF);
   tree->SetBranchAddress("_ep_mass", &_ep_mass);
   tree->SetBranchAddress("_ep_x", &_ep_x);
+  tree->SetBranchAddress("_ep_x_raw", &_ep_x_raw);
   tree->SetBranchAddress("_ep_y", &_ep_y);
+  tree->SetBranchAddress("_ep_y_raw", &_ep_y_raw);
   tree->SetBranchAddress("_ep_z", &_ep_z);
+  tree->SetBranchAddress("_ep_z_raw", &_ep_z_raw);
   tree->SetBranchAddress("_ep_px", &_ep_px);
+  tree->SetBranchAddress("_ep_px_raw", &_ep_px_raw);
   tree->SetBranchAddress("_ep_py", &_ep_py);
+  tree->SetBranchAddress("_ep_py_raw", &_ep_py_raw);
   tree->SetBranchAddress("_ep_pz", &_ep_pz);
+  tree->SetBranchAddress("_ep_pz_raw", &_ep_pz_raw);
   tree->SetBranchAddress("_ep_pE", &_ep_pE);
   tree->SetBranchAddress("_ep_pE_unmoved", &_ep_pE_unmoved);
   tree->SetBranchAddress("_ep_pT", &_ep_pT);
@@ -517,11 +543,15 @@ void setBranch_kfp(TChain* tree)
   tree->SetBranchAddress("_ep_p_raw", &_ep_p_raw);
   tree->SetBranchAddress("_ep_p_unmoved", &_ep_p_unmoved);
   tree->SetBranchAddress("_ep_pseudorapidity", &_ep_pseudorapidity);
+  tree->SetBranchAddress("_ep_pseudorapidity_raw", &_ep_pseudorapidity_raw);
   tree->SetBranchAddress("_ep_rapidity", &_ep_rapidity);
   tree->SetBranchAddress("_ep_theta", &_ep_theta);
   tree->SetBranchAddress("_ep_phi", &_ep_phi);
+  tree->SetBranchAddress("_ep_phi_raw", &_ep_phi_raw);
   tree->SetBranchAddress("_ep_chi2", &_ep_chi2);
+  tree->SetBranchAddress("_ep_chi2_raw", &_ep_chi2_raw);
   tree->SetBranchAddress("_ep_nDoF", &_ep_nDoF);
+  tree->SetBranchAddress("_ep_nDoF_raw", &_ep_nDoF_raw);
   tree->SetBranchAddress("_ep_crossing", &_ep_crossing);
   tree->SetBranchAddress("_ep_clus_ican", &_ep_clus_ican);
   tree->SetBranchAddress("_ep_clus_x", &_ep_clus_x);
@@ -553,11 +583,17 @@ void setBranch_kfp(TChain* tree)
 
   tree->SetBranchAddress("_em_mass", &_em_mass);
   tree->SetBranchAddress("_em_x", &_em_x);
+  tree->SetBranchAddress("_em_x_raw", &_em_x_raw);
   tree->SetBranchAddress("_em_y", &_em_y);
+  tree->SetBranchAddress("_em_y_raw", &_em_y_raw);
   tree->SetBranchAddress("_em_z", &_em_z);
+  tree->SetBranchAddress("_em_z_raw", &_em_z_raw);
   tree->SetBranchAddress("_em_px", &_em_px);
+  tree->SetBranchAddress("_em_px_raw", &_em_px_raw);
   tree->SetBranchAddress("_em_py", &_em_py);
+  tree->SetBranchAddress("_em_py_raw", &_em_py_raw);
   tree->SetBranchAddress("_em_pz", &_em_pz);
+  tree->SetBranchAddress("_em_pz_raw", &_em_pz_raw);
   tree->SetBranchAddress("_em_pE", &_em_pE);
   tree->SetBranchAddress("_em_pE_unmoved", &_em_pE_unmoved);
   tree->SetBranchAddress("_em_pT", &_em_pT);
@@ -569,11 +605,15 @@ void setBranch_kfp(TChain* tree)
   tree->SetBranchAddress("_em_p_raw", &_em_p_raw);
   tree->SetBranchAddress("_em_p_unmoved", &_em_p_unmoved);
   tree->SetBranchAddress("_em_pseudorapidity", &_em_pseudorapidity);
+  tree->SetBranchAddress("_em_pseudorapidity_raw", &_em_pseudorapidity_raw);
   tree->SetBranchAddress("_em_rapidity", &_em_rapidity);
   tree->SetBranchAddress("_em_theta", &_em_theta);
   tree->SetBranchAddress("_em_phi", &_em_phi);
+  tree->SetBranchAddress("_em_phi_raw", &_em_phi_raw);
   tree->SetBranchAddress("_em_chi2", &_em_chi2);
+  tree->SetBranchAddress("_em_chi2_raw", &_em_chi2_raw);
   tree->SetBranchAddress("_em_nDoF", &_em_nDoF);
+  tree->SetBranchAddress("_em_nDoF_raw", &_em_nDoF_raw);
   tree->SetBranchAddress("_em_crossing", &_em_crossing);
   tree->SetBranchAddress("_em_clus_ican", &_em_clus_ican);
   tree->SetBranchAddress("_em_clus_x", &_em_clus_x);
@@ -764,6 +804,27 @@ std::vector<int> readNumberFromText(std::string infile) {
     return vector;
 }
 
+std::vector<std::string> readFileNameFromText(std::string infile) {
+
+    std::vector<std::string> vector;
+    vector.clear();
+
+    std::ifstream inputFile(infile);
+    if (!inputFile.is_open()) {
+        std::cerr << "Can not open file!" << std::endl;
+        return vector;
+    }
+
+    std::string number;
+    while (inputFile >> number) {
+        vector.push_back(number);
+    }
+
+    inputFile.close();
+    return vector;
+}
+
+
 bool isInRange(float min, float value, float max)
 {
   return min <= value && value <= max;
@@ -771,12 +832,12 @@ bool isInRange(float min, float value, float max)
 
 float calRadius(float pt, int q = 1)
 {
-  // R [cm] = pt [GeV/c] / (0.3 * q [e] * B [T]);
-  float R = pt / (0.3 * q * 1.4);
+  // R [m] = pt [GeV/c] / (0.3 * q [e] * B [T]);
+  float R = pt / (0.3 * q * 1.4) * 100; // cm
   return R;
 }
 
-void moveSV(float ep_px, float ep_py, float ep_pz, float em_px, float em_py, float em_pz, float radius_old, float& radius_new, float& phi)
+void moveSV(float ep_px, float ep_py, float ep_pz, float em_px, float em_py, float em_pz, float radius_old, float& radius_new, float& ep_phi_new, float& em_phi_new)
 {
   float ep_phi = atan2(ep_py, ep_px);
   float em_phi = atan2(em_py, em_px);
@@ -796,5 +857,48 @@ void moveSV(float ep_px, float ep_py, float ep_pz, float em_px, float em_py, flo
   float l = (ep_l+em_l) / 2.;
 
   radius_new = radius_old - l;
-  phi = ep_phi + dphi / 2.;
+  ep_phi_new = ep_phi + dphi / 2.;
+  em_phi_new = em_phi - dphi / 2.;
+}
+
+void buildSV(float ep_pcax, float ep_pcay, float ep_px, float ep_py, float em_pcax, float em_pcay, float em_px, float em_py, float& ep_svx, float& ep_svy, float& em_svx, float& em_svy, float& ep_phi_new, float& em_phi_new)
+{
+  float ep_phi = atan2(ep_py, ep_px);
+  float em_phi = atan2(em_py, em_px);
+
+//cout<<"e+ momentum at pca: px = "<<ep_px<<" py = "<<ep_py<<" phi = "<<ep_phi<<endl;
+//cout<<"e- momentum at pca: px = "<<em_px<<" py = "<<em_py<<" phi = "<<em_phi<<endl;
+//cout<<"e+ pca: x = "<<ep_pcax<<" y = "<<ep_pcay<<endl;
+//cout<<"e- pca: x = "<<em_pcax<<" y = "<<em_pcay<<endl;
+
+  float ep_pt = sqrt(ep_px*ep_px+ep_py*ep_py);
+  float em_pt = sqrt(em_px*em_px+em_py*em_py);
+//cout<<"ep_pt = "<<ep_pt<<endl;
+//cout<<"em_pt = "<<em_pt<<endl;
+
+  float ep_r = calRadius(ep_pt);
+  float em_r = calRadius(em_pt);
+//cout<<"ep_r = "<<ep_r<<endl;
+//cout<<"em_r = "<<em_r<<endl;
+
+  float dphi = fabs(PiRange(em_phi - ep_phi));
+//cout<<"ep_l = "<<dphi / 2. * ep_r<<endl;
+//cout<<"em_l = "<<dphi / 2. * em_r<<endl;
+
+  // after rotating dphi/2 angle, phi angle difference between e+ e- is zero
+  // calculate the length dl from the position after rotation to PCA
+  float ep_dl = 2 * ep_r * sin(dphi / 4.);
+  float em_dl = 2 * em_r * sin(dphi / 4.);
+
+  // phi angle of dl vector
+  float ep_dl_phi = em_phi + dphi / 4.;
+  float em_dl_phi = ep_phi - dphi / 4.;
+
+  // calculate sv position
+  ep_svx = ep_pcax + ep_dl * cos(ep_dl_phi);
+  em_svx = em_pcax + em_dl * cos(em_dl_phi);
+  ep_svy = ep_pcay + ep_dl * sin(ep_dl_phi);
+  em_svy = em_pcay + em_dl * sin(em_dl_phi);
+  ep_phi_new = ep_phi + dphi / 2.;
+  em_phi_new = em_phi - dphi / 2.;
 }

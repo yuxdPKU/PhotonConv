@@ -288,11 +288,17 @@ class TrackToCalo : public SubsysReco
 
   std::vector<float> _ep_mass;
   std::vector<float> _ep_x;
+  std::vector<float> _ep_x_raw;
   std::vector<float> _ep_y;
+  std::vector<float> _ep_y_raw;
   std::vector<float> _ep_z;
+  std::vector<float> _ep_z_raw;
   std::vector<float> _ep_px;
+  std::vector<float> _ep_px_raw;
   std::vector<float> _ep_py;
+  std::vector<float> _ep_py_raw;
   std::vector<float> _ep_pz;
+  std::vector<float> _ep_pz_raw;
   std::vector<float> _ep_pE;
   std::vector<float> _ep_pE_unmoved;
   std::vector<float> _ep_pT;
@@ -304,11 +310,15 @@ class TrackToCalo : public SubsysReco
   std::vector<float> _ep_p_raw;
   std::vector<float> _ep_p_unmoved;
   std::vector<float> _ep_pseudorapidity;
+  std::vector<float> _ep_pseudorapidity_raw;
   std::vector<float> _ep_rapidity;
   std::vector<float> _ep_theta;
   std::vector<float> _ep_phi;
+  std::vector<float> _ep_phi_raw;
   std::vector<float> _ep_chi2;
+  std::vector<float> _ep_chi2_raw;
   std::vector<float> _ep_nDoF;
+  std::vector<float> _ep_nDoF_raw;
   std::vector<float> _ep_crossing;
   std::vector<int> _ep_clus_ican;
   //std::vector<int> _ep_clus_type;
@@ -329,11 +339,17 @@ class TrackToCalo : public SubsysReco
 
   std::vector<float> _em_mass;
   std::vector<float> _em_x;
+  std::vector<float> _em_x_raw;
   std::vector<float> _em_y;
+  std::vector<float> _em_y_raw;
   std::vector<float> _em_z;
+  std::vector<float> _em_z_raw;
   std::vector<float> _em_px;
+  std::vector<float> _em_px_raw;
   std::vector<float> _em_py;
+  std::vector<float> _em_py_raw;
   std::vector<float> _em_pz;
+  std::vector<float> _em_pz_raw;
   std::vector<float> _em_pE;
   std::vector<float> _em_pE_unmoved;
   std::vector<float> _em_pT;
@@ -345,11 +361,15 @@ class TrackToCalo : public SubsysReco
   std::vector<float> _em_p_raw;
   std::vector<float> _em_p_unmoved;
   std::vector<float> _em_pseudorapidity;
+  std::vector<float> _em_pseudorapidity_raw;
   std::vector<float> _em_rapidity;
   std::vector<float> _em_theta;
   std::vector<float> _em_phi;
+  std::vector<float> _em_phi_raw;
   std::vector<float> _em_chi2;
+  std::vector<float> _em_chi2_raw;
   std::vector<float> _em_nDoF;
+  std::vector<float> _em_nDoF_raw;
   std::vector<float> _em_crossing;
   std::vector<int> _em_clus_ican;
   //std::vector<int> _em_clus_type;
