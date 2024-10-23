@@ -47,6 +47,7 @@ namespace HeavyFlavorReco
   //Used for naming container in DST
   string containerName = "PhotonConv";
   string outputRecoFile;
+  string outputValidateFile;
   string outputHFEffFile;
   string outputTrackingEvalFile;
   bool useMyTrackMap = true;  //Alternative Track Map
@@ -397,4 +398,50 @@ void myDemoReco()
   kfparticle->setIntermediateMaxVertexVolume(intermediate_max_vertex_vol);
 
   se->registerSubsystem(kfparticle);
+}
+
+void KsReco()
+{
+  Fun4AllServer *se = Fun4AllServer::instance();
+
+  //KFParticle setup
+  KFParticle_sPHENIX *kfparticle = new KFParticle_sPHENIX("myKShortReco");
+  kfparticle->Verbosity(1);
+  kfparticle->setDecayDescriptor("K_S0 -> pi^+ pi^-");
+
+  //Basic node selection and configuration
+  kfparticle->magFieldFile("FIELDMAP_TRACKING");
+  kfparticle->getAllPVInfo(false);
+  kfparticle->allowZeroMassTracks(true);
+  kfparticle->useFakePrimaryVertex(true);
+
+  kfparticle->constrainToPrimaryVertex(false);
+  kfparticle->setMotherIPchi2(FLT_MAX);
+  kfparticle->setFlightDistancechi2(-1.);
+  kfparticle->setMinDIRA(-1.1);
+  kfparticle->setDecayLengthRange(0., FLT_MAX);
+  kfparticle->setDecayTimeRange(-1*FLT_MAX, FLT_MAX);
+
+  //Track parameters
+  kfparticle->setMinMVTXhits(0);
+  kfparticle->setMinTPChits(20);
+  kfparticle->setMinimumTrackPT(-1.);
+  kfparticle->setMaximumTrackPTchi2(FLT_MAX);
+  kfparticle->setMinimumTrackIPchi2(-1.);
+  kfparticle->setMinimumTrackIP(-1.);
+  kfparticle->setMaximumTrackchi2nDOF(20.);
+
+  //Vertex parameters
+  kfparticle->setMaximumVertexchi2nDOF(50);
+  kfparticle->setMaximumDaughterDCA(1.);
+
+  //Parent parameters
+  kfparticle->setMotherPT(0);
+  kfparticle->setMinimumMass(0.300);
+  kfparticle->setMaximumMass(0.700);
+  kfparticle->setMaximumMotherVertexVolume(0.1);
+
+  kfparticle->setOutputName(outputValidateFile);
+
+  se->registerSubsystem(kfparticle); 
 }

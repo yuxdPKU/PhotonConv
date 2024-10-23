@@ -861,7 +861,7 @@ void moveSV(float ep_px, float ep_py, float ep_pz, float em_px, float em_py, flo
   em_phi_new = em_phi - dphi / 2.;
 }
 
-void buildSV(float ep_pcax, float ep_pcay, float ep_px, float ep_py, float em_pcax, float em_pcay, float em_px, float em_py, float& ep_svx, float& ep_svy, float& em_svx, float& em_svy, float& ep_phi_new, float& em_phi_new)
+void buildSV(float ep_pcax, float ep_pcay, float ep_pcaz, float ep_px, float ep_py, float ep_pz, float em_pcax, float em_pcay, float em_pcaz, float em_px, float em_py, float em_pz, float& ep_svx, float& ep_svy, float& ep_svz, float& em_svx, float& em_svy, float& em_svz, float& ep_phi_new, float& em_phi_new)
 {
   float ep_phi = atan2(ep_py, ep_px);
   float em_phi = atan2(em_py, em_px);
@@ -901,11 +901,19 @@ void buildSV(float ep_pcax, float ep_pcay, float ep_px, float ep_py, float em_pc
     em_dl_phi = em_phi + (TMath::Pi() - dphi / 4.);
   }
 
+  // arc length l in time t: l = pt * t
+  // convert to radian: phi = l / R
+  // t = l / pt = R * phi / pt
+  float ep_t = ep_r * dphi / 2. / ep_pt;
+  float em_t = em_r * dphi / 2. / em_pt;
+
   // calculate sv position
   ep_svx = ep_pcax + ep_dl * cos(ep_dl_phi);
   em_svx = em_pcax + em_dl * cos(em_dl_phi);
   ep_svy = ep_pcay + ep_dl * sin(ep_dl_phi);
   em_svy = em_pcay + em_dl * sin(em_dl_phi);
+  ep_svz = ep_pcaz + ep_t * ep_pz;
+  em_svz = em_pcaz + em_t * em_pz;
   if (forward_or_backward==0)
   {
     ep_phi_new = ep_phi - dphi / 2.;

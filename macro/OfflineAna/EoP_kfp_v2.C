@@ -39,8 +39,8 @@ void EoP_kfp_v2(int runnumber=0)
   float teop_SV_x, teop_SV_y, teop_SV_z, teop_SV_radius;
   float teop_SV_radius_corr; // simple correction by using momentum at SV from KFP
   // correction from tracking pca
-  float teop_ep_x_corr2, teop_ep_y_corr2, teop_ep_radius_corr2;
-  float teop_em_x_corr2, teop_em_y_corr2, teop_em_radius_corr2;
+  float teop_ep_x_corr2, teop_ep_y_corr2, teop_ep_z_corr2, teop_ep_radius_corr2;
+  float teop_em_x_corr2, teop_em_y_corr2, teop_em_z_corr2, teop_em_radius_corr2;
   float teop_SV_x_corr2, teop_SV_y_corr2, teop_SV_z_corr2, teop_SV_radius_corr2;
   float teop_track12_distance_2d_corr2;
   float teop_ep_px_raw, teop_ep_py_raw, teop_ep_pz_raw, teop_ep_pt_raw, teop_ep_p_raw, teop_ep_eta_raw, teop_ep_phi_raw;
@@ -158,9 +158,11 @@ void EoP_kfp_v2(int runnumber=0)
   outputtree->Branch("_SV_radius_corr",&teop_SV_radius_corr,"_SV_radius_corr/F");
   outputtree->Branch("_ep_x_corr2",&teop_ep_x_corr2,"_ep_x_corr2/F");
   outputtree->Branch("_ep_y_corr2",&teop_ep_y_corr2,"_ep_y_corr2/F");
+  outputtree->Branch("_ep_z_corr2",&teop_ep_z_corr2,"_ep_z_corr2/F");
   outputtree->Branch("_ep_radius_corr2",&teop_ep_radius_corr2,"_ep_radius_corr2/F");
   outputtree->Branch("_em_x_corr2",&teop_em_x_corr2,"_em_x_corr2/F");
   outputtree->Branch("_em_y_corr2",&teop_em_y_corr2,"_em_y_corr2/F");
+  outputtree->Branch("_em_z_corr2",&teop_em_z_corr2,"_em_z_corr2/F");
   outputtree->Branch("_em_radius_corr2",&teop_em_radius_corr2,"_em_radius_corr2/F");
   outputtree->Branch("_SV_x_corr2",&teop_SV_x_corr2,"_SV_x_corr2/F");
   outputtree->Branch("_SV_y_corr2",&teop_SV_y_corr2,"_SV_y_corr2/F");
@@ -689,13 +691,16 @@ void EoP_kfp_v2(int runnumber=0)
       // SV correction 1
       moveSV(_ep_px->at(ican) , _ep_py->at(ican), _ep_pz->at(ican), _em_px->at(ican) , _em_py->at(ican), _em_pz->at(ican), teop_SV_radius, teop_SV_radius_corr, teop_ep_phi_corr, teop_em_phi_corr);
       // SV correction 2
-      buildSV(_ep_x_raw->at(ican), _ep_y_raw->at(ican), _ep_px_raw->at(ican), _ep_py_raw->at(ican), _em_x_raw->at(ican), _em_y_raw->at(ican), _em_px_raw->at(ican), _em_py_raw->at(ican), teop_ep_x_corr2, teop_ep_y_corr2, teop_em_x_corr2, teop_em_y_corr2, teop_ep_phi_corr2, teop_em_phi_corr2);
+      buildSV(_ep_x_raw->at(ican), _ep_y_raw->at(ican), _ep_z_raw->at(ican), _ep_px_raw->at(ican), _ep_py_raw->at(ican), _ep_pz_raw->at(ican), _em_x_raw->at(ican), _em_y_raw->at(ican), _em_z_raw->at(ican), _em_px_raw->at(ican), _em_py_raw->at(ican), _em_pz_raw->at(ican), teop_ep_x_corr2, teop_ep_y_corr2, teop_ep_z_corr2, teop_em_x_corr2, teop_em_y_corr2, teop_em_z_corr2, teop_ep_phi_corr2, teop_em_phi_corr2);
       teop_SV_x_corr2 = (teop_ep_x_corr2+teop_em_x_corr2) / 2.;
       teop_SV_y_corr2 = (teop_ep_y_corr2+teop_em_y_corr2) / 2.;
       teop_ep_radius_corr2 = sqrt( pow(teop_ep_x_corr2,2) + pow(teop_ep_y_corr2,2) );
       teop_em_radius_corr2 = sqrt( pow(teop_em_x_corr2,2) + pow(teop_em_y_corr2,2) );
       teop_SV_radius_corr2 = sqrt( pow(teop_SV_x_corr2,2) + pow(teop_SV_y_corr2,2) );
       teop_track12_distance_2d_corr2 = sqrt( pow((teop_ep_x_corr2-teop_em_x_corr2),2) + pow((teop_ep_y_corr2-teop_em_y_corr2),2) );
+
+      if (doTruthMatching)
+      {
       teop_ep_has_truthmatching = _ep_has_truthmatching->at(ican);
       teop_em_has_truthmatching = _em_has_truthmatching->at(ican);
       teop_ep_true_id = _ep_true_id->at(ican);
@@ -718,6 +723,7 @@ void EoP_kfp_v2(int runnumber=0)
       teop_em_true_vertex_y_method2 = _em_true_vertex_y_method2->at(ican);
       teop_ep_true_vertex_z_method2 = _ep_true_vertex_z_method2->at(ican);
       teop_em_true_vertex_z_method2 = _em_true_vertex_z_method2->at(ican);
+      }
 
       teop_track12_deta = _ep_pseudorapidity->at(ican) - _em_pseudorapidity->at(ican);
       teop_track12_dphi = _ep_phi->at(ican) - _em_phi->at(ican);

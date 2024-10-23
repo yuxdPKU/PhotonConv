@@ -34,6 +34,6 @@ done
 inputFiles=${inputFiles::-1}
 inputFiles+="}"
 outDir="${!#}"
-echo running: run_data.sh $*
+echo running: run_data_MDC2.sh $*
 root.exe -q -b Fun4All_TrackCalo_MDC2.C\($nEvents,${inputFiles},\"${outDir}\"\)
 echo Script done
