@@ -28,6 +28,7 @@ class TH1;
 class TH2;
 class TFile;
 class TTree;
+class ActsGeometry;
 
 class TrackCaloMatch : public SubsysReco
 {

@@ -27,6 +27,7 @@ class TH1;
 class TH2;
 class TFile;
 class TTree;
+class ActsGeometry;
 
 class TrackOnly : public SubsysReco
 {

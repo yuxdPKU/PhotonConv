@@ -66,6 +66,7 @@ class PHG4TruthInfoContainer;
 class PHG4Particle;
 class PHHepMCGenEvent;
 class PHHepMCGenEventMap;
+class ActsGeometry;
 
 class TrackToCalo : public SubsysReco
 {
