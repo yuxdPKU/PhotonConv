@@ -301,6 +301,7 @@ void TrackOnly::fillTree()
         _trClus_y.push_back(global[1]);
         _trClus_z.push_back(global[2]);
       }
+//std::cout<<"Track id "<<track->get_id()<<" , charge = "<<track->get_charge()<<" , quality = "<<track->get_quality()<<" , ntpc = "<<n_tpc_clusters<<" , track px = "<<track->get_px()<<" , py = "<<track->get_py()<<" , pz = "<<track->get_pz()<<" , tpc seed px = "<<tpc_seed->get_px()<<" , py = "<<tpc_seed->get_py()<<" , pz = "<<tpc_seed->get_pz()<<std::endl;
     }
 
 

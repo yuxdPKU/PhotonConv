@@ -59,8 +59,6 @@ class TrackOnly : public SubsysReco
   void createBranches();
 
   void setTrackPtLowCut(float pt) {m_track_pt_low_cut = pt;}
-  void setEmcalELowCut(float e) {m_emcal_e_low_cut = e;}
-
 
  private:
    int cnt = 0;
@@ -120,7 +118,6 @@ class TrackOnly : public SubsysReco
 
 
    float m_track_pt_low_cut = 0.5;
-   float m_emcal_e_low_cut = 0.2;
    float m_vx, m_vy, m_vz;
 
 };

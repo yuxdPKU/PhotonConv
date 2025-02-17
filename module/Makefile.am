@@ -34,17 +34,19 @@ libtrack_to_calo_la_LIBADD = \
 
 AM_CPPFLAGS = \
   -I$(includedir) \
-  -I$(OFFLINE_MAIN)/include \
+  -isystem$(OFFLINE_MAIN)/include \
   -isystem$(ROOTSYS)/include \
   -DHomogeneousField
 
 pkginclude_HEADERS = \
+  SeedContainerMaker.h \
   TrackCaloMatch.h \
   TrackToCalo.h \
   CaloOnly.h \
   TrackOnly.h
 
 libtrack_to_calo_la_SOURCES = \
+  SeedContainerMaker.cc \
   TrackCaloMatch.cc \
   TrackToCalo.cc \
   CaloOnly.cc \

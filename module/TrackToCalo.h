@@ -1,9 +1,9 @@
 // Tell emacs that this is a C++ source
 //  -*- C++ -*-.
 /*!
- *  \file               TrackToCalo.h
- *  \brief              Track To Calo, output root file
- *  \author Antonio Silva <antonio.silva@cern.ch>, Xudong Yu <xyu3@bnl.gov>
+ *  \file   TrackToCalo.h
+ *  \brief  Track To Calo, output root file
+ *  \author Xudong Yu <xyu3@bnl.gov>
  */
 
 #ifndef TRACKTOCALO_H
@@ -111,6 +111,7 @@ class TrackToCalo : public SubsysReco
 
   void setRawClusContEMName(std::string name) {m_RawClusCont_EM_name = name;}
   void setRawClusContHADName(std::string name) {m_RawClusCont_HAD_name = name;}
+  void setRawTowerGeomContName(std::string name) {m_RawTowerGeomCont_name = name;}
   void setKFPContName(std::string name) {m_KFPCont_name = name;}
   void setKFPtrackMapName(std::string name) {m_KFPtrackMap_name = name;}
 
@@ -121,13 +122,14 @@ class TrackToCalo : public SubsysReco
   void setnTpcClusters(int n) {m_ntpc_low_cut = n;}
   void setTrackQuality(float q) {m_track_quality = q;}
 
-  void doTrkrCaloMatching() {m_doTrkrCaloMatching = true;}
-  void doTrkrCaloMatching_KFP() {m_doTrkrCaloMatching_KFP = true;}
-  void doTruthMatching() {m_doTruthMatching = true;}
+  void doTrkrCaloMatching(bool flag = true) {m_doTrkrCaloMatching = flag;}
+  void doTrkrCaloMatching_KFP(bool flag = true) {m_doTrkrCaloMatching_KFP = flag;}
+  void doTruthMatching(bool flag = true) {m_doTruthMatching = flag;}
 
-  void anaTrkrInfo() {m_doTrackOnly = true;}
-  void anaCaloInfo() {m_doCaloOnly = true;}
+  void anaTrkrInfo(bool flag = true) {m_doTrackOnly = flag;}
+  void anaCaloInfo(bool flag = true) {m_doCaloOnly = flag;}
 
+  void doSimulation(bool flag = true) {m_doSimulation = flag;}
   void setDFNodeName(const std::string &name) { m_df_module_name = name; }
 
   PHG4Particle *getTruthTrack(SvtxTrack *thisTrack);
@@ -136,7 +138,6 @@ class TrackToCalo : public SubsysReco
   using Decay = std::vector<std::pair<std::pair<int, int>, int>>;
   float getParticleMass(const int PDGID) { return TDatabasePDG::Instance()->GetParticle(PDGID)->Mass(); }
 
-  int cnt = 0;
   bool m_use_emcal_radius = false;
   bool m_use_ihcal_radius = false;
   bool m_use_ohcal_radius = false;
@@ -150,6 +151,7 @@ class TrackToCalo : public SubsysReco
 
   std::string m_RawClusCont_EM_name = "TOPOCLUSTER_EMCAL";
   std::string m_RawClusCont_HAD_name = "TOPOCLUSTER_HCAL";
+  std::string m_RawTowerGeomCont_name = "TOWERGEOM_CEMC";
 
   std::string m_KFPCont_name = "KFParticle_Container";
   std::string m_KFPtrackMap_name = "SvtxTrackMap";
@@ -479,8 +481,8 @@ class TrackToCalo : public SubsysReco
 
   float m_track_pt_low_cut = 0.5;
   float m_emcal_e_low_cut = 0.2;
-  int m_ntpc_low_cut = 22;
-  float m_track_quality = 100;
+  int m_ntpc_low_cut = 20;
+  float m_track_quality = 1000;
   float m_vx, m_vy, m_vz;
 
   double caloRadiusEMCal;
@@ -492,6 +494,7 @@ class TrackToCalo : public SubsysReco
   bool m_doTruthMatching = false;
   bool m_doTrackOnly = false;
   bool m_doCaloOnly = false;
+  bool m_doSimulation = false;
 
   PHG4TruthInfoContainer *m_truthInfo = nullptr;
   PHHepMCGenEventMap *m_geneventmap = nullptr;

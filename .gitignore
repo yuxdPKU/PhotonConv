@@ -18,6 +18,21 @@ config.sub
 ltmain.sh
 
 build
+install
+
+#condorJob
+log
+*.log
+*.out
+*.err
+
+#root
+*.root
+
+#file list
+filelist
+*.list
+
 
 # Have editor/IDE/OS specific files you need to ignore? Consider using a global gitignore: 
 #

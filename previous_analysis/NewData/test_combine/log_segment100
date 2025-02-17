@@ -1,0 +1,262 @@
+LD_LIBRARY_PATH now /sphenix/u/xyu3/install/lib:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/gcc/12.1.0-57c96/x86_64-centos7/lib:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/gcc/12.1.0-57c96/x86_64-centos7/lib64:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/binutils/2.37-355ed/x86_64-centos7/lib:.:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.2/lib64:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.2/lib:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/utils/lib64:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/utils/lib:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/lib:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/root-6.26.06.p01/lib:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/geant4.10.07.p04/lib64:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/lhapdf-5.9.1/lib:/afs/rhic.bnl.gov/app/insure-7.5.5/lib:/usr/local/lib64:/usr/lib64
+PATH now /sphenix/u/xyu3/install/bin:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/gcc/12.1.0-57c96/x86_64-centos7/bin:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/binutils/2.37-355ed/x86_64-centos7/bin:.:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.2/bin:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/utils/bin:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/bin:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/root-6.26.06.p01/bin:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/geant4.10.07.p04/bin:/afs/rhic.bnl.gov/app/insure-7.5.5/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin
+sPHENIX environment setup finished
+running: /gpfs/mnt/gpfs02/sphenix/user/xyu3/PhotonConv/NewData/run_data.sh 10 ./run52519_0100.list ./dst_calo_run2pp-00052519.list .
+   ------------------------------------------------------------------
+  | Welcome to ROOT 6.26/06                        https://root.cern |
+  | (c) 1995-2021, The ROOT Team; conception: R. Brun, F. Rademakers |
+  | Built for linuxx8664gcc on Jul 28 2022, 18:08:51                 |
+  | From tags/v6-26-06@v6-26-06                                      |
+  | With g++ (GCC) 12.1.0                                            |
+  | Try '.help', '.demo', '.license', '.credits', '.quit'/'.q'       |
+   ------------------------------------------------------------------
+
+
+Processing Fun4All_FieldOnAllTrackersCalos.C(10,{"./run52519_0100.list","./dst_calo_run2pp-00052519.list"},".")...
+Converting to seeds : 0
+Including 2 files.
+First Line: DST_STREAMING_EVENT_run2pp_new_2024p002-00052519-00100.root
+Reco KFP file: ./inReconstruction/52519/TrackCalo_100_kfp.root
+Reco Ks Validation file: ./inReconstruction/52519/TrackCalo_100_ks.root
+Reco ANA file: ./inReconstruction/52519/TrackCalo_100_ana.root
+Dst file: ./inReconstruction/52519/TrackCalo_100_dst.root
+Json file path: ./inReconstruction/52519/EvtDisplay/
+Use calibrated TPC drift velocity for Run 52519: 0.00688975 cm/ns
+ run: 52519 samples: 425 pre: 40 vdrift: 0.00688975
+Use calibrated TPC drift velocity for Run 52519: 0.00688975 cm/ns
+ActsGeomInit: Mvtx apply misalignment? ACTSGEOM::mvtx_applymisalignment=0
+ActsGeomInit: Use survey geometry? ACTSGEOM::inttsurvey=1
+Registering Subsystem MakeActsGeometry
+Registering Subsystem TpcLoadDistortionCorrection
+TpcCombinedRawDataUnpacker::Init(PHCompositeNode *topNode) Initializing
+Registering Subsystem TpcCombinedRawDataUnpacker
+Registering Subsystem MvtxHitPruner
+Registering Subsystem MvtxClusterizer
+Registering Subsystem InttClusterizer
+Registering Subsystem TpcClusterizer
+Registering Subsystem LaserEventIdentifier
+MicromegasClusterizer::Init - m_use_default_pedestal: 1
+MicromegasClusterizer::Init - m_default_pedestal: 74.6
+MicromegasClusterizer::Init - m_calibration_filename: unspecified
+Registering Subsystem MicromegasClusterizer
+Registering Subsystem PHActsSiliconSeeding
+Registering Subsystem PHSiliconSeedMerger
+PHCASeeding::set_field_dir rescale: -1
+Registering Subsystem PHCASeeding
+Registering Subsystem PHSimpleKFProp
+Registering Subsystem PrelimDistortionCorrection
+Registering Subsystem PHSiliconTpcTrackMatching
+Registering Subsystem PHMicromegasTpcTrackMatching
+Registering Subsystem PHTpcDeltaZCorrection
+Registering Subsystem PHActsTrkFitter
+Registering Subsystem PHTrackCleaner
+Registering Subsystem PHSimpleVertexFinder
+Registering Subsystem GlobalVertexReco
+Registering Subsystem CaloProjection
+Building clusters
+Registering Subsystem EmcRawClusterBuilderTemplate
+Registering Subsystem EMcalRawClusterBuilderTopo2
+TrackCaloMatch::TrackCaloMatch(const std::string &name) Calling ctor
+0x268b51b0
+TrackCaloMatch::Init(PHCompositeNode *topNode) Initializing
+Registering Subsystem Tracks_Calo_Match
+Output nTuple: ./inReconstruction/52519/TrackCalo_100_ks.root
+Registering Subsystem myKShortReco
+Fun4AllServer: Runnumber forced to 52519 by RUNNUMBER IntFlag
+executing run for input master DefaultSyncManager
+Fun4AllServer::EndRun: EndRun(52519) for MakeActsGeometry
+Fun4AllServer::EndRun: EndRun(52519) for TpcLoadDistortionCorrection
+Fun4AllServer::EndRun: EndRun(52519) for TpcCombinedRawDataUnpacker
+Fun4AllServer::EndRun: EndRun(52519) for MvtxHitPruner
+Fun4AllServer::EndRun: EndRun(52519) for MvtxClusterizer
+Fun4AllServer::EndRun: EndRun(52519) for InttClusterizer
+Fun4AllServer::EndRun: EndRun(52519) for TpcClusterizer
+Fun4AllServer::EndRun: EndRun(52519) for LaserEventIdentifier
+Fun4AllServer::EndRun: EndRun(52519) for MicromegasClusterizer
+Fun4AllServer::EndRun: EndRun(52519) for PHActsSiliconSeeding
+Fun4AllServer::EndRun: EndRun(52519) for PHSiliconSeedMerger
+Fun4AllServer::EndRun: EndRun(52519) for PHCASeeding
+Fun4AllServer::EndRun: EndRun(52519) for PHSimpleKFProp
+Fun4AllServer::EndRun: EndRun(52519) for PrelimDistortionCorrection
+Fun4AllServer::EndRun: EndRun(52519) for PHSiliconTpcTrackMatching
+Fun4AllServer::EndRun: EndRun(52519) for PHMicromegasTpcTrackMatching
+Fun4AllServer::EndRun: EndRun(52519) for PHTpcDeltaZCorrection
+Fun4AllServer::EndRun: EndRun(52519) for PHActsTrkFitter
+Fun4AllServer::EndRun: EndRun(52519) for PHTrackCleaner
+Fun4AllServer::EndRun: EndRun(52519) for PHSimpleVertexFinder
+Fun4AllServer::EndRun: EndRun(52519) for GlobalVertexReco
+Fun4AllServer::EndRun: EndRun(52519) for CaloProjection
+Fun4AllServer::EndRun: EndRun(52519) for EmcRawClusterBuilderTemplate
+Fun4AllServer::EndRun: EndRun(52519) for EMcalRawClusterBuilderTopo2
+Fun4AllServer::EndRun: EndRun(52519) for Tracks_Calo_Match
+Fun4AllServer::EndRun: EndRun(52519) for myKShortReco
+Fun4AllServer::End: End for MakeActsGeometry
+Fun4AllServer::End: End for TpcLoadDistortionCorrection
+Fun4AllServer::End: End for TpcCombinedRawDataUnpacker
+Fun4AllServer::End: End for MvtxHitPruner
+Fun4AllServer::End: End for MvtxClusterizer
+Fun4AllServer::End: End for InttClusterizer
+Fun4AllServer::End: End for TpcClusterizer
+Fun4AllServer::End: End for LaserEventIdentifier
+Fun4AllServer::End: End for MicromegasClusterizer
+Fun4AllServer::End: End for PHActsSiliconSeeding
+Fun4AllServer::End: End for PHSiliconSeedMerger
+Fun4AllServer::End: End for PHCASeeding
+Fun4AllServer::End: End for PHSimpleKFProp
+Fun4AllServer::End: End for PrelimDistortionCorrection
+Fun4AllServer::End: End for PHSiliconTpcTrackMatching
+Fun4AllServer::End: End for PHMicromegasTpcTrackMatching
+Fun4AllServer::End: End for PHTpcDeltaZCorrection
+Fun4AllServer::End: End for PHActsTrkFitter
+Fun4AllServer::End: End for PHTrackCleaner
+Fun4AllServer::End: End for PHSimpleVertexFinder
+Fun4AllServer::End: End for GlobalVertexReco
+Fun4AllServer::End: End for CaloProjection
+Fun4AllServer::End: End for EmcRawClusterBuilderTemplate
+Fun4AllServer::End: End for EMcalRawClusterBuilderTopo2
+Fun4AllServer::End: End for Tracks_Calo_Match
+0x268b51b0
+TrackCaloMatch::End(PHCompositeNode *topNode) Endding
+Fun4AllServer::End: End for myKShortReco
+KFParticle_sPHENIX object myKShortReco finished. Number of candidates: 0
+-------------------------------------- ** --------------------------------------
+CaloProjection_TOP: timer never started.
+-------------------------------------- ** --------------------------------------
+EMcalRawClusterBuilderTopo2_TOP: timer never started.
+-------------------------------------- ** --------------------------------------
+EmcRawClusterBuilderTemplate_TOP: timer never started.
+-------------------------------------- ** --------------------------------------
+GlobalVertexReco_TOP: timer never started.
+-------------------------------------- ** --------------------------------------
+InttClusterizer_TOP: timer never started.
+-------------------------------------- ** --------------------------------------
+LaserEventIdentifier_TOP: timer never started.
+-------------------------------------- ** --------------------------------------
+MakeActsGeometry_TOP: timer never started.
+-------------------------------------- ** --------------------------------------
+MicromegasClusterizer_TOP: timer never started.
+-------------------------------------- ** --------------------------------------
+MvtxClusterizer_TOP: timer never started.
+-------------------------------------- ** --------------------------------------
+MvtxHitPruner_TOP: timer never started.
+-------------------------------------- ** --------------------------------------
+PHActsSiliconSeeding_TOP: timer never started.
+-------------------------------------- ** --------------------------------------
+PHActsTrkFitter_TOP: timer never started.
+-------------------------------------- ** --------------------------------------
+PHCASeeding_TOP: timer never started.
+-------------------------------------- ** --------------------------------------
+PHMicromegasTpcTrackMatching_TOP: timer never started.
+-------------------------------------- ** --------------------------------------
+PHSiliconSeedMerger_TOP: timer never started.
+-------------------------------------- ** --------------------------------------
+PHSiliconTpcTrackMatching_TOP: timer never started.
+-------------------------------------- ** --------------------------------------
+PHSimpleKFProp_TOP: timer never started.
+-------------------------------------- ** --------------------------------------
+PHSimpleVertexFinder_TOP: timer never started.
+-------------------------------------- ** --------------------------------------
+PHTpcDeltaZCorrection_TOP: timer never started.
+-------------------------------------- ** --------------------------------------
+PHTrackCleaner_TOP: timer never started.
+-------------------------------------- ** --------------------------------------
+PrelimDistortionCorrection_TOP: timer never started.
+-------------------------------------- ** --------------------------------------
+TpcClusterizer_TOP: timer never started.
+-------------------------------------- ** --------------------------------------
+TpcCombinedRawDataUnpacker_TOP: timer never started.
+-------------------------------------- ** --------------------------------------
+TpcLoadDistortionCorrection_TOP: timer never started.
+-------------------------------------- ** --------------------------------------
+Tracks_Calo_Match_TOP: timer never started.
+-------------------------------------- ** --------------------------------------
+myKShortReco_TOP: timer never started.
+-------------------------------------- ** --------------------------------------
+moveOutput: mv ./inReconstruction/52519/TrackCalo_100_ks.root ./Reconstructed/52519
+Deleting myKShortReco
+TrackCaloMatch::~TrackCaloMatch() Calling dtor
+Deleting Tracks_Calo_Match
+Deleting EMcalRawClusterBuilderTopo2
+Deleting EmcRawClusterBuilderTemplate
+Deleting CaloProjection
+Deleting GlobalVertexReco
+Deleting PHSimpleVertexFinder
+Deleting PHTrackCleaner
+Deleting PHActsTrkFitter
+Deleting PHTpcDeltaZCorrection
+Deleting PHMicromegasTpcTrackMatching
+Deleting PHSiliconTpcTrackMatching
+Deleting PrelimDistortionCorrection
+Deleting PHSimpleKFProp
+Deleting PHCASeeding
+Deleting PHSiliconSeedMerger
+Deleting PHActsSiliconSeeding
+Deleting MicromegasClusterizer
+Deleting LaserEventIdentifier
+Deleting TpcClusterizer
+Deleting InttClusterizer
+Deleting MvtxClusterizer
+Deleting MvtxHitPruner
+Deleting TpcCombinedRawDataUnpacker
+Deleting TpcLoadDistortionCorrection
+Deleting MakeActsGeometry
+Deleting Fun4AllServerHISTOS
+Deleting DSTin_1
+Deleting DSTin_0
+Deleting GeoIn
+Deleting DefaultSyncManager
+TOP (PHCompositeNode)/
+   DST (PHCompositeNode)/
+      SVTX (PHCompositeNode)/
+         MySvtxTrackMap (IO,SvtxTrackMap_v2)
+      GL1 (PHCompositeNode)/
+         GL1RAWHIT (IO,Gl1Packetv2)
+         GL1Packet (IO,Gl1Packetv2)
+      INTT (PHCompositeNode)/
+         INTTRAWHIT (IO,InttRawHitContainerv2)
+      MVTX (PHCompositeNode)/
+         MVTXRAWEVTHEADER (IO,MvtxRawEvtHeaderv2)
+         MVTXRAWHIT (IO,MvtxRawHitContainerv1)
+      TPC (PHCompositeNode)/
+         TPCRAWHIT (IO,TpcRawHitContainerv2)
+      MICROMEGAS (PHCompositeNode)/
+         MICROMEGASRAWHIT (IO,MicromegasRawHitContainerv1)
+      Sync (IO,SyncObjectv1)
+      EventHeader (IO,EventHeaderv1)
+      MBD (PHCompositeNode)/
+         MbdOut (IO,MbdOutV2)
+         MbdPmtContainer (IO,MbdPmtContainerV1)
+      GLOBAL (PHCompositeNode)/
+         MbdVertexMap (IO,MbdVertexMapv1)
+         GlobalVertexMap (IO,GlobalVertexMapv1)
+      ZDC (PHCompositeNode)/
+         Zdcinfo (IO,Zdcinfov2)
+         TOWERINFO_CALIB_ZDC (IO,TowerInfoContainerv4)
+      CEMC (PHCompositeNode)/
+         TOWERINFO_CALIB_CEMC (IO,TowerInfoContainerv4)
+         CLUSTERINFO_CEMC (IO,RawClusterContainer)
+      HCALIN (PHCompositeNode)/
+         TOWERINFO_CALIB_HCALIN (IO,TowerInfoContainerv4)
+      HCALOUT (PHCompositeNode)/
+         TOWERINFO_CALIB_HCALOUT (IO,TowerInfoContainerv4)
+   RUN (PHCompositeNode)/
+      RunHeader (IO,RunHeaderv1)
+      Flags (IO,FlagSavev1)
+      MBD (PHCompositeNode)/
+         MbdGeom (IO,MbdGeomV1)
+      CEMC (PHCompositeNode)/
+         TOWERGEOM_CEMC (IO,RawTowerGeomContainer_Cylinderv1)
+      HCALIN (PHCompositeNode)/
+         TOWERGEOM_HCALIN (IO,RawTowerGeomContainer_Cylinderv1)
+      HCALOUT (PHCompositeNode)/
+         TOWERGEOM_HCALOUT (IO,RawTowerGeomContainer_Cylinderv1)
+      CdbUrl (IO,CdbUrlSavev1)
+      CYLINDERGEOM_MVTX (IO,PHG4CylinderGeomContainer)
+      CYLINDERGEOM_INTT (IO,PHG4CylinderGeomContainer)
+      CYLINDERCELLGEOM_SVTX (IO,PHG4TpcCylinderGeomContainer)
+      CYLINDERGEOM_MICROMEGAS_FULL (IO,PHG4CylinderGeomContainer)
+      GEOMETRY_IO (IO,PHGeomIOTGeo)
+   PAR (PHCompositeNode)/
+Deleting Fun4AllServer
+All done
+Script done

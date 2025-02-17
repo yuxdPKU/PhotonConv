@@ -1,7 +1,7 @@
 /*!
- *  \file               TrackToCalo.cc
- *  \brief              Track To Calo, output root file
- *  \author Xudong Yu <xyu3@bnl.gov>, Antonio Silva <antonio.silva@cern.ch>
+ *  \file   TrackToCalo.cc
+ *  \brief  Track To Calo, output root file
+ *  \author Xudong Yu <xyu3@bnl.gov>
  */
 #include "TrackToCalo.h"
 
@@ -101,8 +101,6 @@ int TrackToCalo::Init(PHCompositeNode *topNode)
   {
     createBranches_KFP();
   }
-
-  cnt=0;
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -411,14 +409,11 @@ void TrackToCalo::createBranches_KFP()
 //____________________________________________________________________________..
 int TrackToCalo::process_event(PHCompositeNode *topNode)
 {
-  std::cout<<"TrackToCalo::process_event event "<<cnt<<std::endl;
-  cnt++;
   PHNodeIterator nodeIter(topNode);
   PHNode* evtNode = dynamic_cast<PHNode*>(nodeIter.findFirst("EventHeader"));
   if (evtNode)
   {
     EventHeaderv1* evtHeader = findNode::getClass<EventHeaderv1>(topNode, "EventHeader");
-    std::cout<<"runNumber = "<<evtHeader->get_RunNumber()<<" , m_evtNumber = "<<evtHeader->get_EvtSequence()<<std::endl;
     _runNumber = evtHeader->get_RunNumber();
     _eventNumber = evtHeader->get_EvtSequence();
   }
@@ -427,6 +422,7 @@ int TrackToCalo::process_event(PHCompositeNode *topNode)
     _runNumber = 0;
     _eventNumber = -1;
   }
+  std::cout<<"TrackToCalo::process_event run "<<_runNumber<<" event "<<_eventNumber<<std::endl;
 
   if(!trackMap)
   {
@@ -525,10 +521,10 @@ std::cout << " id " << track->get_id()
 
   if(!EMCalGeo)
   {
-    EMCalGeo = findNode::getClass<RawTowerGeomContainer>(topNode, "TOWERGEOM_CEMC");
+    EMCalGeo = findNode::getClass<RawTowerGeomContainer>(topNode, m_RawTowerGeomCont_name);
     if(!EMCalGeo)
     {
-      std::cout << "TrackToCalo::process_event: TOWERGEOM_CEMC not found!!!" << std::endl;
+      std::cout << "TrackToCalo::process_event: " << m_RawTowerGeomCont_name << " not found!!!" << std::endl;
     }
   }
 
@@ -1781,7 +1777,6 @@ void TrackToCalo::fillTree_KFP()
 
   for (int i = 0; i < _numCan; i++)
   {
-std::cout<<"begin candidate "<<i<<std::endl;
     auto it_kfp_cont = KFP_Container->begin();
     std::advance(it_kfp_cont, 3 * i);
     kfp_mother = it_kfp_cont->second;

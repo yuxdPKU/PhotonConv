@@ -1,6 +1,6 @@
 /*!
- *  \file               TrackCaloMatch.h
- *  \brief              Track to Calo matching, save new SvtxTrackMap, Event display
+ *  \file   TrackCaloMatch.h
+ *  \brief  Track to Calo matching, save new SvtxTrackMap, Event display
  *  \author Xudong Yu <xyu3@bnl.gov>
  */
 
@@ -56,7 +56,6 @@
 #include <phool/getClass.h>
 #include <phool/PHCompositeNode.h>
 #include <phool/PHNodeIterator.h>
-#include <phool/recoConsts.h>
 
 #include <CLHEP/Vector/ThreeVector.h>
 #include <math.h>
@@ -69,6 +68,32 @@
 
 #include <boost/format.hpp>
 #include <boost/math/special_functions/sign.hpp>
+
+namespace
+{
+  //! get cluster keys from a given track
+  std::vector<TrkrDefs::cluskey> get_cluster_keys(SvtxTrack* track)
+  {
+    std::vector<TrkrDefs::cluskey> out;
+    for (const auto& seed : {track->get_silicon_seed(), track->get_tpc_seed()})
+    {
+      if (seed)
+      {
+        std::copy(seed->begin_cluster_keys(), seed->end_cluster_keys(), std::back_inserter(out));
+      }
+    }
+    return out;
+  }
+
+  /// return number of clusters of a given type that belong to a tracks
+  template <int type>
+  int count_clusters(const std::vector<TrkrDefs::cluskey>& keys)
+  {
+    return std::count_if(keys.begin(), keys.end(),
+                         [](const TrkrDefs::cluskey& key)
+                         { return TrkrDefs::getTrkrId(key) == type; });
+  }
+}
 
 //____________________________________________________________________________..
 TrackCaloMatch::TrackCaloMatch(const std::string &name):
@@ -89,8 +114,6 @@ int TrackCaloMatch::Init(PHCompositeNode *topNode)
   std::cout << topNode << std::endl;
   std::cout << "TrackCaloMatch::Init(PHCompositeNode *topNode) Initializing" << std::endl;
 
-  m_event=0;
-
   PHNodeIterator iter(topNode);
 
   PHCompositeNode* dstNode = dynamic_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "DST"));
@@ -98,7 +121,7 @@ int TrackCaloMatch::Init(PHCompositeNode *topNode)
   if (!dstNode)
   {
     std::cerr << "DST node is missing, quitting" << std::endl;
-    throw std::runtime_error("Failed to find DST node in PHActsTrkFitter::createNodes");
+    throw std::runtime_error("Failed to find DST node in TrackCaloMatch::Init");
   }
 
   PHNodeIterator dstIter(topNode);
@@ -125,17 +148,29 @@ int TrackCaloMatch::Init(PHCompositeNode *topNode)
 //____________________________________________________________________________..
 int TrackCaloMatch::process_event(PHCompositeNode* topNode)
 {
-  std::cout << "TrackCaloMatch::process_event event " << m_event << std::endl;
 
-  recoConsts *rc = recoConsts::instance();
-  //m_runNumber = rc->get_IntFlag("RUNNUMBER");
+  PHNodeIterator nodeIter(topNode);
+  PHNode* evtNode = dynamic_cast<PHNode*>(nodeIter.findFirst("EventHeader"));
+
+  if (evtNode)
+  {
+    EventHeaderv1* evtHeader = findNode::getClass<EventHeaderv1>(topNode, "EventHeader");
+    m_runNumber = evtHeader->get_RunNumber();
+    m_evtNumber = evtHeader->get_EvtSequence();
+  }
+  else
+  {
+    m_runNumber = m_evtNumber = -1;
+  }
+
+  std::cout << "TrackCaloMatch::process_event run " << m_runNumber << " event " << m_evtNumber << std::endl;
 
   if(!trackMap)
   {
     trackMap = findNode::getClass<SvtxTrackMap>(topNode, m_trackMapName);
     if(!trackMap)
     {
-      std::cout << "trackMap not found! Aborting!" << std::endl;
+      std::cout << "TrackCaloMatch::process_event " << m_trackMapName << " not found! Aborting!" << std::endl;
       return Fun4AllReturnCodes::ABORTEVENT;
     }
   }
@@ -145,16 +180,17 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
     acts_Geometry = findNode::getClass<ActsGeometry>(topNode, "ActsGeometry");
     if (!acts_Geometry)
     {
-      std::cout << "ActsTrackingGeometry not on node tree. Exiting." << std::endl;
+      std::cout << "TrackCaloMatch::process_event ActsGeometry not found! Aborting!" << std::endl;
       return Fun4AllReturnCodes::ABORTEVENT;
     }
   }
 
-  if ( !clustersEM ) {
+  if (!clustersEM)
+  {
     clustersEM = findNode::getClass<RawClusterContainer>(topNode, m_RawClusCont_EM_name);
     if (!clustersEM)
     {
-      std::cout << "TrackCaloMatch::process_event : FATAL ERROR, cannot find cluster container " << m_RawClusCont_EM_name << std::endl;
+      std::cout << "TrackCaloMatch::process_event " << m_RawClusCont_EM_name << " not found! Aborting!" << std::endl;
       return Fun4AllReturnCodes::ABORTEVENT;
     }
   }
@@ -164,68 +200,71 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
     trkrContainer = findNode::getClass<TrkrClusterContainer>(topNode, "TRKR_CLUSTER");
     if(!trkrContainer)
     {
-      std::cout << "trkrContainer not found! Aborting!" << std::endl;
+      std::cout << "TrackCaloMatch::process_event TRKR_CLUSTER not found! Aborting!" << std::endl;
       return Fun4AllReturnCodes::ABORTEVENT;
     }
   }
 
   if(!EMCalGeo)
   {
-    EMCalGeo = findNode::getClass<RawTowerGeomContainer>(topNode, "TOWERGEOM_CEMC");
+    EMCalGeo = findNode::getClass<RawTowerGeomContainer>(topNode, m_RawTowerGeomCont_name);
     if(!EMCalGeo)
     {
-      std::cout << "EMCalGeo not found! Aborting!" << std::endl;
+      std::cout << "TrackCaloMatch::process_event " << m_RawTowerGeomCont_name << " not found! Aborting!" << std::endl;
       return Fun4AllReturnCodes::ABORTEVENT;
     }
   }
 
-/*
-  if(!m_truthinfo)
+  if(m_is_simulation)
   {
-    m_truthinfo = findNode::getClass<PHG4TruthInfoContainer>(topNode, "G4TruthInfo");
-    if(!m_truthinfo)
+    if(!m_truthInfo)
     {
-      std::cout << "G4TruthInfo not found!" << std::endl;
+      m_truthInfo = findNode::getClass<PHG4TruthInfoContainer>(topNode, "G4TruthInfo");
+      if(!m_truthInfo)
+      {
+        std::cout << "TrackCaloMatch::process_event G4TruthInfo not found! Aborting!" << std::endl;
+        return Fun4AllReturnCodes::ABORTEVENT;
+      }
     }
-  }
 
-  if(!m_geneventmap)
-  {
-    m_geneventmap = findNode::getClass<PHHepMCGenEventMap>(topNode, "PHHepMCGenEventMap");
     if(!m_geneventmap)
     {
-      std::cout << "PHHepMCGenEventMap not found!" << std::endl;
-    }
-  }
-
-  if (m_truthinfo)
-  {
-    PHG4TruthInfoContainer::ConstRange range = m_truthinfo->GetParticleRange();
-    //std::cout << "m_truthinfo size = " << m_truthinfo->size() << std::endl;
-    for (PHG4TruthInfoContainer::ConstIterator iter = range.first; iter != range.second; ++iter)
-    {
-      PHG4Particle* g4particle = iter->second;
-      int this_pid = g4particle->get_pid();
-      if (this_pid == -11 || this_pid == 11)
+      m_geneventmap = findNode::getClass<PHHepMCGenEventMap>(topNode, "PHHepMCGenEventMap");
+      if(!m_geneventmap)
       {
-        std::cout << "found daughter particle e+/e-" << std::endl;
+        std::cout << "TrackCaloMatch::process_event PHHepMCGenEventMap not found! Aborting!" << std::endl;
+        return Fun4AllReturnCodes::ABORTEVENT;
+      }
+    }
 
-        PHG4Particle* mother = nullptr;
-        if (g4particle->get_parent_id() != 0)
+    if (m_truthInfo)
+    {
+      PHG4TruthInfoContainer::ConstRange range = m_truthInfo->GetParticleRange();
+      if (Verbosity()>1) {std::cout << "m_truthInfo size = " << m_truthInfo->size() << std::endl;}
+      for (PHG4TruthInfoContainer::ConstIterator iter = range.first; iter != range.second; ++iter)
+      {
+        PHG4Particle* g4particle = iter->second;
+        int this_pid = g4particle->get_pid();
+        if (this_pid == -11 || this_pid == 11)
         {
-          mother = m_truthinfo->GetParticle(g4particle->get_parent_id());
-          if (abs(mother->get_pid())==22)
+          if (Verbosity()>1) {std::cout << "found daughter particle e+/e-" << std::endl;}
+
+          PHG4Particle* mother = nullptr;
+          if (g4particle->get_parent_id() != 0)
           {
-            float mother_e = mother->get_e();
-            float mother_pt = sqrt( (mother->get_px())*(mother->get_px()) + (mother->get_py())*(mother->get_py()));
-            float mother_eta = asinh(mother->get_pz()/sqrt(mother->get_px()*mother->get_px() + mother->get_py()*mother->get_py()));
-            std::cout << "daughter pid = " << this_pid << " track id = " << g4particle->get_track_id() << " mother is gamma track id= " << mother->get_track_id() << " E = " << mother_e << " pT = " << mother_pt << " eta = " << mother_eta << std::endl;
+            mother = m_truthInfo->GetParticle(g4particle->get_parent_id());
+            if (abs(mother->get_pid())==22)
+            {
+              float mother_e = mother->get_e();
+              float mother_pt = sqrt( (mother->get_px())*(mother->get_px()) + (mother->get_py())*(mother->get_py()));
+              float mother_eta = asinh(mother->get_pz()/sqrt(mother->get_px()*mother->get_px() + mother->get_py()*mother->get_py()));
+              if (Verbosity()>1) {std::cout << "daughter pid = " << this_pid << " track id = " << g4particle->get_track_id() << " mother is gamma track id= " << mother->get_track_id() << " E = " << mother_e << " pT = " << mother_pt << " eta = " << mother_eta << std::endl;}
+            }
           }
         }
       }
     }
   }
-*/
 
   double caloRadiusEMCal;
   if (m_use_emcal_radius)
@@ -242,61 +281,21 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
   TrackSeed *tpc_seed = nullptr;
   TrkrCluster *trkrCluster = nullptr;
 
-  //for (auto &iter : *trackMap)
-  //{
-  //  SvtxTrack* kfp = iter.second;
-  //  std::cout<<"iter.first = "<<iter.first<<std::endl;
-  //  std::cout<<"svtxtrack id = "<<kfp->get_id()<<" px = "<<kfp->get_px()<<" py = "<<kfp->get_py()<<" pz = "<<kfp->get_pz()<<std::endl;
-  //}
-
   int num_matched_pair = 0;
   for (auto &iter : *trackMap)
   {
     track = iter.second;
 
-    if(!track) continue;
-
-    if(track->get_pt() < m_track_pt_low_cut)
-    {
-      continue;
-    }
-
-    if(track->get_quality() > m_track_quality)
-    {
-      continue;
-    }
-
-    int n_tpc_clusters = 0;
-
-    tpc_seed = track->get_tpc_seed();
-
-    if(tpc_seed)
-    {
-      for(auto key_iter = tpc_seed->begin_cluster_keys(); key_iter != tpc_seed->end_cluster_keys(); ++key_iter)
-      {
-        const auto& cluster_key = *key_iter;
-        trkrCluster = trkrContainer->findCluster(cluster_key);
-        if(!trkrCluster)
-        {
-          continue;
-        }
-        if(TrkrDefs::getTrkrId(cluster_key) == TrkrDefs::TrkrId::tpcId)
-        {
-          n_tpc_clusters++;
-        }
-      }
-    }
-
-    if(n_tpc_clusters < m_ntpc_low_cut) 
+    if(!checkTrack(track))
     {
       continue;
     }
 
     thisState = track->get_state(caloRadiusEMCal);
     float _track_phi_emc = NAN;
-    //float _track_eta_emc = NAN;
-    //float _track_x_emc = NAN;
-    //float _track_y_emc = NAN;
+    float _track_eta_emc = NAN;
+    float _track_x_emc = NAN;
+    float _track_y_emc = NAN;
     float _track_z_emc = NAN;
 
     if(!thisState)
@@ -306,9 +305,9 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
     else
     {
       _track_phi_emc = atan2(thisState->get_y(), thisState->get_x());
-      //_track_eta_emc = asinh(thisState->get_z()/sqrt(thisState->get_x()*thisState->get_x() + thisState->get_y()*thisState->get_y()));
-      //_track_x_emc = thisState->get_x();
-      //_track_y_emc = thisState->get_y();
+      _track_eta_emc = asinh(thisState->get_z()/sqrt(thisState->get_x()*thisState->get_x() + thisState->get_y()*thisState->get_y()));
+      _track_x_emc = thisState->get_x();
+      _track_y_emc = thisState->get_y();
       _track_z_emc = thisState->get_z();
     }
 
@@ -329,7 +328,7 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
       }
 
       float _emcal_phi = atan2(cluster->get_y(), cluster->get_x());
-      //float _emcal_eta = asinh(cluster->get_z()/sqrt(cluster->get_x()*cluster->get_x() + cluster->get_y()*cluster->get_y()));
+      float _emcal_eta = asinh(cluster->get_z()/sqrt(cluster->get_x()*cluster->get_x() + cluster->get_y()*cluster->get_y()));
       float _emcal_x = cluster->get_x();
       float _emcal_y = cluster->get_y();
       float radius_scale = caloRadiusEMCal / sqrt(_emcal_x*_emcal_x+_emcal_y*_emcal_y);
@@ -340,12 +339,14 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
 
       if(fabs(dphi)<m_dphi_cut && fabs(dz)<m_dz_cut)
       {
-        //std::cout<<"matched tracks!!!"<<std::endl;
-        //std::cout<<"emcal x = "<<_emcal_x<<" , y = "<<_emcal_y<<" , z = "<<_emcal_z<<" , phi = "<<_emcal_phi<<" , eta = "<<_emcal_eta<<std::endl;
-        //std::cout<<"track projected x = "<<_track_x_emc<<" , y = "<<_track_y_emc<<" , z = "<<_track_z_emc<<" , phi = "<<_track_phi_emc<<" , eta = "<<_track_eta_emc<<std::endl;
-        //std::cout<<"track px = "<<track->get_px()<<" , py = "<<track->get_py()<<" , pz = "<<track->get_pz()<<" , pt = "<<track->get_pt()<<" , p = "<<track->get_p()<<" , charge = "<<track->get_charge()<<std::endl;
-
         is_match = true;
+	if (Verbosity() > 2)
+	{
+          std::cout<<"matched tracks!!!"<<std::endl;
+          std::cout<<"emcal x = "<<_emcal_x<<" , y = "<<_emcal_y<<" , z = "<<_emcal_z<<" , phi = "<<_emcal_phi<<" , eta = "<<_emcal_eta<<std::endl;
+          std::cout<<"track projected x = "<<_track_x_emc<<" , y = "<<_track_y_emc<<" , z = "<<_track_z_emc<<" , phi = "<<_track_phi_emc<<" , eta = "<<_track_eta_emc<<std::endl;
+          std::cout<<"track px = "<<track->get_px()<<" , py = "<<track->get_py()<<" , pz = "<<track->get_pz()<<" , pt = "<<track->get_pt()<<" , p = "<<track->get_p()<<" , charge = "<<track->get_charge()<<std::endl;
+	}
       }
     }
 
@@ -353,7 +354,7 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
     {
       //trackMap_new->insert(iter.second);
       trackMap_new->insertWithKey(iter.second,iter.first);
-//std::cout<<"Hey!!!!!! insertWithKey iter.first = "<<iter.first<<" , track->get_id() = "<<track->get_id()<<std::endl;
+      if (Verbosity() > 1) {std::cout<<"insertWithKey iter.first = "<<iter.first<<" , track->get_id() = "<<track->get_id()<<std::endl;}
       num_matched_pair++;
     }
   }
@@ -362,22 +363,6 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
   std::ofstream outFile;
   if (num_matched_pair>=2 && m_write_evt_display)
   {
-
-    PHNodeIterator nodeIter(topNode);
-
-    PHNode* evtNode = dynamic_cast<PHNode*>(nodeIter.findFirst("EventHeader"));
-
-    if (evtNode)
-    {
-      EventHeaderv1* evtHeader = findNode::getClass<EventHeaderv1>(topNode, "EventHeader");
-      m_runNumber = evtHeader->get_RunNumber();
-      m_evtNumber = evtHeader->get_EvtSequence();
-    }
-    else
-    {
-      m_runNumber = m_evtNumber = -1;
-    }
-
     outFile.open(m_evt_display_path + "EvtDisplay_" + m_runNumber + "_" + m_evtNumber + ".json");
     event_file_start(outFile, m_run_date, m_runNumber, m_evtNumber);
     outFile << "     \"HITS\": {\n   \n     \"CEMC\":  [";
@@ -549,10 +534,50 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
   }
 
   outFile.close();
-  m_event++;
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
+//____________________________________________________________________________..
+bool TrackCaloMatch::checkTrack(SvtxTrack* track)
+{
+  if(!track)
+  {
+    return false;  
+  }
+
+  if(track->get_pt() < m_track_pt_low_cut)
+  {
+    return false;
+  }
+
+  if(track->get_quality() > m_track_quality)
+  {
+    return false;
+  }
+
+  const auto cluster_keys(get_cluster_keys(track));
+  if (count_clusters<TrkrDefs::mvtxId>(cluster_keys) < m_nmvtx_low_cut)
+  {
+    return false;
+  }
+  if (count_clusters<TrkrDefs::inttId>(cluster_keys) < m_nintt_low_cut)
+  {
+    return false;
+  }
+  if (count_clusters<TrkrDefs::tpcId>(cluster_keys) < m_ntpc_low_cut)
+  {
+    return false;
+  }
+  if (count_clusters<TrkrDefs::micromegasId>(cluster_keys) < m_ntpot_low_cut)
+  {
+    return false;
+  }
+
+  return true;
+
+}
+
+//____________________________________________________________________________..
 void TrackCaloMatch::event_file_start(std::ofstream &jason_file_header, std::string date, int runid, int evtid)
 {
     jason_file_header << "{\n    \"EVENT\": {\n        \"runid\": " << runid << ", \n        \"evtid\": " << evtid << ", \n        \"time\": 0, \n        \"type\": \"Collision\", \n        \"s_nn\": 0, \n        \"B\": 3.0,\n        \"pv\": [0,0,0],\n        \"runstats\": [\"sPHENIX Internal\",        \n        \"200 GeV pp\",        \n        \"" << date << ", Run " << runid << "\",        \n        \"Event #" << evtid << "\"]  \n    },\n" << std::endl;
