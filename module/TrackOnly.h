@@ -66,8 +66,8 @@ class TrackOnly : public SubsysReco
    TFile *_outfile = nullptr;
    TTree *_tree = nullptr;
 
-   int _runNumber;
-   int _eventNumber;
+   int _runNumber = -9999;
+   int _eventNumber = -9999;
    std::vector<int> _vertex_id;
    std::vector<int> _vertex_crossing;
    std::vector<int> _vertex_ntracks;
@@ -118,7 +118,7 @@ class TrackOnly : public SubsysReco
 
 
    float m_track_pt_low_cut = 0.5;
-   float m_vx, m_vy, m_vz;
+   float m_vx = 0, m_vy = 0, m_vz = 0;
 
 };
 

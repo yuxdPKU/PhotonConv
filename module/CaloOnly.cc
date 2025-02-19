@@ -99,24 +99,25 @@ int CaloOnly::process_event(PHCompositeNode *topNode)
 
     hasMBDvertex = false;
   }
-
-  if (vertexmap->empty())
+  else if (vertexmap->empty())
   {
     //std::cout << "CaloOnly::process_event - Fatal Error - GlobalVertexMap node is empty. Please turn on the do_global flag in the main macro in order to reconstruct the global vertex." << std::endl;
     hasMBDvertex = false;
   }
 
-  GlobalVertex *vtx = vertexmap->begin()->second;
-  if (vtx == nullptr)
+  if (vertexmap)
   {
-    hasMBDvertex = false;
-  }
+    GlobalVertex *vtx = vertexmap->begin()->second;
+    if (vtx == nullptr)
+    {
+      hasMBDvertex = false;
+    }
 
-  if(hasMBDvertex == true)
-  {
-    _mbd_z.push_back(vtx->get_z());
+    if(hasMBDvertex == true)
+    {
+      _mbd_z.push_back(vtx->get_z());
+    }
   }
-
 
 
 

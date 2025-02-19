@@ -109,32 +109,39 @@ class TrackToCalo : public SubsysReco
   void setIHcalRadius(float r) {m_ihcal_radius_user = r;}
   void setOHcalRadius(float r) {m_ohcal_radius_user = r;}
 
-  void setRawClusContEMName(std::string name) {m_RawClusCont_EM_name = name;}
-  void setRawClusContHADName(std::string name) {m_RawClusCont_HAD_name = name;}
-  void setRawTowerGeomContName(std::string name) {m_RawTowerGeomCont_name = name;}
-  void setKFPContName(std::string name) {m_KFPCont_name = name;}
-  void setKFPtrackMapName(std::string name) {m_KFPtrackMap_name = name;}
+  void setRawClusContEMName(const std::string& name) {m_RawClusCont_EM_name = name;}
+  void setRawClusContHADName(const std::string& name) {m_RawClusCont_HAD_name = name;}
+  void setRawTowerGeomContName(const std::string& name) {m_RawTowerGeomCont_name = name;}
+  void setKFPContName(const std::string& name) {m_KFPCont_name = name;}
+  void setKFPtrackMapName(const std::string& name) {m_KFPtrackMap_name = name;}
 
   void resetCaloRadius();
 
   void setTrackPtLowCut(float pt) {m_track_pt_low_cut = pt;}
   void setEmcalELowCut(float e) {m_emcal_e_low_cut = e;}
+  void setHcalELowCut(float e) {m_hcal_e_low_cut = e;}
+  void setnMvtxClusters(int n) {m_nmvtx_low_cut = n;}
+  void setnInttClusters(int n) {m_nintt_low_cut = n;}
   void setnTpcClusters(int n) {m_ntpc_low_cut = n;}
+  void setnTpotClusters(int n) {m_ntpot_low_cut = n;}
   void setTrackQuality(float q) {m_track_quality = q;}
 
   void doTrkrCaloMatching(bool flag = true) {m_doTrkrCaloMatching = flag;}
   void doTrkrCaloMatching_KFP(bool flag = true) {m_doTrkrCaloMatching_KFP = flag;}
+
+  void doSimulation(bool flag = true) {m_doSimulation = flag;}
   void doTruthMatching(bool flag = true) {m_doTruthMatching = flag;}
 
   void anaTrkrInfo(bool flag = true) {m_doTrackOnly = flag;}
   void anaCaloInfo(bool flag = true) {m_doCaloOnly = flag;}
 
-  void doSimulation(bool flag = true) {m_doSimulation = flag;}
   void setDFNodeName(const std::string &name) { m_df_module_name = name; }
 
   PHG4Particle *getTruthTrack(SvtxTrack *thisTrack);
 
  private:
+  bool checkTrack(SvtxTrack* track);
+
   using Decay = std::vector<std::pair<std::pair<int, int>, int>>;
   float getParticleMass(const int PDGID) { return TDatabasePDG::Instance()->GetParticle(PDGID)->Mass(); }
 
@@ -156,8 +163,8 @@ class TrackToCalo : public SubsysReco
   std::string m_KFPCont_name = "KFParticle_Container";
   std::string m_KFPtrackMap_name = "SvtxTrackMap";
 
-  int _runNumber;
-  int _eventNumber;
+  int _runNumber = -9999;
+  int _eventNumber = -9999;
   std::vector<int> _vertex_id;
   std::vector<int> _vertex_crossing;
   std::vector<int> _vertex_ntracks;
@@ -184,6 +191,7 @@ class TrackToCalo : public SubsysReco
   std::vector<int> _track_nc_mvtx;
   std::vector<int> _track_nc_intt;
   std::vector<int> _track_nc_tpc;
+  std::vector<int> _track_nc_tpot;
   std::vector<float> _track_ptq;
   std::vector<float> _track_px;
   std::vector<float> _track_py;
@@ -265,7 +273,7 @@ class TrackToCalo : public SubsysReco
 
   std::vector<int> _ntracks;
 
-  int _numCan;
+  int _numCan = 0;
 
   std::vector<float> _gamma_mass;
   std::vector<float> _gamma_massErr;
@@ -323,6 +331,10 @@ class TrackToCalo : public SubsysReco
   std::vector<float> _ep_nDoF;
   std::vector<float> _ep_nDoF_raw;
   std::vector<float> _ep_crossing;
+  std::vector<int> _ep_nmvtx;
+  std::vector<int> _ep_nintt;
+  std::vector<int> _ep_ntpc;
+  std::vector<int> _ep_ntpot;
   std::vector<int> _ep_clus_ican;
   //std::vector<int> _ep_clus_type;
   std::vector<float> _ep_clus_x;
@@ -374,6 +386,10 @@ class TrackToCalo : public SubsysReco
   std::vector<float> _em_nDoF;
   std::vector<float> _em_nDoF_raw;
   std::vector<float> _em_crossing;
+  std::vector<int> _em_nmvtx;
+  std::vector<int> _em_nintt;
+  std::vector<int> _em_ntpc;
+  std::vector<int> _em_ntpot;
   std::vector<int> _em_clus_ican;
   //std::vector<int> _em_clus_type;
   std::vector<float> _em_clus_x;
@@ -412,7 +428,7 @@ class TrackToCalo : public SubsysReco
   std::vector<float> _epem_DCA_2d;
   std::vector<float> _epem_DCA_3d;
 
-  int _true_numCan;
+  int _true_numCan = 0;
   std::vector<float> _true_gamma_phi;
   std::vector<float> _true_gamma_eta;
   std::vector<float> _true_gamma_px;
@@ -454,11 +470,11 @@ class TrackToCalo : public SubsysReco
   ActsGeometry *acts_Geometry = nullptr;
   RawClusterContainer *clustersEM = nullptr;
   RawClusterContainer *clustersHAD = nullptr;
-  RawClusterContainer *EMCAL_RawClusters = nullptr;
+  //RawClusterContainer *EMCAL_RawClusters = nullptr;
   TowerInfoContainer *EMCAL_Container = nullptr;
   TowerInfoContainer *IHCAL_Container = nullptr;
   TowerInfoContainer *OHCAL_Container = nullptr;
-  TrkrHitSetContainer *trkrHitSet = nullptr;
+  //TrkrHitSetContainer *trkrHitSet = nullptr;
   TrkrClusterContainer *trkrContainer = nullptr;
   RawTowerGeomContainer *EMCalGeo = nullptr;
   RawTowerGeomContainer *IHCalGeo = nullptr;
@@ -467,10 +483,10 @@ class TrackToCalo : public SubsysReco
   std::string m_df_module_name;
 
   SvtxTrackState *thisState = nullptr;
-  SvtxTrack *track = nullptr;
+  SvtxTrack *svtxtrack = nullptr;
   PHG4Particle *g4particle = nullptr;
   PHG4VtxPoint *g4vertex_point = nullptr;
-  TrackSeed *seed = nullptr;
+  TrackSeed *si_seed = nullptr;
   TrackSeed *tpc_seed = nullptr;
   TrkrCluster *trkrCluster = nullptr;
 
@@ -479,22 +495,26 @@ class TrackToCalo : public SubsysReco
   KFParticle* kfp_ep = nullptr;
   KFParticle* kfp_em = nullptr;
 
-  float m_track_pt_low_cut = 0.5;
-  float m_emcal_e_low_cut = 0.2;
+  float m_track_pt_low_cut = 1;
+  float m_emcal_e_low_cut = 0.5;
+  float m_hcal_e_low_cut = 0.2;
+  int m_nmvtx_low_cut = 0;
+  int m_nintt_low_cut = 0;
   int m_ntpc_low_cut = 20;
+  int m_ntpot_low_cut = 0;
   float m_track_quality = 1000;
-  float m_vx, m_vy, m_vz;
+  float m_vx = 0, m_vy = 0, m_vz = 0;
 
-  double caloRadiusEMCal;
-  double caloRadiusIHCal;
-  double caloRadiusOHCal;
+  double caloRadiusEMCal = 100;
+  double caloRadiusIHCal = 100;
+  double caloRadiusOHCal = 100;
 
   bool m_doTrkrCaloMatching = false;
   bool m_doTrkrCaloMatching_KFP = false;
-  bool m_doTruthMatching = false;
   bool m_doTrackOnly = false;
   bool m_doCaloOnly = false;
   bool m_doSimulation = false;
+  bool m_doTruthMatching = false;
 
   PHG4TruthInfoContainer *m_truthInfo = nullptr;
   PHHepMCGenEventMap *m_geneventmap = nullptr;

@@ -44,13 +44,13 @@ class SeedContainerMaker : public SubsysReco
   /// Called at the end of all processing.
   int End(PHCompositeNode *topNode) override;
 
-  std::string GetTpcTrackMapName() {return m_TpcTrackMapName;}
+  const std::string& GetTpcTrackMapName() const {return m_TpcTrackMapName;}
   void SetTpcTrackMapName(const std::string &name) {m_TpcTrackMapName = name;}
-  std::string GetNewTpcTrackMapName() {return m_NewTpcTrackMapName;}
+  const std::string& GetNewTpcTrackMapName() const {return m_NewTpcTrackMapName;}
   void SetNewTpcTrackMapName(const std::string &name) {m_NewTpcTrackMapName = name;}
-  std::string GetSiliconTrackMapName() {return m_SiliconTrackMapName;}
+  const std::string& GetSiliconTrackMapName() const {return m_SiliconTrackMapName;}
   void SetSiliconTrackMapName(const std::string &name) {m_SiliconTrackMapName = name;}
-  std::string GetSvtxTrackMapName() {return m_SvtxTrackMapName;}
+  const std::string& GetSvtxTrackMapName() const {return m_SvtxTrackMapName;}
   void SetSvtxTrackMapName(const std::string &name) {m_SvtxTrackMapName = name;}
 
  private:

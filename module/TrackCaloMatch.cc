@@ -367,7 +367,7 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
     event_file_start(outFile, m_run_date, m_runNumber, m_evtNumber);
     outFile << "     \"HITS\": {\n   \n     \"CEMC\":  [";
     bool firstEMCALHits = true;
-    bool firstHCALHits = true;
+    //bool firstHCALHits = true;
     bool firstHits = true;
 
     RawClusterContainer::Range begin_end_EMC = clustersEM->getClusters();
@@ -381,7 +381,7 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
 
       RawCluster::TowerConstRange towers = cluster->get_towers();
       RawCluster::TowerConstIterator toweriter;
-      TowerInfo *towerInfo = nullptr;
+      //TowerInfo *towerInfo = nullptr;
 
       for (toweriter = towers.first; toweriter != towers.second; ++toweriter)
       {
@@ -574,11 +574,10 @@ bool TrackCaloMatch::checkTrack(SvtxTrack* track)
   }
 
   return true;
-
 }
 
 //____________________________________________________________________________..
-void TrackCaloMatch::event_file_start(std::ofstream &jason_file_header, std::string date, int runid, int evtid)
+void TrackCaloMatch::event_file_start(std::ofstream &jason_file_header, const std::string& date, int runid, int evtid)
 {
     jason_file_header << "{\n    \"EVENT\": {\n        \"runid\": " << runid << ", \n        \"evtid\": " << evtid << ", \n        \"time\": 0, \n        \"type\": \"Collision\", \n        \"s_nn\": 0, \n        \"B\": 3.0,\n        \"pv\": [0,0,0],\n        \"runstats\": [\"sPHENIX Internal\",        \n        \"200 GeV pp\",        \n        \"" << date << ", Run " << runid << "\",        \n        \"Event #" << evtid << "\"]  \n    },\n" << std::endl;
 

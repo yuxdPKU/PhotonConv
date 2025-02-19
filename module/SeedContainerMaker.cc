@@ -130,8 +130,6 @@ int SeedContainerMaker::process_event(PHCompositeNode* topNode)
     }
   }
 
-  TrackSeed *tpc_seed = nullptr;
-
   for (auto &iter : *_track_map_tpc)
   {
     _track_map_tpc_new->insert(iter);
