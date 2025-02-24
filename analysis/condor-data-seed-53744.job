@@ -41,30 +41,33 @@ Rank=CPU_Speed
 Initialdir     = /sphenix/u/xyu3/workarea/PhotonConv/analysis
 
 # The executable we want to run.
-Executable     = $(Initialdir)/run_photonconv.sh
+Executable     = $(Initialdir)/run_photonconv_seed.sh
 
-Nevent         = 2000
-RunNumber      = 53756
-TrackFileName  = clusters_seeds_$(RunNumber)-$(Segment)-$(Index).root_dst.root
-TrackFilePath  = /sphenix/u/xyu3/hftg01/Full_track_DST/Reconstructed/$(RunNumber)/
+Nevent         = 10000
+RunNumber      = 53744
+ClusterFileName= DST_TRKR_CLUSTER_run2pp_ana466_2024p012_v001-$INT(RunNumber,%08d)-$INT(TrkrSegment,%05d).root
+ClusterFilePath= /sphenix/lustre01/sphnxpro/production/run2pp/physics/ana466_2024p012_v001/DST_TRKR_CLUSTER/run_00053700_00053800/dst/
+SeedFileName   = DST_TRKR_SEED_run2pp_ana468_2024p012_v002-$INT(RunNumber,%08d)-$INT(TrkrSegment,%05d).root
+SeedFilePath   = /sphenix/lustre01/sphnxpro/production/run2pp/physics/ana468_2024p012_v002/DST_TRKR_SEED/run_00053700_00053800/dst/
 CaloFileName   = DST_CALO_run2pp_ana462_2024p010_v001-$INT(RunNumber,%08d)-$INT(CaloSegment,%05d).root
 CaloFilePath   = /sphenix/lustre01/sphnxpro/production/run2pp/physics/ana462_2024p010_v001/DST_CALO/run_00053700_00053800/dst/
 OutPrefix      = clusters_seeds
 OutPath        = $(Initialdir)
+Index          = 0
 StepSize       = 0
 
 # The argument to pass to the executable.
 #tracking firt then calo, only one tracking file
-Arguments      = "$(Nevent) $(TrackFileName) $(TrackFilePath) $(CaloFileName) $(CaloFilePath) $(OutPrefix) $(OutPath) $(RunNumber) $(Segment) $(Index) $(StepSize)"
+Arguments      = "$(Nevent) $(ClusterFileName) $(ClusterFilePath) $(SeedFileName) $(SeedFilePath) $(CaloFileName) $(CaloFilePath) $(OutPrefix) $(OutPath) $(Index) $(StepSize)"
 
 # The job's stdout is sent to this file.
-Output         = $(Initialdir)/log/job-Data-$(RunNumber).$(Segment).$(Index).$(Cluster).$(Process).out
+Output         = $(Initialdir)/log/job-Data-$(RunNumber).$(TrkrSegment).$(Process).out
 
 # The job's stderr is sent to this file.
-Error          = $(Initialdir)/log/job-Data-$(RunNumber).$(Segment).$(Index).$(Cluster).$(Process).err
+Error          = $(Initialdir)/log/job-Data-$(RunNumber).$(TrkrSegment).$(Process).err
 
 # The condor log file for this job, useful when debugging.
-Log            = $(Initialdir)/log/job-Data-$(RunNumber).$(Segment).$(Index).$(Cluster).$(Process).log
+Log            = $(Initialdir)/log/job-Data-$(RunNumber).$(TrkrSegment).$(Process).log
 
 #should_transfer_files   = YES
 #when_to_transfer_output = ON_EXIT_OR_EVICT
@@ -79,4 +82,4 @@ concurrency_limits=CONCURRENCY_LIMIT_DEFAULT:1000
 # job.  If a number is placed after the command (i.e. Queue 15)
 # then the job will be submitted N times.  Use the $(Process)
 # macro to make your input/output and log files unique.
-Queue Segment Index CaloSegment from $(Initialdir)/$(RunNumber)_seg_id.txt
+Queue TrkrSegment CaloSegment from $(Initialdir)/filelist/dst_sync_trkr_seed_cluster_calo_run2pp-$INT(RunNumber,%08d).list

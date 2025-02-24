@@ -250,6 +250,7 @@ void TrackToCalo::createBranches_KFP()
   _tree_KFP->Branch("_numCan", &_numCan);
   _tree_KFP->Branch("_gamma_mass", &_gamma_mass);
   _tree_KFP->Branch("_gamma_massErr", &_gamma_massErr);
+  _tree_KFP->Branch("_gamma_charge", &_gamma_charge);
   _tree_KFP->Branch("_gamma_x", &_gamma_x);
   _tree_KFP->Branch("_gamma_y", &_gamma_y);
   _tree_KFP->Branch("_gamma_z", &_gamma_z);
@@ -321,9 +322,9 @@ void TrackToCalo::createBranches_KFP()
   _tree_KFP->Branch("_ep_x_emc", &_ep_x_emc);
   _tree_KFP->Branch("_ep_y_emc", &_ep_y_emc);
   _tree_KFP->Branch("_ep_z_emc", &_ep_z_emc);
-  _tree_KFP->Branch("_ep_has_truthmatching", &_ep_has_truthmatching);
   if(m_doSimulation)
   {
+    _tree_KFP->Branch("_ep_has_truthmatching", &_ep_has_truthmatching);
     _tree_KFP->Branch("_ep_true_id", &_ep_true_id);
     _tree_KFP->Branch("_ep_true_px", &_ep_true_px);
     _tree_KFP->Branch("_ep_true_py", &_ep_true_py);
@@ -387,9 +388,9 @@ void TrackToCalo::createBranches_KFP()
   _tree_KFP->Branch("_em_x_emc", &_em_x_emc);
   _tree_KFP->Branch("_em_y_emc", &_em_y_emc);
   _tree_KFP->Branch("_em_z_emc", &_em_z_emc);
-  _tree_KFP->Branch("_em_has_truthmatching", &_em_has_truthmatching);
   if(m_doSimulation)
   {
+    _tree_KFP->Branch("_em_has_truthmatching", &_em_has_truthmatching);
     _tree_KFP->Branch("_em_true_id", &_em_true_id);
     _tree_KFP->Branch("_em_true_px", &_em_true_px);
     _tree_KFP->Branch("_em_true_py", &_em_true_py);
@@ -1673,6 +1674,7 @@ void TrackToCalo::fillTree_KFP()
     _gamma_nDoF.push_back(kfp_mother->GetNDF());
     _gamma_vertex_volume.push_back( kf_tools.calculateEllipsoidVolume(*kfp_mother) );
 
+    int totalcharge = 0;
     // one for e+, one for e-
     for (int j = 1; j <= 2; j++)
     {
@@ -1752,8 +1754,9 @@ void TrackToCalo::fillTree_KFP()
 
       //int pdgid = kfp_daughter->GetPDG(); // pdgid might be reverse
       int charge = kfp_daughter->Q();
+      totalcharge+=charge;
 
-      if (charge == -1)
+      if ((m_doLikesign==true && j==1) || (m_doLikesign==false && charge == -1))
       {
         kfp_em = kfp_daughter;
         _em_mass.push_back(kfp_daughter->GetMass());
@@ -1852,7 +1855,7 @@ void TrackToCalo::fillTree_KFP()
         }
 
       }
-      else if (charge == 1)
+      else if ((m_doLikesign==true && j==2) || (m_doLikesign==false && charge == 1))
       {
         kfp_ep = kfp_daughter;
         _ep_mass.push_back(kfp_daughter->GetMass());
@@ -1960,6 +1963,7 @@ void TrackToCalo::fillTree_KFP()
     motherDecayVertex += *kfp_ep;
     motherDecayVertex += *kfp_em;
     _gamma_SV_chi2_per_nDoF.push_back( motherDecayVertex.GetChi2() / motherDecayVertex.GetNDF() );
+    _gamma_charge.push_back(totalcharge);
 
   }
 
@@ -2306,6 +2310,7 @@ void TrackToCalo::ResetTreeVectors_KFP()
 {
   _gamma_mass.clear();
   _gamma_massErr.clear();
+  _gamma_charge.clear();
   _gamma_x.clear();
   _gamma_y.clear();
   _gamma_z.clear();

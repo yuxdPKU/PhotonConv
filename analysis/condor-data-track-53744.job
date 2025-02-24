@@ -41,7 +41,7 @@ Rank=CPU_Speed
 Initialdir     = /sphenix/u/xyu3/workarea/PhotonConv/analysis
 
 # The executable we want to run.
-Executable     = $(Initialdir)/run_photonconv.sh
+Executable     = $(Initialdir)/run_photonconv_track.sh
 
 Nevent         = 500
 RunNumber      = 53744

@@ -132,6 +132,8 @@ class TrackToCalo : public SubsysReco
   void doSimulation(bool flag = true) {m_doSimulation = flag;}
   void doTruthMatching(bool flag = true) {m_doTruthMatching = flag;}
 
+  void doLikesign(bool flag = true) {m_doLikesign = flag;}
+
   void anaTrkrInfo(bool flag = true) {m_doTrackOnly = flag;}
   void anaCaloInfo(bool flag = true) {m_doCaloOnly = flag;}
 
@@ -277,6 +279,7 @@ class TrackToCalo : public SubsysReco
 
   std::vector<float> _gamma_mass;
   std::vector<float> _gamma_massErr;
+  std::vector<int> _gamma_charge;
   std::vector<float> _gamma_x;
   std::vector<float> _gamma_y;
   std::vector<float> _gamma_z;
@@ -515,6 +518,7 @@ class TrackToCalo : public SubsysReco
   bool m_doCaloOnly = false;
   bool m_doSimulation = false;
   bool m_doTruthMatching = false;
+  bool m_doLikesign = false;
 
   PHG4TruthInfoContainer *m_truthInfo = nullptr;
   PHHepMCGenEventMap *m_geneventmap = nullptr;

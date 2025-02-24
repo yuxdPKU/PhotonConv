@@ -18,16 +18,16 @@ this_dir=`dirname $this_script`
 echo running: $this_script $*
 
 nEvents=$1
-InTrackDst=$2
-InTrackPath=$3
-InCaloDst=$4
-InCaloPath=$5
-OutPrefix=$6
-OutPath=$7
-RunNumber=$8
-Segment=$9
+InClusterDst=$2
+InClusterPath=$3
+InSeedDst=$4
+InSeedPath=$5
+InCaloDst=$6
+InCaloPath=$7
+OutPrefix=$8
+OutPath=$9
 Index=${10}
 StepSize=${11}
 
-root.exe -q -b Fun4All_FullReconstruction_PhotonConv.C\($nEvents,\"${InTrackDst}\",\"${InTrackPath}\",\"${InCaloDst}\",\"${InCaloPath}\",\"${OutPrefix}\",\"${OutPath}\",$RunNumber,$Segment,$Index,$StepSize\)
+root.exe -q -l Fun4All_TrackFitting_PhotonConv.C\($nEvents,\"${InClusterDst}\",\"${InClusterPath}\",\"${InSeedDst}\",\"${InSeedPath}\",\"${InCaloDst}\",\"${InCaloPath}\",\"${OutPrefix}\",\"${OutPath}\",$Index,$StepSize\)
 echo Script done
