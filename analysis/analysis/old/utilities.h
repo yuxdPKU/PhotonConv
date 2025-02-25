@@ -1,15 +1,3 @@
-#include <TTree.h>
-#include <TChain.h>
-#include <TMath.h>
-#include <TGraph.h>
-#include <TVector3.h>
-#include <TFile.h>
-
-#include <fstream>
-#include <iostream>
-
-using namespace std;
-
 float PiRange(float deltaPhi);
 bool IsClusterClose(float projPhi, float projEta, float clusterPhi, float clusterEta, float minR);
 bool HasOverlap(float projPhi, float projEta, std::vector<float> towerPhi, std::vector<float> towerEta, float minDelta);
@@ -30,8 +18,6 @@ float emcal_radius = 99;
 //float emcal_radius = 100.70;//(1-(-0.077))*93.5
 //float emcal_radius = 99.1;//(1-(-0.060))*93.5
 float hcal_radius = 177.423;
-
-const bool doTruthMatching = false;
 
 // branch vars
   int _runNumber = 0;
@@ -140,7 +126,6 @@ const bool doTruthMatching = false;
   int _numCan = 0;
   std::vector<float> *_gamma_mass = 0;
   std::vector<float> *_gamma_massErr = 0;
-  std::vector<int> *_gamma_charge = 0;
   std::vector<float> *_gamma_x = 0;
   std::vector<float> *_gamma_y = 0;
   std::vector<float> *_gamma_z = 0;
@@ -194,10 +179,6 @@ const bool doTruthMatching = false;
   std::vector<float> *_ep_nDoF = 0;
   std::vector<float> *_ep_nDoF_raw = 0;
   std::vector<int> *_ep_crossing = 0;
-  std::vector<int> *_ep_nmvtx = 0;
-  std::vector<int> *_ep_nintt = 0;
-  std::vector<int> *_ep_ntpc = 0;
-  std::vector<int> *_ep_ntpot = 0;
   std::vector<int> *_ep_clus_ican = 0;
   std::vector<float> *_ep_clus_x = 0;
   std::vector<float> *_ep_clus_y = 0;
@@ -256,10 +237,6 @@ const bool doTruthMatching = false;
   std::vector<float> *_em_nDoF = 0;
   std::vector<float> *_em_nDoF_raw = 0;
   std::vector<int> *_em_crossing = 0;
-  std::vector<int> *_em_nmvtx = 0;
-  std::vector<int> *_em_nintt = 0;
-  std::vector<int> *_em_ntpc = 0;
-  std::vector<int> *_em_ntpot = 0;
   std::vector<int> *_em_clus_ican = 0;
   std::vector<float> *_em_clus_x = 0;
   std::vector<float> *_em_clus_y = 0;
@@ -524,7 +501,6 @@ void setBranch_kfp(TChain* tree)
   tree->SetBranchAddress("_numCan", &_numCan);
   tree->SetBranchAddress("_gamma_mass", &_gamma_mass);
   tree->SetBranchAddress("_gamma_massErr", &_gamma_massErr);
-  tree->SetBranchAddress("_gamma_charge", &_gamma_charge);
   tree->SetBranchAddress("_gamma_x", &_gamma_x);
   tree->SetBranchAddress("_gamma_y", &_gamma_y);
   tree->SetBranchAddress("_gamma_z", &_gamma_z);
@@ -578,10 +554,6 @@ void setBranch_kfp(TChain* tree)
   tree->SetBranchAddress("_ep_nDoF", &_ep_nDoF);
   tree->SetBranchAddress("_ep_nDoF_raw", &_ep_nDoF_raw);
   tree->SetBranchAddress("_ep_crossing", &_ep_crossing);
-  tree->SetBranchAddress("_ep_nmvtx", &_ep_nmvtx);
-  tree->SetBranchAddress("_ep_nintt", &_ep_nintt);
-  tree->SetBranchAddress("_ep_ntpc", &_ep_ntpc);
-  tree->SetBranchAddress("_ep_ntpot", &_ep_ntpot);
   tree->SetBranchAddress("_ep_clus_ican", &_ep_clus_ican);
   tree->SetBranchAddress("_ep_clus_x", &_ep_clus_x);
   tree->SetBranchAddress("_ep_clus_y", &_ep_clus_y);
@@ -594,8 +566,6 @@ void setBranch_kfp(TChain* tree)
   tree->SetBranchAddress("_ep_x_emc", &_ep_x_emc);
   tree->SetBranchAddress("_ep_y_emc", &_ep_y_emc);
   tree->SetBranchAddress("_ep_z_emc", &_ep_z_emc);
-  if (doTruthMatching)
-  {
   tree->SetBranchAddress("_ep_has_truthmatching", &_ep_has_truthmatching);
   tree->SetBranchAddress("_ep_true_id", &_ep_true_id);
   tree->SetBranchAddress("_ep_true_px", &_ep_true_px);
@@ -607,7 +577,10 @@ void setBranch_kfp(TChain* tree)
   tree->SetBranchAddress("_ep_true_vertex_x_method2", &_ep_true_vertex_x_method2);
   tree->SetBranchAddress("_ep_true_vertex_y_method2", &_ep_true_vertex_y_method2);
   tree->SetBranchAddress("_ep_true_vertex_z_method2", &_ep_true_vertex_z_method2);
-  }
+
+  std::vector<float> *_ep_true_vertex_x_method2 = 0;
+  std::vector<float> *_ep_true_vertex_y_method2 = 0;
+  std::vector<float> *_ep_true_vertex_z_method2 = 0;
 
   tree->SetBranchAddress("_em_mass", &_em_mass);
   tree->SetBranchAddress("_em_x", &_em_x);
@@ -643,10 +616,6 @@ void setBranch_kfp(TChain* tree)
   tree->SetBranchAddress("_em_nDoF", &_em_nDoF);
   tree->SetBranchAddress("_em_nDoF_raw", &_em_nDoF_raw);
   tree->SetBranchAddress("_em_crossing", &_em_crossing);
-  tree->SetBranchAddress("_em_nmvtx", &_em_nmvtx);
-  tree->SetBranchAddress("_em_nintt", &_em_nintt);
-  tree->SetBranchAddress("_em_ntpc", &_em_ntpc);
-  tree->SetBranchAddress("_em_ntpot", &_em_ntpot);
   tree->SetBranchAddress("_em_clus_ican", &_em_clus_ican);
   tree->SetBranchAddress("_em_clus_x", &_em_clus_x);
   tree->SetBranchAddress("_em_clus_y", &_em_clus_y);
@@ -659,8 +628,6 @@ void setBranch_kfp(TChain* tree)
   tree->SetBranchAddress("_em_x_emc", &_em_x_emc);
   tree->SetBranchAddress("_em_y_emc", &_em_y_emc);
   tree->SetBranchAddress("_em_z_emc", &_em_z_emc);
-  if (doTruthMatching)
-  {
   tree->SetBranchAddress("_em_has_truthmatching", &_em_has_truthmatching);
   tree->SetBranchAddress("_em_true_id", &_em_true_id);
   tree->SetBranchAddress("_em_true_px", &_em_true_px);
@@ -672,7 +639,6 @@ void setBranch_kfp(TChain* tree)
   tree->SetBranchAddress("_em_true_vertex_x_method2", &_em_true_vertex_x_method2);
   tree->SetBranchAddress("_em_true_vertex_y_method2", &_em_true_vertex_y_method2);
   tree->SetBranchAddress("_em_true_vertex_z_method2", &_em_true_vertex_z_method2);
-  }
 
   tree->SetBranchAddress("_emcal_phi", &_emcal_phi);
   tree->SetBranchAddress("_emcal_eta", &_emcal_eta);
@@ -684,8 +650,6 @@ void setBranch_kfp(TChain* tree)
   tree->SetBranchAddress("_epem_DCA_2d", &_epem_DCA_2d);
   tree->SetBranchAddress("_epem_DCA_3d", &_epem_DCA_3d);
 
-  if (doTruthMatching)
-  {
   tree->SetBranchAddress("_true_numCan", &_true_numCan);
   tree->SetBranchAddress("_true_gamma_phi", &_true_gamma_phi);
   tree->SetBranchAddress("_true_gamma_eta", &_true_gamma_eta);
@@ -719,7 +683,6 @@ void setBranch_kfp(TChain* tree)
   tree->SetBranchAddress("_true_em_x", &_true_em_x);
   tree->SetBranchAddress("_true_em_y", &_true_em_y);
   tree->SetBranchAddress("_true_em_z", &_true_em_z);
-  }
 
 }
 
@@ -829,7 +792,7 @@ std::vector<int> readNumberFromText(std::string infile) {
 
     std::ifstream inputFile(infile);
     if (!inputFile.is_open()) {
-        std::cout << "Can not open file!" << std::endl;
+        std::cerr << "Can not open file!" << std::endl;
         return vector;
     }
 
@@ -849,7 +812,7 @@ std::vector<std::string> readFileNameFromText(std::string infile) {
 
     std::ifstream inputFile(infile);
     if (!inputFile.is_open()) {
-        std::cout << "Can not open file!" << std::endl;
+        std::cerr << "Can not open file!" << std::endl;
         return vector;
     }
 

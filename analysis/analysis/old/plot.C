@@ -9,14 +9,13 @@ void drawArrow(TArrow *arrow);
 namespace fs = std::filesystem;
 TVector3 z_direction(0,0,1);
 
-void plot()
+void plot(int runnumber = 53744)
 {
   SetsPhenixStyle();
   //gStyle->SetOptStat(0);
 
   TChain* chain = new TChain("tree");
-  chain->Add("eop_kfp_unlikesign.root");
-  //chain->Add("eop_kfp_likesign.root");
+  chain->Add(Form("eop_%d_kfp_v2.root",runnumber));
 
   TH1F* h1_epemc_dphi = new TH1F("h1_epemc_dphi","",100,-0.15,0.15);
   h1_epemc_dphi->GetXaxis()->SetTitle("#Delta#phi [rad]");
@@ -139,7 +138,7 @@ void plot()
   TH2F* h2_eop_p_ep = new TH2F("h2_eop_p_ep","",20,0,5,40,0,2);
   h2_eop_p_ep->GetXaxis()->SetTitle("p [GeV/#it{c}]");
   h2_eop_p_ep->GetYaxis()->SetTitle("E/p");
-  h2_eop_p_ep->SetTitle("#it{#bf{sPHENIX}} Internal, p+p #sqrt{s}=200 GeV, Run 53741-53744, 9.77 Million");
+  h2_eop_p_ep->SetTitle("#it{#bf{sPHENIX}} Internal, p+p #sqrt{s}=200 GeV, Run 53744, 3 Million");
   TPaveText *pt9 = new TPaveText(.70, .70, 1.0, 1., "NDC");
   drawsPHENIXInternal(pt9);
   pt9->AddText("e^{+}");
@@ -147,10 +146,32 @@ void plot()
   TH2F* h2_eop_p_em = new TH2F("h2_eop_p_em","",20,0,5,40,0,2);
   h2_eop_p_em->GetXaxis()->SetTitle("p [GeV/#it{c}]");
   h2_eop_p_em->GetYaxis()->SetTitle("E/p");
-  h2_eop_p_em->SetTitle("#it{#bf{sPHENIX}} Internal, p+p #sqrt{s}=200 GeV, Run 53741-53744, 9.77 Million");
+  h2_eop_p_em->SetTitle("#it{#bf{sPHENIX}} Internal, p+p #sqrt{s}=200 GeV, Run 53744, 3 Million");
   TPaveText *pt10 = new TPaveText(.70, .70, 1.0, 1., "NDC");
   drawsPHENIXInternal(pt10);
   pt10->AddText("e^{-}");
+
+  TH1F* h1_eop_ep = new TH1F("h1_eop_ep","",40,0,2);
+  h1_eop_ep->GetXaxis()->SetTitle("E/p");
+  h1_eop_ep->GetYaxis()->SetTitle(Form("Events / %.2f",2./40.));
+  h1_eop_ep->SetLineColor(kRed);
+
+  TH1F* h1_eop_em = new TH1F("h1_eop_em","",40,0,2);
+  h1_eop_em->GetXaxis()->SetTitle("E/p");
+  h1_eop_em->GetYaxis()->SetTitle(Form("Events / %.2f",2./40.));
+  h1_eop_em->SetLineColor(kBlue);
+
+  TLegend *legend7 = new TLegend(0.70, 0.6, 1.0, 0.7);
+  legend7->AddEntry(h1_eop_ep, "e^{+}", "l");
+  legend7->AddEntry(h1_eop_em, "e^{-}", "l");
+
+  TPaveText *pt7 = new TPaveText(.70, .70, 1.0, 1., "NDC");
+  drawsPHENIXInternal(pt7);
+
+
+
+
+
 
 
   chain->Draw("_epemc_dphi>>h1_epemc_dphi");
@@ -289,7 +310,7 @@ void drawsPHENIXInternal(TPaveText *pt)
   pt->SetTextColor(kBlack);
   pt->AddText("#it{#bf{sPHENIX}} Internal");
   pt->AddText("p+p #sqrt{s}=200 GeV");
-  pt->AddText(Form("Run 53741-53744, 9.77 Million"));
+  pt->AddText(Form("Run 53744, 3 Million"));
 }
 
 void drawArrow(TArrow *arrow)
