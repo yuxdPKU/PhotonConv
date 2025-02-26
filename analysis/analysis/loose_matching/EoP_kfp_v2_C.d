@@ -1,7 +1,7 @@
 
 # DO NOT DELETE
 
-./EoP_kfp_v2_C.so: utilities.h
+./EoP_kfp_v2_C.so: ../utilities.h
 ./EoP_kfp_v2_C.so: /cvmfs/sphenix.sdcc.bnl.gov/alma9.2-gcc-14.2.0/opt/sphenix/core/root-6.32.06/include/TTree.h
 ./EoP_kfp_v2_C.so: /cvmfs/sphenix.sdcc.bnl.gov/alma9.2-gcc-14.2.0/opt/sphenix/core/root-6.32.06/include/Compression.h
 ./EoP_kfp_v2_C.so: /cvmfs/sphenix.sdcc.bnl.gov/alma9.2-gcc-14.2.0/opt/sphenix/core/root-6.32.06/include/RtypesCore.h

@@ -1,5 +1,5 @@
 #include <filesystem>
-#include "utilities.h"
+#include "../utilities.h"
 #include <sPhenixStyle.C>
 
 namespace fs = std::filesystem;
@@ -16,12 +16,14 @@ void EoP_kfp_v2()
   int runs[4]={53741,53742,53743,53744};
 
   TChain* chain = new TChain("tree_KFP");
-  //for (int i=0; i<nrun; i++) chain->Add(Form("../Reconstructed/%d/clusters_seeds_%d*track2calo_unlikesign.root",runs[i],runs[i]));
-  for (int i=0; i<nrun; i++) chain->Add(Form("../Reconstructed/%d/clusters_seeds_%d*track2calo_likesign.root",runs[i],runs[i]));
+  for (int i=0; i<nrun; i++) chain->Add(Form("../../Reconstructed/%d/clusters_seeds_%d*track2calo_unlikesign.root",runs[i],runs[i]));
+  //for (int i=0; i<nrun; i++) chain->Add(Form("../../Reconstructed/%d/clusters_seeds_%d*track2calo_likesign.root",runs[i],runs[i]));
+  //chain->Add("photonconv_track2calo_unlikesign.root");
+  //chain->Add("photonconv_track2calo_likesign.root");
   setBranch_kfp(chain);
 
-  //TFile* outputfile = new TFile(Form("./eop_kfp_unlikesign.root"),"recreate");
-  TFile* outputfile = new TFile(Form("./eop_kfp_likesign.root"),"recreate");
+  TFile* outputfile = new TFile(Form("./eop_kfp_unlikesign.root"),"recreate");
+  //TFile* outputfile = new TFile(Form("./eop_kfp_likesign.root"),"recreate");
   TTree* outputtree = new TTree("tree","tree with eop info");
 
   float teop_gamma_mass, teop_gamma_radius;
@@ -480,8 +482,8 @@ void EoP_kfp_v2()
 
         //matching
         //if (dphi>-0.2 && dphi<0.2) // no cut in all
-        //if (isInRange(-0.15,dphi,0.15) && isInRange(-10,dz,10))
-        if (isInRange(-0.05,dphi,0.1) && isInRange(-3,dz,5))
+        if (isInRange(-0.15,dphi,0.15) && isInRange(-10,dz,10))
+        //if (isInRange(-0.05,dphi,0.1) && isInRange(-3,dz,5))
         {
           vec_ep_emcal_matched_index.push_back(iem);
           vec_ep_emcal_matched_e.push_back(_emcal_e->at(iem));
@@ -527,8 +529,8 @@ void EoP_kfp_v2()
 
         //matching
         //if (dphi>-0.2 && dphi<0.2) // no cut in all
-        //if (isInRange(-0.15,dphi,0.15) && isInRange(-10,dz,10))
-        if (isInRange(-0.05,dphi,0.1) && isInRange(-3,dz,5))
+        if (isInRange(-0.15,dphi,0.15) && isInRange(-10,dz,10))
+        //if (isInRange(-0.05,dphi,0.1) && isInRange(-3,dz,5))
         {
           vec_em_emcal_matched_index.push_back(iem);
           vec_em_emcal_matched_e.push_back(_emcal_e->at(iem));

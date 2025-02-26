@@ -7,7 +7,7 @@ void EvtDisplay2D(){
   //SetsPhenixStyle();
 
   TChain* chain = new TChain("tree");
-  chain->Add(Form("eop_53744_kfp_v2.root"));
+  chain->Add(Form("eop_kfp_unlikesign.root"));
 
   int _runNumber, _eventNumber;
   std::vector<float> *_ep_clus_x=0, *_ep_clus_y=0, *_ep_clus_z=0;
@@ -67,14 +67,9 @@ void EvtDisplay2D(){
   vec_emcal_z.clear();
   vec_emcal_r.clear();
 
-  //int runnumber = 53744, eventid = 1035955, irow = 5412;
-  //int runnumber = 53744, eventid = 1042251, irow = 6826;
-  //int runnumber = 53744, eventid = 1059531, irow = 7579;
-  //int runnumber = 53744, eventid = 1120807, irow = 13886;
-  //int runnumber = 53744, eventid = 1158932, irow = 17138;
-  //int runnumber = 53744, eventid = 1153372, irow = 17526;
-  //int runnumber = 53744, eventid = 128940, irow = 21735;
-  int runnumber = 53744, eventid = 139187, irow = 32321;
+  int runnumber = 53741, eventid = 1035318, irow = 342;
+  //int runnumber = 53741, eventid = 1291503, irow = 1533;
+  //int runnumber = 53741, eventid = 1553134, irow = 2983;
 
   chain->GetEntry(irow);
 
@@ -145,7 +140,7 @@ void EvtDisplay2D(){
   DrawEllipseWithTGraph(0., 0., emcal_radius + 3., kBlack);
 
   can_xy->Update();
-  can_xy->SaveAs(Form("figure/EvtDisplay_xy_run%d_event%d.pdf",runnumber,eventid));
+  can_xy->SaveAs(Form("figure/EvtDisplay_run%d_event%d_xy.pdf",runnumber,eventid));
 
   TCanvas *can_rz = new TCanvas(Form("can_rz"), "can_rz", 800, 800);
   can_rz->SetLeftMargin(0.15);
@@ -176,7 +171,7 @@ void EvtDisplay2D(){
   DrawHLineWithTGraph(emcal_radius + 3., -150, 150, kBlack);
 
   can_rz->Update();
-  can_rz->SaveAs(Form("figure/EvtDisplay_rz_run%d_event%d.pdf",runnumber,eventid));
+  can_rz->SaveAs(Form("figure/EvtDisplay_run%d_event%d_rz.pdf",runnumber,eventid));
 
 
 }

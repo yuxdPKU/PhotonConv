@@ -1,5 +1,5 @@
 #include <filesystem>
-#include "utilities.h"
+#include "../utilities.h"
 #include <sPhenixStyle.C>
 
 namespace fs = std::filesystem;
@@ -12,16 +12,21 @@ void EoP_kfp_v2()
   SetsPhenixStyle();
   //gStyle->SetOptStat(0);
 
+  min_Track_Pt = 1.0;
+  min_EMCal_E = 0.5;
+
   const int nrun=4;
   int runs[4]={53741,53742,53743,53744};
 
   TChain* chain = new TChain("tree_KFP");
-  //for (int i=0; i<nrun; i++) chain->Add(Form("../Reconstructed/%d/clusters_seeds_%d*track2calo_unlikesign.root",runs[i],runs[i]));
-  for (int i=0; i<nrun; i++) chain->Add(Form("../Reconstructed/%d/clusters_seeds_%d*track2calo_likesign.root",runs[i],runs[i]));
+  for (int i=0; i<nrun; i++) chain->Add(Form("../../Reconstructed/%d/clusters_seeds_%d*track2calo_unlikesign.root",runs[i],runs[i]));
+  //for (int i=0; i<nrun; i++) chain->Add(Form("../../Reconstructed/%d/clusters_seeds_%d*track2calo_likesign.root",runs[i],runs[i]));
+  //chain->Add("photonconv_track2calo_unlikesign.root");
+  //chain->Add("photonconv_track2calo_likesign.root");
   setBranch_kfp(chain);
 
-  //TFile* outputfile = new TFile(Form("./eop_kfp_unlikesign.root"),"recreate");
-  TFile* outputfile = new TFile(Form("./eop_kfp_likesign.root"),"recreate");
+  TFile* outputfile = new TFile(Form("./eop_kfp_unlikesign.root"),"recreate");
+  //TFile* outputfile = new TFile(Form("./eop_kfp_likesign.root"),"recreate");
   TTree* outputtree = new TTree("tree","tree with eop info");
 
   float teop_gamma_mass, teop_gamma_radius;

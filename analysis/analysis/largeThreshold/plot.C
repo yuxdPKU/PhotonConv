@@ -1,5 +1,5 @@
 #include <filesystem>
-#include "utilities.h"
+#include "../utilities.h"
 #include <sPhenixStyle.C>
 #include <TArrow.h>
 
