@@ -11,32 +11,24 @@ make -j 4
 make install
 ```
 
-- Prepare a run list, one line one runnumber, e.g. `macro/runList/run51619-51886_1000seg_condor_trkrcalo.list`
+- Prepare a run list in macro/filelist/run.list, one line one runnumber
 
 - Grab DST file list by using CreateDstList.pl:
 ```
-cd macro/runList
-./grablist.sh run51619-51886_1000seg.list
+cd macro/filelist
+./create.sh
 ```
-different kinds of DST list are generated: streaming production with all trackers, streaming production with tpc only, tracking production in cluster level, tracking production in seed level, calo production
+Trkr Seed, Trkr Cluster, Calo DST lists are generated
 
-- Split tracker DST list into several files
+- Sync different types of DST by segment ID
 ```
-./splitlist_list_trkr_calo.sh [in-file-list-name] [out-file-list-name] [number-of-DST-per-file]
+./sync.sh
 ```
-or
-```
-./splitlist_list_tpc.sh [in-file-list-name] [out-file-list-name] [number-of-DST-per-file]
-```
+Trkr Seed/Cluster DST 10000 events/segment, Calo DST 100000 events/segment
 
 - Submit jobs in condorJob
-If you want to do tracking only with track fitting (tracking production as input), use `gen_condor_job_trkrcalo.sh`.
 ```
-./gen_condor_job.sh [path-of-list-file]
-```
-If you want to do tracking from hit unpacker (streaming production as input), use `gen_condor_job.sh`.
-```
-./gen_condor_job_trkrcalo.sh [path-of-list-file]
+condor_submit condor-data-seed-53741.job
 ```
 **Do not forget to change Initialdir!!!**
 
@@ -44,4 +36,12 @@ If you want to do tracking from hit unpacker (streaming production as input), us
 
 - When job finished, output root file saved in Reconstructed/[runnumber]
 
-- Offline analysis code in OfflineAna
+- Offline analysis code in analysis/
+
+``utilities.h``: for const variables, utility functions
+
+``EoP_kfp.C``: for Track-EMCal matching association, generate a smaller root file
+
+``plot.C``: for 1D/2D distribution plotting
+
+``EvtDisplay2D.C``: for event display
