@@ -409,6 +409,9 @@ void TrackToCalo::createBranches_KFP()
   _tree_KFP->Branch("_emcal_y", &_emcal_y);
   _tree_KFP->Branch("_emcal_z", &_emcal_z);
   _tree_KFP->Branch("_emcal_e", &_emcal_e);
+  _tree_KFP->Branch("_emcal_ecore", &_emcal_ecore);
+  _tree_KFP->Branch("_emcal_chi2", &_emcal_chi2);
+  _tree_KFP->Branch("_emcal_prob", &_emcal_prob);
 
   _tree_KFP->Branch("_epem_DCA_2d", &_epem_DCA_2d);
   _tree_KFP->Branch("_epem_DCA_3d", &_epem_DCA_3d);
@@ -486,6 +489,8 @@ int TrackToCalo::process_event(PHCompositeNode *topNode)
       std::cout << "TrackToCalo::process_event: ActsGeometry not found!" << std::endl;
     }
   }
+
+  m_globalPositionWrapper.loadNodes(topNode);
 
   if (!clustersEM)
   {
@@ -942,7 +947,8 @@ void TrackToCalo::fillTree_TrackOnly()
           n_tpot_clusters++;
         }
         Acts::Vector3 global(0., 0., 0.);
-        global = acts_Geometry->getGlobalPosition(cluster_key, trkrCluster);
+        //global = acts_Geometry->getGlobalPosition(cluster_key, trkrCluster);
+	global = m_globalPositionWrapper.getGlobalPositionDistortionCorrected(cluster_key, trkrCluster, svtxtrack->get_crossing());
         _trClus_track_id.push_back(svtxtrack->get_id());
         _trClus_type.push_back(TrkrDefs::getTrkrId(cluster_key));
         _trClus_x.push_back(global[0]);
@@ -1823,7 +1829,8 @@ void TrackToCalo::fillTree_KFP()
             continue;
           }
           Acts::Vector3 global(0., 0., 0.);
-          global = acts_Geometry->getGlobalPosition(cluster_key, trkrCluster);
+          //global = acts_Geometry->getGlobalPosition(cluster_key, trkrCluster);
+	  global = m_globalPositionWrapper.getGlobalPositionDistortionCorrected(cluster_key, trkrCluster, svtxtrack->get_crossing());
           _em_clus_ican.push_back(i);
           //_em_clus_type.push_back(TrkrDefs::getTrkrId(cluster_key));
           _em_clus_x.push_back(global[0]);
@@ -1922,7 +1929,8 @@ void TrackToCalo::fillTree_KFP()
             continue;
           }
           Acts::Vector3 global(0., 0., 0.);
-          global = acts_Geometry->getGlobalPosition(cluster_key, trkrCluster);
+          //global = acts_Geometry->getGlobalPosition(cluster_key, trkrCluster);
+	  global = m_globalPositionWrapper.getGlobalPositionDistortionCorrected(cluster_key, trkrCluster, svtxtrack->get_crossing());
           _ep_clus_ican.push_back(i);
           //_ep_clus_type.push_back(TrkrDefs::getTrkrId(cluster_key));
           _ep_clus_x.push_back(global[0]);
@@ -1984,6 +1992,10 @@ void TrackToCalo::fillTree_KFP()
     _emcal_x.push_back(cluster->get_x());
     _emcal_y.push_back(cluster->get_y());
     _emcal_z.push_back(cluster->get_z());
+    _emcal_ecore.push_back(cluster->get_ecore());
+    _emcal_chi2.push_back(cluster->get_chi2());
+    _emcal_prob.push_back(cluster->get_prob());
+
   }
 
   if (m_doSimulation && m_doTruthMatching)
@@ -2436,6 +2448,9 @@ void TrackToCalo::ResetTreeVectors_KFP()
   _emcal_y.clear();
   _emcal_z.clear();
   _emcal_e.clear();
+  _emcal_ecore.clear();
+  _emcal_prob.clear();
+  _emcal_chi2.clear();
   _epem_DCA_2d.clear();
   _epem_DCA_3d.clear();
 

@@ -25,6 +25,8 @@
 #include <phhepmc/PHHepMCGenEvent.h>
 #include <phhepmc/PHHepMCGenEventMap.h>
 
+#include <tpc/TpcGlobalPositionWrapper.h>
+
 #include <string>
 #include <vector>
 
@@ -137,6 +139,7 @@ class TrackCaloMatch : public SubsysReco
   RawTowerGeomContainer* EMCalGeo = nullptr;
   RawTowerGeomContainer* IHCalGeo = nullptr;
   RawTowerGeomContainer* OHCalGeo = nullptr;
+  TpcGlobalPositionWrapper m_globalPositionWrapper;
 
   std::string m_trackMapName = "SvtxTrackMap";
   std::string m_trackMapName_new = "MySvtxTrackMap";

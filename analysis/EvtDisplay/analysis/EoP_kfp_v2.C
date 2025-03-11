@@ -5,25 +5,42 @@
 namespace fs = std::filesystem;
 TVector3 z_direction(0,0,1);
 
-void EoP_kfp_v2(int runnumber=53744)
+void EoP_kfp_v2(bool do_unlikesign_likesign=0)
 {
   int verbosity = 0;
-
-  bool doTruthMatching = false;
 
   SetsPhenixStyle();
   //gStyle->SetOptStat(0);
 
+  const int nrun=1;
+  //int runs[nrun]={53741,53742,53743,53744,53756,53783};
+  int runs[nrun]={53741};
+
   TChain* chain = new TChain("tree_KFP");
-  //chain->Add(Form("../Reconstructed/%d/clusters_seeds_%d-*.root_track2calo.root",runnumber,runnumber));
-  chain->Add("photonconv_track2calo.root");
+  if (do_unlikesign_likesign==0)
+  {
+    for (int i=0; i<nrun; i++) chain->Add(Form("../Reconstructed/%d/clusters_seeds_%d*track2calo_unlikesign.root",runs[i],runs[i]));
+  }
+  else if (do_unlikesign_likesign==1)
+  {
+    for (int i=0; i<nrun; i++) chain->Add(Form("../Reconstructed/%d/clusters_seeds_%d*track2calo_likesign.root",runs[i],runs[i]));
+  }
   setBranch_kfp(chain);
 
-  TFile* outputfile = new TFile(Form("./eop_%d_kfp_v2.root",runnumber),"recreate");
+  TFile* outputfile;
+  if (do_unlikesign_likesign==0)
+  {
+    outputfile = new TFile(Form("./eop_kfp_unlikesign.root"),"recreate");
+  }
+  else
+  {
+    outputfile = new TFile(Form("./eop_kfp_likesign.root"),"recreate");
+  }
   TTree* outputtree = new TTree("tree","tree with eop info");
 
   float teop_gamma_mass, teop_gamma_radius;
   float teop_gamma_x, teop_gamma_y, teop_gamma_z;
+  int teop_gamma_charge;
   float teop_gamma_pE;
   float teop_gamma_vertex_volume, teop_gamma_SV_chi2_per_nDoF;
   float teop_gamma_quality, teop_ep_quality, teop_em_quality;
@@ -32,7 +49,9 @@ void EoP_kfp_v2(int runnumber=53744)
   float teop_ep_p, teop_ep_phi_projemc, teop_ep_x_projemc, teop_ep_y_projemc, teop_ep_z_projemc;
   float teop_em_p, teop_em_phi_projemc, teop_em_x_projemc, teop_em_y_projemc, teop_em_z_projemc;
   float teop_ep_px, teop_ep_py, teop_ep_pz, teop_ep_pt, teop_ep_eta, teop_ep_phi, teop_ep_pE, teop_ep_phi_corr, teop_ep_phi_corr2;
+  int teop_ep_nmvtx, teop_ep_nintt, teop_ep_ntpc, teop_ep_ntpot;
   float teop_em_px, teop_em_py, teop_em_pz, teop_em_pt, teop_em_eta, teop_em_phi, teop_em_pE, teop_em_phi_corr, teop_em_phi_corr2;
+  int teop_em_nmvtx, teop_em_nintt, teop_em_ntpc, teop_em_ntpot;
   float teop_ep_x, teop_ep_y, teop_ep_z, teop_ep_radius;
   float teop_em_x, teop_em_y, teop_em_z, teop_em_radius;
   float teop_SV_x, teop_SV_y, teop_SV_z, teop_SV_radius;
@@ -54,7 +73,6 @@ void EoP_kfp_v2(int runnumber=53744)
   float teop_epemc_dphi, teop_epemc_dz;
   float teop_ememc_dphi, teop_ememc_dz;
   float teop_track12_dca_2d, teop_track12_dca_3d;
-  float teop_eop_ep, teop_eop_em;
   std::vector<float> teop_ep_clus_x, teop_ep_clus_y, teop_ep_clus_z;
   std::vector<float> teop_em_clus_x, teop_em_clus_y, teop_em_clus_z;
   std::vector<float> teop_true_gamma_mass, teop_true_gamma_pE, teop_true_gamma_eta;
@@ -86,10 +104,19 @@ void EoP_kfp_v2(int runnumber=53744)
   outputtree->Branch("_gamma_x",&teop_gamma_x,"_gamma_x/F");
   outputtree->Branch("_gamma_y",&teop_gamma_y,"_gamma_y/F");
   outputtree->Branch("_gamma_z",&teop_gamma_z,"_gamma_z/F");
+  outputtree->Branch("_gamma_charge",&teop_gamma_charge,"_gamma_charge/I");
   outputtree->Branch("_gamma_pE",&teop_gamma_pE,"_gamma_pE/F");
   outputtree->Branch("_gamma_quality",&teop_gamma_quality,"_gamma_quality/F");
   outputtree->Branch("_gamma_vertex_volume",&teop_gamma_vertex_volume,"_gamma_vertex_volume/F");
   outputtree->Branch("_gamma_SV_chi2_per_nDoF",&teop_gamma_SV_chi2_per_nDoF,"_gamma_SV_chi2_per_nDoF/F");
+  outputtree->Branch("_ep_nmvtx",&teop_ep_nmvtx,"_ep_nmvtx/I");
+  outputtree->Branch("_em_nmvtx",&teop_em_nmvtx,"_em_nmvtx/I");
+  outputtree->Branch("_ep_nintt",&teop_ep_nintt,"_ep_nintt/I");
+  outputtree->Branch("_em_nintt",&teop_em_nintt,"_em_nintt/I");
+  outputtree->Branch("_ep_ntpc",&teop_ep_ntpc,"_ep_ntpc/I");
+  outputtree->Branch("_em_ntpc",&teop_em_ntpc,"_em_ntpc/I");
+  outputtree->Branch("_ep_ntpot",&teop_ep_ntpot,"_ep_ntpot/I");
+  outputtree->Branch("_em_ntpot",&teop_em_ntpot,"_em_ntpot/I");
   outputtree->Branch("_ep_emcal_e",&teop_ep_emcal_e,"_ep_emcal_e/F");
   outputtree->Branch("_em_emcal_e",&teop_em_emcal_e,"_em_emcal_e/F");
   outputtree->Branch("_ep_emcal_phi",&teop_ep_emcal_phi,"_ep_emcal_phi/F");
@@ -204,8 +231,6 @@ void EoP_kfp_v2(int runnumber=53744)
   outputtree->Branch("_em_clus_y",&teop_em_clus_y);
   outputtree->Branch("_ep_clus_z",&teop_ep_clus_z);
   outputtree->Branch("_em_clus_z",&teop_em_clus_z);
-  outputtree->Branch("_eop_ep",&teop_eop_ep,"_eop_ep/F");
-  outputtree->Branch("_eop_em",&teop_eop_em,"_eop_em/F");
 
   // reco-truth matching by using g4truthinfo / recotruthmap
   outputtree->Branch("_ep_has_truthmatching",&teop_ep_has_truthmatching);
@@ -304,7 +329,7 @@ void EoP_kfp_v2(int runnumber=53744)
   {
     if (i % (nevent / 10) == 0)
     {
-      cout << "Processing progress: " << i / (nevent / 10) << "0%" << endl;
+      //cout << "Processing progress: " << i / (nevent / 10) << "0%" << endl;
     }
     chain->GetEntry(i);
 
@@ -428,6 +453,7 @@ void EoP_kfp_v2(int runnumber=53744)
       teop_gamma_x = _gamma_x->at(ican);
       teop_gamma_y = _gamma_y->at(ican);
       teop_gamma_z = _gamma_z->at(ican);
+      teop_gamma_charge = _gamma_charge->at(ican);
       teop_gamma_pE = _gamma_pE->at(ican);
       teop_gamma_quality = _gamma_chi2->at(ican) / _gamma_nDoF->at(ican);
       teop_gamma_vertex_volume = _gamma_vertex_volume->at(ican);
@@ -466,7 +492,7 @@ void EoP_kfp_v2(int runnumber=53744)
         //matching
         //if (dphi>-0.2 && dphi<0.2) // no cut in all
         //if (isInRange(-0.15,dphi,0.15) && isInRange(-10,dz,10))
-        if (isInRange(-0.05,dphi,0.1) && isInRange(-3,dz,5))
+        if (isInRange(-0.00,dphi,0.07) && isInRange(-5,dz,5))
         {
           vec_ep_emcal_matched_index.push_back(iem);
           vec_ep_emcal_matched_e.push_back(_emcal_e->at(iem));
@@ -513,7 +539,7 @@ void EoP_kfp_v2(int runnumber=53744)
         //matching
         //if (dphi>-0.2 && dphi<0.2) // no cut in all
         //if (isInRange(-0.15,dphi,0.15) && isInRange(-10,dz,10))
-        if (isInRange(-0.05,dphi,0.1) && isInRange(-3,dz,5))
+        if (isInRange(-0.02,dphi,0.05) && isInRange(-5,dz,5))
         {
           vec_em_emcal_matched_index.push_back(iem);
           vec_em_emcal_matched_e.push_back(_emcal_e->at(iem));
@@ -584,7 +610,7 @@ void EoP_kfp_v2(int runnumber=53744)
       teop_ep_clus_x.clear();
       teop_ep_clus_y.clear();
       teop_ep_clus_z.clear();
-      for (int j = 0; j < (_ep_clus_x->size()); j++)
+      for (unsigned int j = 0; j < (_ep_clus_x->size()); j++)
       {
         if (_ep_clus_ican->at(j) != ican) continue;
         teop_ep_clus_x.push_back(_ep_clus_x->at(j));
@@ -595,7 +621,7 @@ void EoP_kfp_v2(int runnumber=53744)
       teop_em_clus_x.clear();
       teop_em_clus_y.clear();
       teop_em_clus_z.clear();
-      for (int j = 0; j < (_em_clus_x->size()); j++)
+      for (unsigned int j = 0; j < (_em_clus_x->size()); j++)
       {
         if (_em_clus_ican->at(j) != ican) continue;
         teop_em_clus_x.push_back(_em_clus_x->at(j));
@@ -618,7 +644,14 @@ void EoP_kfp_v2(int runnumber=53744)
       teop_em_emcal_eta = vec_em_emcal_matched_eta.at(em_index);
 
       //if (vec_ep_emcal_matched_index.at(ep_index)==vec_em_emcal_matched_index.at(em_index)) continue;
-
+      teop_ep_nmvtx = _ep_nmvtx->at(ican);
+      teop_ep_nintt = _ep_nintt->at(ican);
+      teop_ep_ntpc = _ep_ntpc->at(ican);
+      teop_ep_ntpot = _ep_ntpot->at(ican);
+      teop_em_nmvtx = _em_nmvtx->at(ican);
+      teop_em_nintt = _em_nintt->at(ican);
+      teop_em_ntpc = _em_ntpc->at(ican);
+      teop_em_ntpot = _em_ntpot->at(ican);
       teop_ep_p = _ep_p->at(ican);
       teop_ep_p_raw = _ep_p_raw->at(ican);
       teop_ep_p_unmoved = _ep_p_unmoved->at(ican);
@@ -737,27 +770,6 @@ void EoP_kfp_v2(int runnumber=53744)
       teop_track12_dca_2d = _epem_DCA_2d->at(ican);
       teop_track12_dca_3d = _epem_DCA_3d->at(ican);
 
-      float eop_ep = teop_ep_emcal_e / teop_ep_p;
-      float eop_em = teop_em_emcal_e / teop_em_p;
-
-      if (eop_ep > 0.8 && eop_ep < 1.3)
-      {
-        teop_eop_em = eop_em;
-      }
-      else
-      {
-        teop_eop_em = -1;
-      }
-
-      if (eop_em > 0.8 && eop_em < 1.3)
-      {
-        teop_eop_ep = eop_ep;
-      }
-      else
-      {
-        teop_eop_ep = -1;
-      }
-
       if (doTruthMatching)
       {
       teop_ep_phi_recotruthDiff.clear();
@@ -770,7 +782,7 @@ void EoP_kfp_v2(int runnumber=53744)
       teop_em_phi_corr2_recotruthDiff.clear();
       teop_SV_phi_recotruthDiff.clear();
 
-      for (int icant = 0; icant < (teop_true_gamma_decay_radius.size()); icant++)
+      for (unsigned int icant = 0; icant < (teop_true_gamma_decay_radius.size()); icant++)
       {
         teop_ep_phi_recotruthDiff.push_back(PiRange(teop_ep_phi - teop_true_ep_phi.at(icant)));
         teop_ep_phi_raw_recotruthDiff.push_back(PiRange(teop_ep_phi_raw - teop_true_ep_phi.at(icant)));

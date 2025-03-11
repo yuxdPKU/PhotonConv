@@ -61,13 +61,13 @@ StepSize       = 0
 Arguments      = "$(Nevent) $(ClusterFileName) $(ClusterFilePath) $(SeedFileName) $(SeedFilePath) $(CaloFileName) $(CaloFilePath) $(OutPrefix) $(OutPath) $(Index) $(StepSize)"
 
 # The job's stdout is sent to this file.
-Output         = $(Initialdir)/log/job-Data-$(RunNumber).$(TrkrSegment).$(Process).out
+Output         = $(Initialdir)/log/job-Data-$(RunNumber).$(TrkrSegment).$(Cluster).$(Process).out
 
 # The job's stderr is sent to this file.
-Error          = $(Initialdir)/log/job-Data-$(RunNumber).$(TrkrSegment).$(Process).err
+Error          = $(Initialdir)/log/job-Data-$(RunNumber).$(TrkrSegment).$(Cluster).$(Process).err
 
 # The condor log file for this job, useful when debugging.
-Log            = $(Initialdir)/log/job-Data-$(RunNumber).$(TrkrSegment).$(Process).log
+Log            = $(Initialdir)/log/job-Data-$(RunNumber).$(TrkrSegment).$(Cluster).$(Process).log
 
 #should_transfer_files   = YES
 #when_to_transfer_output = ON_EXIT_OR_EVICT

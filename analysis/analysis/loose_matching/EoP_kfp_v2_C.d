@@ -81,8 +81,8 @@
 ./EoP_kfp_v2_C.so: /cvmfs/sphenix.sdcc.bnl.gov/alma9.2-gcc-14.2.0/opt/sphenix/core/root-6.32.06/include/ROOT/RConcurrentHashColl.hxx
 ./EoP_kfp_v2_C.so: /cvmfs/sphenix.sdcc.bnl.gov/alma9.2-gcc-14.2.0/opt/sphenix/core/root-6.32.06/include/ROOT/TRWSpinLock.hxx
 ./EoP_kfp_v2_C.so: /cvmfs/sphenix.sdcc.bnl.gov/alma9.2-gcc-14.2.0/opt/sphenix/core/root-6.32.06/include/ROOT/TSpinMutex.hxx
-./EoP_kfp_v2_C.so: /cvmfs/sphenix.sdcc.bnl.gov/alma9.2-gcc-14.2.0/release/release_new/new.9/rootmacros/sPhenixStyle.C
-./EoP_kfp_v2_C.so: /cvmfs/sphenix.sdcc.bnl.gov/alma9.2-gcc-14.2.0/release/release_new/new.9/rootmacros/sPhenixStyle.h
+./EoP_kfp_v2_C.so: /cvmfs/sphenix.sdcc.bnl.gov/alma9.2-gcc-14.2.0/release/release_new/new.1/rootmacros/sPhenixStyle.C
+./EoP_kfp_v2_C.so: /cvmfs/sphenix.sdcc.bnl.gov/alma9.2-gcc-14.2.0/release/release_new/new.1/rootmacros/sPhenixStyle.h
 ./EoP_kfp_v2_C.so: /cvmfs/sphenix.sdcc.bnl.gov/alma9.2-gcc-14.2.0/opt/sphenix/core/root-6.32.06/include/TStyle.h
 ./EoP_kfp_v2_C.so: /cvmfs/sphenix.sdcc.bnl.gov/alma9.2-gcc-14.2.0/opt/sphenix/core/root-6.32.06/include/TAttText.h
 ./EoP_kfp_v2_C.so: /cvmfs/sphenix.sdcc.bnl.gov/alma9.2-gcc-14.2.0/opt/sphenix/core/root-6.32.06/include/TAttAxis.h

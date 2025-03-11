@@ -5,6 +5,9 @@
 
 void drawsPHENIXInternal(TPaveText *pt);
 void drawArrow(TArrow *arrow);
+void fit_gauss(TH2* h, TString name, bool verbose=0, TPaveText *pt=nullptr);
+TH2* DuplicateTH2(const TH2* originalHist);
+void KeepSlopeBand(TH2* hist, double xMinAtY0 = 0.01, double xMaxAtY0 = 0.04);
 
 namespace fs = std::filesystem;
 TVector3 z_direction(0,0,1);
@@ -71,12 +74,12 @@ void plot()
   h1_track12_deta->GetYaxis()->SetTitle(Form("Events / %.3f",0.4/100.));
   h1_track12_deta->SetLineColor(kBlack);
 
-  TPaveText *pt3 = new TPaveText(.17, .60, .47, .75, "NDC");
+  TPaveText *pt3 = new TPaveText(.17, .45, .47, .60, "NDC");
   drawsPHENIXInternal(pt3);
 
-  TArrow *arrow3l = new TArrow(-0.02,1200,-0.02,0,0.05,">");
+  TArrow *arrow3l = new TArrow(-0.02,8000,-0.02,0,0.05,">");
   drawArrow(arrow3l);
-  TArrow *arrow3r = new TArrow(0.02,1200,0.02,0,0.05,">");
+  TArrow *arrow3r = new TArrow(0.02,8000,0.02,0,0.05,">");
   drawArrow(arrow3r);
 
   TH1F* h1_track12_dphi = new TH1F("h1_track12_dphi","",100,-0.2,0.2);
@@ -87,9 +90,9 @@ void plot()
   TPaveText *pt4 = new TPaveText(.17, .60, .47, .75, "NDC");
   drawsPHENIXInternal(pt4);
 
-  TArrow *arrow4l = new TArrow(-0.02,400,-0.02,0,0.05,">");
+  TArrow *arrow4l = new TArrow(-0.02,3000,-0.02,0,0.05,">");
   drawArrow(arrow4l);
-  TArrow *arrow4r = new TArrow(0.02,400,0.02,0,0.05,">");
+  TArrow *arrow4r = new TArrow(0.02,3000,0.02,0,0.05,">");
   drawArrow(arrow4r);
 
   TH1F* h1_gamma_mass = new TH1F("h1_gamma_mass","",100,0,1);
@@ -147,14 +150,14 @@ void plot()
   TH2F* h2_eop_p_ep = new TH2F("h2_eop_p_ep","",20,0,5,40,0,3);
   h2_eop_p_ep->GetXaxis()->SetTitle("e^{+} p [GeV/#it{c}]");
   h2_eop_p_ep->GetYaxis()->SetTitle("e^{+} E/p");
-  h2_eop_p_ep->SetTitle("#it{#bf{sPHENIX}} Internal, p+p #sqrt{s}=200 GeV, Run 53741-53744, 28.59 Million");
+  h2_eop_p_ep->SetTitle("#it{#bf{sPHENIX}} Internal, p+p #sqrt{s}=200 GeV, Run 53741-53783, 43.32 Million");
   TPaveText *pt9 = new TPaveText(.55, .77, .80, .92, "NDC");
   drawsPHENIXInternal(pt9);
 
   TH2F* h2_eop_p_em = new TH2F("h2_eop_p_em","",20,0,5,40,0,3);
   h2_eop_p_em->GetXaxis()->SetTitle("e^{-} p [GeV/#it{c}]");
   h2_eop_p_em->GetYaxis()->SetTitle("e^{-} E/p");
-  h2_eop_p_em->SetTitle("#it{#bf{sPHENIX}} Internal, p+p #sqrt{s}=200 GeV, Run 53741-53744, 28.59 Million");
+  h2_eop_p_em->SetTitle("#it{#bf{sPHENIX}} Internal, p+p #sqrt{s}=200 GeV, Run 53741-53783, 43.32 Million");
   TPaveText *pt10 = new TPaveText(.55, .77, .80, .92, "NDC");
   drawsPHENIXInternal(pt10);
 
@@ -192,6 +195,120 @@ void plot()
   TPaveText *pt12 = new TPaveText(.62, .77, .92, .92, "NDC");
   drawsPHENIXInternal(pt12);
 
+  TH2F* h2_eop_qopt_ep = new TH2F("h2_eop_qopt_ep","",20,-3,3,40,0,3);
+  h2_eop_qopt_ep->GetXaxis()->SetTitle("q/pT [(GeV/#it{c})^{-1}]");
+  h2_eop_qopt_ep->GetYaxis()->SetTitle("E/p");
+  h2_eop_qopt_ep->SetTitle("#it{#bf{sPHENIX}} Internal, p+p #sqrt{s}=200 GeV, Run 53741-53783, 43.32 Million");
+  TPaveText *pt13 = new TPaveText(.55, .77, .80, .92, "NDC");
+  drawsPHENIXInternal(pt13);
+
+  TH2F* h2_eop_qopt_em = new TH2F("h2_eop_qopt_em","",20,-3,3,40,0,3);
+  h2_eop_qopt_em->GetXaxis()->SetTitle("q/pT [(GeV/#it{c})^{-1}]");
+  h2_eop_qopt_em->GetYaxis()->SetTitle("E/p");
+  h2_eop_qopt_em->SetTitle("#it{#bf{sPHENIX}} Internal, p+p #sqrt{s}=200 GeV, Run 53741-53783, 43.32 Million");
+  TPaveText *pt14 = new TPaveText(.55, .77, .80, .92, "NDC");
+  drawsPHENIXInternal(pt14);
+
+  TH2F* h2_eop_relemcalphi = new TH2F("h2_eop_relemcalphi","",16,0,2*TMath::Pi()/128.,40,0,2);
+  h2_eop_relemcalphi->GetXaxis()->SetNoExponent(true);
+  h2_eop_relemcalphi->GetXaxis()->SetTitle("fmod(EMCal #phi, 2#pi/128) [rad]");
+  h2_eop_relemcalphi->GetYaxis()->SetTitle("E/p");
+  h2_eop_relemcalphi->GetXaxis()->SetNdivisions(505);
+  h2_eop_relemcalphi->SetTitle("#it{#bf{sPHENIX}} Internal, p+p #sqrt{s}=200 GeV, Run 53741-53783, 43.32 Million");
+
+  TH2F* h2_eop_reltrackphi = new TH2F("h2_eop_reltrackphi","",16,0,2*TMath::Pi()/128.,40,0,2);
+  h2_eop_reltrackphi->GetXaxis()->SetNoExponent(true);
+  h2_eop_reltrackphi->GetXaxis()->SetTitle("fmod(Track projected #phi, 2#pi/128) [rad]");
+  h2_eop_reltrackphi->GetYaxis()->SetTitle("E/p");
+  h2_eop_reltrackphi->GetXaxis()->SetNdivisions(505);
+  h2_eop_reltrackphi->SetTitle("#it{#bf{sPHENIX}} Internal, p+p #sqrt{s}=200 GeV, Run 53741-53783, 43.32 Million");
+
+  TH2F* h2_eop_reltrackphi_ep = new TH2F("h2_eop_reltrackphi_ep","",16,0,2*TMath::Pi()/128.,40,0,2);
+  h2_eop_reltrackphi_ep->GetXaxis()->SetNoExponent(true);
+  h2_eop_reltrackphi_ep->GetXaxis()->SetTitle("fmod(e^{+} Track projected #phi, 2#pi/128) [rad]");
+  h2_eop_reltrackphi_ep->GetYaxis()->SetTitle("E/p");
+  h2_eop_reltrackphi_ep->GetXaxis()->SetNdivisions(505);
+  h2_eop_reltrackphi_ep->SetTitle("#it{#bf{sPHENIX}} Internal, p+p #sqrt{s}=200 GeV, Run 53741-53783, 43.32 Million");
+
+  TH2F* h2_eop_reltrackphi_em = new TH2F("h2_eop_reltrackphi_em","",16,0,2*TMath::Pi()/128.,40,0,2);
+  h2_eop_reltrackphi_em->GetXaxis()->SetNoExponent(true);
+  h2_eop_reltrackphi_em->GetXaxis()->SetTitle("fmod(e^{-} Track projected #phi, 2#pi/128) [rad]");
+  h2_eop_reltrackphi_em->GetYaxis()->SetTitle("E/p");
+  h2_eop_reltrackphi_em->GetXaxis()->SetNdivisions(505);
+  h2_eop_reltrackphi_em->SetTitle("#it{#bf{sPHENIX}} Internal, p+p #sqrt{s}=200 GeV, Run 53741-53783, 43.32 Million");
+
+  TH2F* h2_relemcalphi_reltrackphi = new TH2F("h2_relemcalphi_reltrackphi","",16,0,2*TMath::Pi()/128.,16,0,2*TMath::Pi()/128.);
+  h2_relemcalphi_reltrackphi->GetXaxis()->SetNoExponent(true);
+  h2_relemcalphi_reltrackphi->GetYaxis()->SetNoExponent(true);
+  h2_relemcalphi_reltrackphi->GetXaxis()->SetTitle("fmod(Track projected #phi, 2#pi/128) [rad]");
+  h2_relemcalphi_reltrackphi->GetYaxis()->SetTitle("fmod(EMCal #phi, 2#pi/128) [rad]");
+  h2_relemcalphi_reltrackphi->GetXaxis()->SetNdivisions(505);
+  h2_relemcalphi_reltrackphi->GetYaxis()->SetNdivisions(505);
+  h2_relemcalphi_reltrackphi->SetTitle("#it{#bf{sPHENIX}} Internal, p+p #sqrt{s}=200 GeV, Run 53741-53783, 43.32 Million");
+
+  TH2F* h2_relemcalphi_reltrackphi_ep = new TH2F("h2_relemcalphi_reltrackphi_ep","",16,0,2*TMath::Pi()/128.,16,0,2*TMath::Pi()/128.);
+  h2_relemcalphi_reltrackphi_ep->GetXaxis()->SetNoExponent(true);
+  h2_relemcalphi_reltrackphi_ep->GetYaxis()->SetNoExponent(true);
+  h2_relemcalphi_reltrackphi_ep->GetXaxis()->SetTitle("fmod(e^{+} Track projected #phi, 2#pi/128) [rad]");
+  h2_relemcalphi_reltrackphi_ep->GetYaxis()->SetTitle("fmod(EMCal #phi, 2#pi/128) [rad]");
+  h2_relemcalphi_reltrackphi_ep->GetXaxis()->SetNdivisions(505);
+  h2_relemcalphi_reltrackphi_ep->GetYaxis()->SetNdivisions(505);
+  h2_relemcalphi_reltrackphi_ep->SetTitle("#it{#bf{sPHENIX}} Internal, p+p #sqrt{s}=200 GeV, Run 53741-53783, 43.32 Million");
+
+  TH2F* h2_relemcalphi_reltrackphi_em = new TH2F("h2_relemcalphi_reltrackphi_em","",16,0,2*TMath::Pi()/128.,16,0,2*TMath::Pi()/128.);
+  h2_relemcalphi_reltrackphi_em->GetXaxis()->SetNoExponent(true);
+  h2_relemcalphi_reltrackphi_em->GetYaxis()->SetNoExponent(true);
+  h2_relemcalphi_reltrackphi_em->GetXaxis()->SetTitle("fmod(e^{-} Track projected #phi, 2#pi/128) [rad]");
+  h2_relemcalphi_reltrackphi_em->GetYaxis()->SetTitle("fmod(EMCal #phi, 2#pi/128) [rad]");
+  h2_relemcalphi_reltrackphi_em->GetXaxis()->SetNdivisions(505);
+  h2_relemcalphi_reltrackphi_em->GetYaxis()->SetNdivisions(505);
+  h2_relemcalphi_reltrackphi_em->SetTitle("#it{#bf{sPHENIX}} Internal, p+p #sqrt{s}=200 GeV, Run 53741-53783, 43.32 Million");
+
+  TPaveText *pt15 = new TPaveText(.2, .77, .55, .92, "NDC");
+  drawsPHENIXInternal(pt15);
+
+  TLine *line_v1 = new TLine(0, 0, 0, 2*TMath::Pi()/128.);
+  line_v1->SetLineColor(kRed);
+  TLine *line_v2 = new TLine(2*TMath::Pi()/128., 0, 2*TMath::Pi()/128., 2*TMath::Pi()/128.);
+  line_v2->SetLineColor(kRed);
+  TLine *line_h1 = new TLine(0, 0, 2*TMath::Pi()/128., 0);
+  line_h1->SetLineColor(kRed);
+  TLine *line_h2 = new TLine(0, 2*TMath::Pi()/128., 2*TMath::Pi()/128., 2*TMath::Pi()/128.);
+  line_h2->SetLineColor(kRed);
+
+  TH1F* h1_pT_ep = new TH1F("h1_pT_ep","",100,0,3);
+  h1_pT_ep->GetXaxis()->SetTitle("p_{T} [GeV/#it{c}]");
+  h1_pT_ep->GetYaxis()->SetTitle(Form("Events / %.2f [GeV/#it{c}]",3./100.));
+  h1_pT_ep->SetLineColor(kRed);
+
+  TH1F* h1_pT_em = new TH1F("h1_pT_em","",100,0,3);
+  h1_pT_em->GetXaxis()->SetTitle("p_{T} [GeV/#it{c}]");
+  h1_pT_em->GetYaxis()->SetTitle(Form("Events / %.2f [GeV/#it{c}]",3./100.));
+  h1_pT_em->SetLineColor(kBlue);
+
+  TLegend *legend13 = new TLegend(0.75, 0.6, 0.92, 0.7);
+  legend13->AddEntry(h1_pT_ep, "e^{+}", "l");
+  legend13->AddEntry(h1_pT_em, "e^{-}", "l");
+
+  TPaveText *pt16 = new TPaveText(.55, .77, .80, .92, "NDC");
+  drawsPHENIXInternal(pt16);
+
+  TH1F* h1_Eemc_ep = new TH1F("h1_Eemc_ep","",100,0,3);
+  h1_Eemc_ep->GetXaxis()->SetTitle("E [GeV]");
+  h1_Eemc_ep->GetYaxis()->SetTitle(Form("Events / %.2f [GeV]",3./100.));
+  h1_Eemc_ep->SetLineColor(kRed);
+
+  TH1F* h1_Eemc_em = new TH1F("h1_Eemc_em","",100,0,3);
+  h1_Eemc_em->GetXaxis()->SetTitle("E [GeV]");
+  h1_Eemc_em->GetYaxis()->SetTitle(Form("Events / %.2f [GeV]",3./100.));
+  h1_Eemc_em->SetLineColor(kBlue);
+
+  TLegend *legend14 = new TLegend(0.75, 0.6, 0.92, 0.7);
+  legend14->AddEntry(h1_Eemc_ep, "e^{+}", "l");
+  legend14->AddEntry(h1_Eemc_em, "e^{-}", "l");
+
+  TPaveText *pt17 = new TPaveText(.55, .77, .80, .92, "NDC");
+  drawsPHENIXInternal(pt17);
 
   chain->Draw("_epemc_dphi>>h1_epemc_dphi");
   chain->Draw("_ememc_dphi>>h1_ememc_dphi");
@@ -219,17 +336,41 @@ void plot()
   chain->Draw("_ep_emcal_e/_ep_p>>h1_eop_ep","fabs(_track12_deta)<0.02 && fabs(_track12_dphi)<0.02 && _SV_radius>3 && _SV_radius<30 && _gamma_mass>0 && _gamma_mass<0.1");
   chain->Draw("_em_emcal_e/_em_p>>h1_eop_em","fabs(_track12_deta)<0.02 && fabs(_track12_dphi)<0.02 && _SV_radius>3 && _SV_radius<30 && _gamma_mass>0 && _gamma_mass<0.1");
 
-  chain->Draw("_eop_ep>>h1_eop_ep_cons","fabs(_track12_deta)<0.02 && fabs(_track12_dphi)<0.02 && _gamma_mass>0 && _gamma_mass<0.1 && _SV_radius>3 && _SV_radius<30");
-  chain->Draw("_eop_em>>h1_eop_em_cons","fabs(_track12_deta)<0.02 && fabs(_track12_dphi)<0.02 && _gamma_mass>0 && _gamma_mass<0.1 && _SV_radius>3 && _SV_radius<30");
+  chain->Draw("_ep_emcal_e/_ep_p>>h1_eop_ep_cons","fabs(_track12_deta)<0.02 && fabs(_track12_dphi)<0.02 && _gamma_mass>0 && _gamma_mass<0.1 && _SV_radius>3 && _SV_radius<30 && (_em_emcal_e/_em_p)>0.8 && (_em_emcal_e/_em_p)<1.3");
+  chain->Draw("_em_emcal_e/_em_p>>h1_eop_em_cons","fabs(_track12_deta)<0.02 && fabs(_track12_dphi)<0.02 && _gamma_mass>0 && _gamma_mass<0.1 && _SV_radius>3 && _SV_radius<30 && (_ep_emcal_e/_ep_p)>0.8 && (_ep_emcal_e/_ep_p)<1.3");
 
   chain->Draw("_ep_emcal_e/_ep_p:_ep_p>>h2_eop_p_ep","fabs(_track12_deta)<0.02 && fabs(_track12_dphi)<0.02 && _gamma_mass>0 && _gamma_mass<0.1 && _SV_radius>3 && _SV_radius<30","colz");
   chain->Draw("_em_emcal_e/_em_p:_em_p>>h2_eop_p_em","fabs(_track12_deta)<0.02 && fabs(_track12_dphi)<0.02 && _gamma_mass>0 && _gamma_mass<0.1 && _SV_radius>3 && _SV_radius<30","colz");
+
+  chain->Draw("_ep_emcal_e/_ep_p:1/_ep_pt>>h2_eop_qopt_ep","fabs(_track12_deta)<0.02 && fabs(_track12_dphi)<0.02 && _gamma_mass>0 && _gamma_mass<0.1 && _SV_radius>3 && _SV_radius<30","colz");
+  chain->Draw("_em_emcal_e/_em_p:-1/_em_pt>>h2_eop_qopt_em","fabs(_track12_deta)<0.02 && fabs(_track12_dphi)<0.02 && _gamma_mass>0 && _gamma_mass<0.1 && _SV_radius>3 && _SV_radius<30","colz");
 
   chain->Draw("_ep_crossing>>h1_ep_crossing","fabs(_track12_deta)<0.02 && fabs(_track12_dphi)<0.02 && _SV_radius>3 && _SV_radius<30 && _gamma_mass>0 && _gamma_mass<0.1");
   chain->Draw("_em_crossing>>h1_em_crossing","fabs(_track12_deta)<0.02 && fabs(_track12_dphi)<0.02 && _SV_radius>3 && _SV_radius<30 && _gamma_mass>0 && _gamma_mass<0.1");
 
   chain->Draw("_ep_nmvtx+_ep_nintt>>h1_ep_nsi","fabs(_track12_deta)<0.02 && fabs(_track12_dphi)<0.02 && _SV_radius>3 && _SV_radius<30 && _gamma_mass>0 && _gamma_mass<0.1");
   chain->Draw("_em_nmvtx+_em_nintt>>h1_em_nsi","fabs(_track12_deta)<0.02 && fabs(_track12_dphi)<0.02 && _SV_radius>3 && _SV_radius<30 && _gamma_mass>0 && _gamma_mass<0.1");
+
+  chain->Draw("_ep_emcal_e/_ep_p:fmod(_ep_emcal_phi < 0 ? _ep_emcal_phi + 2*TMath::Pi() : _ep_emcal_phi, 2*TMath::Pi()/128.)>>h2_eop_relemcalphi","fabs(_track12_deta)<0.02 && fabs(_track12_dphi)<0.02 && _gamma_mass>0 && _gamma_mass<0.1 && _SV_radius>3 && _SV_radius<30","colz");
+  chain->Draw("_em_emcal_e/_em_p:fmod(_em_emcal_phi < 0 ? _em_emcal_phi + 2*TMath::Pi() : _em_emcal_phi, 2*TMath::Pi()/128.)>>+h2_eop_relemcalphi","fabs(_track12_deta)<0.02 && fabs(_track12_dphi)<0.02 && _gamma_mass>0 && _gamma_mass<0.1 && _SV_radius>3 && _SV_radius<30","colz");
+
+  chain->Draw("_ep_emcal_e/_ep_p:fmod(_ep_phi_projemc < 0 ? _ep_phi_projemc + 2*TMath::Pi() : _ep_phi_projemc, 2*TMath::Pi()/128.)>>h2_eop_reltrackphi","fabs(_track12_deta)<0.02 && fabs(_track12_dphi)<0.02 && _gamma_mass>0 && _gamma_mass<0.1 && _SV_radius>3 && _SV_radius<30","colz");
+  chain->Draw("_em_emcal_e/_em_p:fmod(_em_phi_projemc < 0 ? _em_phi_projemc + 2*TMath::Pi() : _em_phi_projemc, 2*TMath::Pi()/128.)>>+h2_eop_reltrackphi","fabs(_track12_deta)<0.02 && fabs(_track12_dphi)<0.02 && _gamma_mass>0 && _gamma_mass<0.1 && _SV_radius>3 && _SV_radius<30","colz");
+
+  chain->Draw("_ep_emcal_e/_ep_p:fmod(_ep_phi_projemc < 0 ? _ep_phi_projemc + 2*TMath::Pi() : _ep_phi_projemc, 2*TMath::Pi()/128.)>>h2_eop_reltrackphi_ep","fabs(_track12_deta)<0.02 && fabs(_track12_dphi)<0.02 && _gamma_mass>0 && _gamma_mass<0.1 && _SV_radius>3 && _SV_radius<30","colz");
+  chain->Draw("_em_emcal_e/_em_p:fmod(_em_phi_projemc < 0 ? _em_phi_projemc + 2*TMath::Pi() : _em_phi_projemc, 2*TMath::Pi()/128.)>>h2_eop_reltrackphi_em","fabs(_track12_deta)<0.02 && fabs(_track12_dphi)<0.02 && _gamma_mass>0 && _gamma_mass<0.1 && _SV_radius>3 && _SV_radius<30","colz");
+
+  chain->Draw("fmod(_ep_emcal_phi < 0 ? _ep_emcal_phi + 2*TMath::Pi() : _ep_emcal_phi, 2*TMath::Pi()/128.):fmod(_ep_phi_projemc < 0 ? _ep_phi_projemc + 2*TMath::Pi() : _ep_phi_projemc, 2*TMath::Pi()/128.)>>h2_relemcalphi_reltrackphi","fabs(_track12_deta)<0.02 && fabs(_track12_dphi)<0.02 && _gamma_mass>0 && _gamma_mass<0.1 && _SV_radius>3 && _SV_radius<30","colz");
+  chain->Draw("fmod(_em_emcal_phi < 0 ? _em_emcal_phi + 2*TMath::Pi() : _em_emcal_phi, 2*TMath::Pi()/128.):fmod(_em_phi_projemc < 0 ? _em_phi_projemc + 2*TMath::Pi() : _em_phi_projemc, 2*TMath::Pi()/128.)>>+h2_relemcalphi_reltrackphi","fabs(_track12_deta)<0.02 && fabs(_track12_dphi)<0.02 && _gamma_mass>0 && _gamma_mass<0.1 && _SV_radius>3 && _SV_radius<30","colz");
+
+  chain->Draw("fmod(_ep_emcal_phi < 0 ? _ep_emcal_phi + 2*TMath::Pi() : _ep_emcal_phi, 2*TMath::Pi()/128.):fmod(_ep_phi_projemc < 0 ? _ep_phi_projemc + 2*TMath::Pi() : _ep_phi_projemc, 2*TMath::Pi()/128.)>>h2_relemcalphi_reltrackphi_ep","fabs(_track12_deta)<0.02 && fabs(_track12_dphi)<0.02 && _gamma_mass>0 && _gamma_mass<0.1 && _SV_radius>3 && _SV_radius<30","colz");
+  chain->Draw("fmod(_em_emcal_phi < 0 ? _em_emcal_phi + 2*TMath::Pi() : _em_emcal_phi, 2*TMath::Pi()/128.):fmod(_em_phi_projemc < 0 ? _em_phi_projemc + 2*TMath::Pi() : _em_phi_projemc, 2*TMath::Pi()/128.)>>h2_relemcalphi_reltrackphi_em","fabs(_track12_deta)<0.02 && fabs(_track12_dphi)<0.02 && _gamma_mass>0 && _gamma_mass<0.1 && _SV_radius>3 && _SV_radius<30","colz");
+
+  chain->Draw("_ep_pt>>h1_pT_ep","fabs(_track12_deta)<0.02 && fabs(_track12_dphi)<0.02 && _gamma_mass>0 && _gamma_mass<0.1 && _SV_radius>3 && _SV_radius<30","colz");
+  chain->Draw("_em_pt>>h1_pT_em","fabs(_track12_deta)<0.02 && fabs(_track12_dphi)<0.02 && _gamma_mass>0 && _gamma_mass<0.1 && _SV_radius>3 && _SV_radius<30","colz");
+
+  chain->Draw("_ep_emcal_e>>h1_Eemc_ep","fabs(_track12_deta)<0.02 && fabs(_track12_dphi)<0.02 && _gamma_mass>0 && _gamma_mass<0.1 && _SV_radius>3 && _SV_radius<30","colz");
+  chain->Draw("_em_emcal_e>>h1_Eemc_em","fabs(_track12_deta)<0.02 && fabs(_track12_dphi)<0.02 && _gamma_mass>0 && _gamma_mass<0.1 && _SV_radius>3 && _SV_radius<30","colz");
 
   TCanvas *can1 = new TCanvas("can1", "", 800, 800);
   can1->cd();
@@ -306,6 +447,9 @@ void plot()
   h1_eop_em->Draw("same,hist");
   can7->Update();
   can7->SaveAs("./figure/eop.pdf");
+  Int_t eop1_bin = h1_eop_ep->FindBin(0.7);
+  Int_t eop2_bin = h1_eop_ep->FindBin(1.4);
+  std::cout<<"Integrated 0.7<E/p<1.4 region, e+ "<<h1_eop_ep->Integral(eop1_bin,eop2_bin)<<" , e- "<<h1_eop_em->Integral(eop1_bin,eop2_bin)<<std::endl;
 
   TCanvas *can8 = new TCanvas("can8", "", 800, 800);
   can8->cd();
@@ -360,7 +504,121 @@ void plot()
   can12->Update();
   can12->SaveAs("./figure/nsi.pdf");
 
+  TCanvas *can13 = new TCanvas("can13", "", 1200, 800);
+  gPad->SetRightMargin(0.15);
+  can13->cd();
+  h2_eop_qopt_ep->Draw("colz");
+  h2_eop_qopt_em->Draw("colz,same");
+  pt13->Draw("same");
+  pt14->Draw("same");
+  can13->Update();
+  can13->SaveAs("./figure/eop_qopt.pdf");
 
+  //TCanvas *can14 = new TCanvas("can14", "", 1200, 800);
+  //gPad->SetRightMargin(0.15);
+  //can14->cd();
+  //h2_eop_relemcalphi->Draw("colz");
+  //pt15->Draw("same");
+  //can14->Update();
+  //can14->SaveAs("./figure/eop_relemcalphi.pdf");
+  fit_gauss(h2_eop_relemcalphi, Form("./figure/eop_relemcalphi.pdf"), 0, pt15);
+  fit_gauss(h2_eop_reltrackphi, Form("./figure/eop_reltrackphi.pdf"), 0, pt15);
+  fit_gauss(h2_eop_reltrackphi_ep, Form("./figure/eop_reltrackphi_ep.pdf"), 0, pt15);
+  fit_gauss(h2_eop_reltrackphi_em, Form("./figure/eop_reltrackphi_em.pdf"), 0, pt15);
+
+  TH2* h2_relemcalphi_reltrackphi_2x2 = DuplicateTH2(h2_relemcalphi_reltrackphi);
+  TCanvas *can14 = new TCanvas("can14", "", 1200, 800);
+  can14->cd();
+  gPad->SetRightMargin(0.15);
+  //h2_relemcalphi_reltrackphi->Draw("colz");
+  h2_relemcalphi_reltrackphi_2x2->Draw("colz");
+  line_v1->Draw();
+  line_v2->Draw();
+  line_h1->Draw();
+  line_h2->Draw();
+  can14->Update();
+  can14->SaveAs("./figure/relemcalphi_reltrackphi.pdf");
+
+  KeepSlopeBand(h2_relemcalphi_reltrackphi_2x2, 0, 2*TMath::Pi()/128.);
+  TCanvas *can14a = new TCanvas("can14a", "", 1200, 800);
+  can14a->cd();
+  gPad->SetRightMargin(0.15);
+  h2_relemcalphi_reltrackphi_2x2->Draw("colz");
+  pt15->Draw("same");
+  can14a->Update();
+  can14a->SaveAs("./figure/relemcalphi_reltrackphi_cutband.pdf");
+
+  TCanvas *can15 = new TCanvas("can15", "", 1200, 800);
+  can15->cd();
+  h1_pT_ep->Draw("hist");
+  h1_pT_em->Draw("hist,same");
+  pt16->Draw("same");
+  legend13->Draw("same");
+  can15->Update();
+  can15->SaveAs("./figure/pt.pdf");
+
+  TCanvas *can16 = new TCanvas("can16", "", 1200, 800);
+  can16->cd();
+  h1_Eemc_ep->Draw("hist");
+  h1_Eemc_em->Draw("hist,same");
+  pt17->Draw("same");
+  legend14->Draw("same");
+  can16->Update();
+  can16->SaveAs("./figure/Eemc.pdf");
+
+  TH2* h2_relemcalphi_reltrackphi_ep_2x2 = DuplicateTH2(h2_relemcalphi_reltrackphi_ep);
+  TCanvas *can17 = new TCanvas("can17", "", 1200, 800);
+  can17->cd();
+  gPad->SetRightMargin(0.15);
+  //h2_relemcalphi_reltrackphi_ep->Draw("colz");
+  h2_relemcalphi_reltrackphi_ep_2x2->Draw("colz");
+  line_v1->Draw();
+  line_v2->Draw();
+  line_h1->Draw();
+  line_h2->Draw();
+  can17->Update();
+  can17->SaveAs("./figure/relemcalphi_reltrackphi_ep.pdf");
+
+  KeepSlopeBand(h2_relemcalphi_reltrackphi_ep_2x2, 0, 2*TMath::Pi()/128.);
+  //h2_relemcalphi_reltrackphi_ep_2x2->FitSlicesY();
+  //TH1 *h2_relemcalphi_reltrackphi_ep_2x2_1 = (TH1*)gDirectory->Get("h2_relemcalphi_reltrackphi_ep_2x2_1");
+  //TProfile *h2_relemcalphi_reltrackphi_ep_2x2_profileX = h2_relemcalphi_reltrackphi_ep_2x2->ProfileX();
+  TCanvas *can17a = new TCanvas("can17a", "", 1200, 800);
+  can17a->cd();
+  gPad->SetRightMargin(0.15);
+  h2_relemcalphi_reltrackphi_ep_2x2->Draw("colz");
+  //h2_relemcalphi_reltrackphi_ep_2x2_1->Draw("same");
+  //h2_relemcalphi_reltrackphi_ep_2x2_profileX->Draw("same");
+  pt15->Draw("same");
+  can17a->Update();
+  can17a->SaveAs("./figure/relemcalphi_reltrackphi_ep_cutband.pdf");
+
+  TH2* h2_relemcalphi_reltrackphi_em_2x2 = DuplicateTH2(h2_relemcalphi_reltrackphi_em);
+  TCanvas *can18 = new TCanvas("can18", "", 1200, 800);
+  can18->cd();
+  gPad->SetRightMargin(0.15);
+  //h2_relemcalphi_reltrackphi_em->Draw("colz");
+  h2_relemcalphi_reltrackphi_em_2x2->Draw("colz");
+  line_v1->Draw();
+  line_v2->Draw();
+  line_h1->Draw();
+  line_h2->Draw();
+  can18->Update();
+  can18->SaveAs("./figure/relemcalphi_reltrackphi_em.pdf");
+
+  KeepSlopeBand(h2_relemcalphi_reltrackphi_em_2x2, 0, 2*TMath::Pi()/128.);
+  //h2_relemcalphi_reltrackphi_em_2x2->FitSlicesY();
+  //TH1 *h2_relemcalphi_reltrackphi_em_2x2_1 = (TH1*)gDirectory->Get("h2_relemcalphi_reltrackphi_em_2x2_1");
+  //TProfile *h2_relemcalphi_reltrackphi_em_2x2_profileX = h2_relemcalphi_reltrackphi_em_2x2->ProfileX();
+  TCanvas *can18a = new TCanvas("can18a", "", 1200, 800);
+  can18a->cd();
+  gPad->SetRightMargin(0.15);
+  h2_relemcalphi_reltrackphi_em_2x2->Draw("colz");
+  //h2_relemcalphi_reltrackphi_em_2x2_profileX->Draw("same");
+  //h2_relemcalphi_reltrackphi_em_2x2_1->Draw("same");
+  pt15->Draw("same");
+  can18a->Update();
+  can18a->SaveAs("./figure/relemcalphi_reltrackphi_em_cutband.pdf");
 
 }
 
@@ -373,12 +631,157 @@ void drawsPHENIXInternal(TPaveText *pt)
   pt->SetTextColor(kBlack);
   pt->AddText("#it{#bf{sPHENIX}} Internal");
   pt->AddText("p+p #sqrt{s}=200 GeV");
-  pt->AddText(Form("Run 53741-53744"));
-  pt->AddText("28.59 Million");
+  pt->AddText(Form("Run 53741-53783"));
+  pt->AddText("43.32 Million");
 }
 
 void drawArrow(TArrow *arrow)
 {
   arrow->SetLineColor(2);
   arrow->SetLineWidth(2);
+}
+
+void fit_gauss(TH2* h, TString name, bool verbose=0, TPaveText *pt=nullptr)
+{
+  TGraphErrors *graph_full = new TGraphErrors();
+  TGraphErrors *graph_sub = new TGraphErrors();
+
+  int n = 1;
+  for (int i = 1; i <= h->GetNbinsX(); i+=n)
+  {
+    TH1D *projection = h->ProjectionY("projection", i, i+n);
+    projection->GetYaxis()->SetTitle("Counts");
+    projection->SetTitle(Form("%s , Bin %d fmod(phi,2#pi/128)=%d cm",h->GetTitle(),i,(int)h->GetXaxis()->GetBinCenter(i)));
+
+    TF1 *gausFit_full = new TF1("gausFit_full", "gaus", projection->GetXaxis()->GetXmin(), projection->GetXaxis()->GetXmax());
+    projection->Fit(gausFit_full, "Q", "", projection->GetXaxis()->GetXmin(), projection->GetXaxis()->GetXmax());
+
+    int maxBin = projection->GetMaximumBin();
+    double maxBinCenter = projection->GetBinCenter(maxBin);
+//    double fitmin=maxBinCenter-0.5;
+//    double fitmax=maxBinCenter+0.5;
+    double fitmin=0.5;
+    double fitmax=1.5;
+    TF1 *gausFit_sub = new TF1("gausFit_sub", "gaus", fitmin, fitmax);
+    projection->Fit(gausFit_sub, "Q", "", fitmin, fitmax);
+
+    if (verbose>0)
+    {
+      TCanvas *can = new TCanvas("can", "Canvas", 800, 600);
+      gPad->SetRightMargin(0.1);
+      projection->Draw("hist");
+      gausFit_full->SetLineColor(kRed);
+      gausFit_full->Draw("same");
+      gausFit_sub->SetLineColor(kBlue);
+      gausFit_sub->Draw("same");
+      can->Update();
+      can->SaveAs(name + Form(".gausFit_%d.pdf",i));
+      delete can;
+    }
+
+    Double_t mean_full = gausFit_full->GetParameter(1);
+    Double_t error_full = gausFit_full->GetParError(1);
+
+    Double_t mean_sub = gausFit_sub->GetParameter(1);
+    Double_t error_sub = gausFit_sub->GetParError(1);
+
+    if (verbose>0)
+    {
+      cout<<"Bin "<<i<<": full fit mean = "<<mean_full<<" +/- "<<error_full<<" , sub fit mean = "<<mean_sub<<" +/- "<<error_sub<<endl;
+    }
+
+    double center = 0;
+    double width = 0;
+    for (int j=0; j<n; j++)
+    {
+      center += h->GetXaxis()->GetBinCenter(i+j) / n;
+      width += h->GetXaxis()->GetBinWidth(i+j) / 2;
+    }
+    graph_full->SetPoint(i-1, center, mean_full);
+    graph_full->SetPointError(i-1, width, error_full);
+    graph_sub->SetPoint(i-1, center, mean_sub);
+    graph_sub->SetPointError(i-1, width, error_sub);
+  }
+
+  TCanvas *c1 = new TCanvas("c1", "Canvas", 800, 600);
+  gPad->SetRightMargin(0.15);
+  h->Draw("COLZ");
+
+  graph_full->SetMarkerStyle(20);
+  graph_full->SetMarkerColor(kRed);
+  //graph_full->Draw("P");
+  graph_sub->SetMarkerStyle(20);
+  graph_sub->SetMarkerColor(kBlack);
+  graph_sub->Draw("P");
+
+  TLine *line = new TLine(h->GetXaxis()->GetXmin(), 1, h->GetXaxis()->GetXmax(), 1);
+  line->SetLineColor(kRed);
+  line->Draw();
+
+  if (pt) pt->Draw("same");
+  c1->Update();
+  c1->SaveAs(name);
+  delete c1;
+}
+
+TH2* DuplicateTH2(const TH2* originalHist)
+{
+    int nx = originalHist->GetNbinsX();
+    int ny = originalHist->GetNbinsY();
+    float xmin = originalHist->GetXaxis()->GetXmin();
+    float xmax = originalHist->GetXaxis()->GetXmax();
+    float ymin = originalHist->GetYaxis()->GetXmin();
+    float ymax = originalHist->GetYaxis()->GetXmax();
+
+    TH2* newHist = new TH2F(Form("%s_2x2",originalHist->GetName()), "2x2 Duplicated Histogram", 
+                             2 * nx, xmin, 2 * xmax, 2 * ny, ymin, 2 * ymax);
+    newHist->GetXaxis()->SetNoExponent(true);
+    newHist->GetYaxis()->SetNoExponent(true);
+    newHist->GetXaxis()->SetTitle(originalHist->GetXaxis()->GetTitle());
+    newHist->GetYaxis()->SetTitle(originalHist->GetYaxis()->GetTitle());
+    newHist->GetXaxis()->SetNdivisions(505);
+    newHist->GetYaxis()->SetNdivisions(505);
+    newHist->SetTitle(newHist->GetTitle());
+
+    for (int i = 1; i <= nx; ++i) {
+        for (int j = 1; j <= ny; ++j) {
+            double content = originalHist->GetBinContent(i, j);
+            double error = originalHist->GetBinError(i, j);
+
+            newHist->SetBinContent(i, j, content);
+            newHist->SetBinError(i, j, error);
+
+            newHist->SetBinContent(i + nx, j, content);
+            newHist->SetBinError(i + nx, j, error);
+
+            newHist->SetBinContent(i, j + ny, content);
+            newHist->SetBinError(i, j + ny, error);
+
+            newHist->SetBinContent(i + nx, j + ny, content);
+            newHist->SetBinError(i + nx, j + ny, error);
+        }
+    }
+
+    return newHist;
+}
+
+void KeepSlopeBand(TH2* hist, double xMinAtY0 = 0.01, double xMaxAtY0 = 0.04)
+{
+    int nx = hist->GetNbinsX();
+    int ny = hist->GetNbinsY();
+
+    for (int i = 1; i <= nx; ++i) {
+        for (int j = 1; j <= ny; ++j) {
+            double x = hist->GetXaxis()->GetBinCenter(i);
+            double y = hist->GetYaxis()->GetBinCenter(j);
+
+            double bandMin = x - xMaxAtY0;
+            double bandMax = x - xMinAtY0;
+
+            if (y < bandMin || y > bandMax) {
+                hist->SetBinContent(i, j, 0);
+                hist->SetBinError(i, j, 0);
+            }
+        }
+    }
 }

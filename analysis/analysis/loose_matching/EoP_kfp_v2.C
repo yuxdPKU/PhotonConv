@@ -12,14 +12,12 @@ void EoP_kfp_v2()
   SetsPhenixStyle();
   //gStyle->SetOptStat(0);
 
-  const int nrun=4;
-  int runs[4]={53741,53742,53743,53744};
+  const int nrun=6;
+  int runs[nrun]={53741,53742,53743,53744,53756,53783};
 
   TChain* chain = new TChain("tree_KFP");
   for (int i=0; i<nrun; i++) chain->Add(Form("../../Reconstructed/%d/clusters_seeds_%d*track2calo_unlikesign.root",runs[i],runs[i]));
   //for (int i=0; i<nrun; i++) chain->Add(Form("../../Reconstructed/%d/clusters_seeds_%d*track2calo_likesign.root",runs[i],runs[i]));
-  //chain->Add("photonconv_track2calo_unlikesign.root");
-  //chain->Add("photonconv_track2calo_likesign.root");
   setBranch_kfp(chain);
 
   TFile* outputfile = new TFile(Form("./eop_kfp_unlikesign.root"),"recreate");
@@ -61,7 +59,6 @@ void EoP_kfp_v2()
   float teop_epemc_dphi, teop_epemc_dz;
   float teop_ememc_dphi, teop_ememc_dz;
   float teop_track12_dca_2d, teop_track12_dca_3d;
-  float teop_eop_ep, teop_eop_em;
   std::vector<float> teop_ep_clus_x, teop_ep_clus_y, teop_ep_clus_z;
   std::vector<float> teop_em_clus_x, teop_em_clus_y, teop_em_clus_z;
   std::vector<float> teop_true_gamma_mass, teop_true_gamma_pE, teop_true_gamma_eta;
@@ -220,8 +217,6 @@ void EoP_kfp_v2()
   outputtree->Branch("_em_clus_y",&teop_em_clus_y);
   outputtree->Branch("_ep_clus_z",&teop_ep_clus_z);
   outputtree->Branch("_em_clus_z",&teop_em_clus_z);
-  outputtree->Branch("_eop_ep",&teop_eop_ep,"_eop_ep/F");
-  outputtree->Branch("_eop_em",&teop_eop_em,"_eop_em/F");
 
   // reco-truth matching by using g4truthinfo / recotruthmap
   outputtree->Branch("_ep_has_truthmatching",&teop_ep_has_truthmatching);
@@ -760,27 +755,6 @@ void EoP_kfp_v2()
       teop_ememc_dz = vec_em_emcal_residual_z.at(em_index);
       teop_track12_dca_2d = _epem_DCA_2d->at(ican);
       teop_track12_dca_3d = _epem_DCA_3d->at(ican);
-
-      float eop_ep = teop_ep_emcal_e / teop_ep_p;
-      float eop_em = teop_em_emcal_e / teop_em_p;
-
-      if (eop_ep > 0.8 && eop_ep < 1.3)
-      {
-        teop_eop_em = eop_em;
-      }
-      else
-      {
-        teop_eop_em = -1;
-      }
-
-      if (eop_em > 0.8 && eop_em < 1.3)
-      {
-        teop_eop_ep = eop_ep;
-      }
-      else
-      {
-        teop_eop_ep = -1;
-      }
 
       if (doTruthMatching)
       {

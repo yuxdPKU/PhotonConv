@@ -362,17 +362,20 @@ void Fun4All_TrackFitting_PhotonConv(
 
   TrackCaloMatch *tcm = new TrackCaloMatch("Tracks_Calo_Match");
   tcm->SetMyTrackMapName("MySvtxTrackMap");
-  tcm->writeEventDisplays(false);
+  tcm->writeEventDisplays(true);
+  tcm->setEventDisplayPath("./");
+  tcm->setRunDate("2024-09-27");
   tcm->EMcalRadiusUser(doEMcalRadiusCorr);
   tcm->setEMcalRadius(new_cemc_rad);
-  tcm->setdphicut(0.15);
-  tcm->setdzcut(10);
-  tcm->setTrackPtLowCut(0.2);
-  tcm->setEmcalELowCut(0.1);
+  tcm->setdphicut(0.1);
+  tcm->setdzcut(5);
+  tcm->setTrackPtLowCut(0.5);
+  tcm->setEmcalELowCut(0.2);
   tcm->setnTpcClusters(20);
   tcm->setTrackQuality(1000);
   tcm->setRawClusContEMName("CLUSTERINFO_CEMC");
   tcm->setRawTowerGeomContName("TOWERGEOM_CEMCv3");
+  tcm->Verbosity(2);
   se->registerSubsystem(tcm);
 
   TString photonconv_kfp_likesign_outfile = theOutfile + "_photonconv_kfp_likesign.root";
@@ -423,7 +426,8 @@ void Fun4All_TrackFitting_PhotonConv(
   ttc_likesign->setRawTowerGeomContName("TOWERGEOM_CEMCv3");
   se->registerSubsystem(ttc_likesign); 
 
-  se->skip(stepsize*index);
+  //se->skip(stepsize*index);
+  se->skip(5118);
   se->run(nEvents);
   se->End();
   se->PrintTimer();

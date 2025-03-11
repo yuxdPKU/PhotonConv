@@ -7,7 +7,8 @@ void EvtDisplay2D(){
   //SetsPhenixStyle();
 
   TChain* chain = new TChain("tree");
-  chain->Add(Form("eop_kfp_unlikesign.root"));
+  //chain->Add(Form("eop_kfp_unlikesign.root"));
+  chain->Add(Form("old/eop_kfp_unlikesign.root"));
 
   int _runNumber, _eventNumber;
   std::vector<float> *_ep_clus_x=0, *_ep_clus_y=0, *_ep_clus_z=0;
@@ -67,9 +68,12 @@ void EvtDisplay2D(){
   vec_emcal_z.clear();
   vec_emcal_r.clear();
 
-  int runnumber = 53741, eventid = 1035318, irow = 342;
-  //int runnumber = 53741, eventid = 1291503, irow = 1533;
-  //int runnumber = 53741, eventid = 1553134, irow = 2983;
+  //int runnumber = 53741, eventid = 4515, irow = 601;
+  //int runnumber = 53741, eventid = 129449, irow = 20327;
+  //int runnumber = 53741, eventid = 1262229, irow = 24907;
+  //int runnumber = 53741, eventid = 115271, irow = 11760;
+  //int runnumber = 53741, eventid = 1474518, irow = 42978;
+  int runnumber = 53741, eventid = 1415202, irow = 38728;
 
   chain->GetEntry(irow);
 
@@ -149,9 +153,9 @@ void EvtDisplay2D(){
 
   TGraph *gr_clus_rz = new TGraph(vec_cluster_z.size(), vec_cluster_z.data(), vec_cluster_r.data());
   gr_clus_rz->SetTitle(Form("Run %d Event %d;Z [cm];R [cm]",runnumber,eventid));
-  gr_clus_rz->GetXaxis()->SetLimits(-(emcal_radius+10.), (emcal_radius+10.));
+  gr_clus_rz->GetXaxis()->SetLimits(-(emcal_radius+20.), (emcal_radius+20.));
   gr_clus_rz->SetMinimum(20);
-  gr_clus_rz->SetMaximum(emcal_radius+10.);
+  gr_clus_rz->SetMaximum(emcal_radius+20.);
   gr_clus_rz->SetMarkerSize(0.5);
   gr_clus_rz->SetMarkerStyle(20);
   gr_clus_rz->SetMarkerColor(kBlue);

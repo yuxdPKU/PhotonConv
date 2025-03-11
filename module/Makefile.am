@@ -21,6 +21,7 @@ libtrack_to_calo_la_LIBADD = \
   -lActsExamplesFramework \
   -lSubsysReco \
   -ltrackbase_historic_io \
+  -ltpc \
   -ltrack_io \
   -ltrack_reco \
   -lcalo_io \

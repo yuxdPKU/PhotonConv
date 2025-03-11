@@ -25,6 +25,7 @@
 #include <trackbase/TrkrClusterContainer.h>
 #include <trackbase/TrkrCluster.h>
 #include <calobase/RawTowerGeomContainer.h>
+#include <tpc/TpcGlobalPositionWrapper.h>
 
 #include <kfparticle_sphenix/KFParticle_sPHENIX.h>
 #include <kfparticle_sphenix/KFParticle_DST.h>
@@ -528,6 +529,7 @@ class TrackToCalo : public SubsysReco
   SvtxTrackEval *trackeval = nullptr;
   SvtxTruthEval *trutheval = nullptr;
   SvtxVertexEval *vertexeval = nullptr;
+  TpcGlobalPositionWrapper m_globalPositionWrapper;
 };
 
 #endif // TRACKTOCALO_H
