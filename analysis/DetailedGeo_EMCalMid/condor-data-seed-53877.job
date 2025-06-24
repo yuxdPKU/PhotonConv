@@ -10,7 +10,7 @@ PeriodicHold   = (NumJobStarts>=1 && JobStatus == 1)
 # Jobs by default get 1.4Gb of RAM allocated, ask for more if needed
 # but if a job needs more than 2Gb it will not be able to run on the
 # older nodes
-request_memory = 10GB
+request_memory = 4GB
 
 # If you need multiple cores you can ask for them, but the scheduling
 # may take longer the "larger" a job you ask for
@@ -38,19 +38,19 @@ Rank=CPU_Speed
 
 # Used to give jobs a directory with respect to file input 
 # and output.
-Initialdir     = /sphenix/u/xyu3/workarea/PhotonConv/analysis
+Initialdir     = /sphenix/u/xyu3/workarea/PhotonConv/analysis/DetailedGeo_EMCalMid
 
 # The executable we want to run.
 Executable     = $(Initialdir)/run_photonconv_seed.sh
 
 Nevent         = 10000
-RunNumber      = 53876
-ClusterFileName= DST_TRKR_CLUSTER_run2pp_ana466_2024p012_v001-$INT(RunNumber,%08d)-$INT(TrkrSegment,%05d).root
-ClusterFilePath= /sphenix/lustre01/sphnxpro/production/run2pp/physics/ana466_2024p012_v001/DST_TRKR_CLUSTER/run_00053800_00053900/dst/
-SeedFileName   = DST_TRKR_SEED_run2pp_ana468_2024p012_v002-$INT(RunNumber,%08d)-$INT(TrkrSegment,%05d).root
-SeedFilePath   = /sphenix/lustre01/sphnxpro/production/run2pp/physics/ana468_2024p012_v002/DST_TRKR_SEED/run_00053800_00053900/dst/
-CaloFileName   = DST_CALO_run2pp_ana462_2024p010_v001-$INT(RunNumber,%08d)-$INT(CaloSegment,%05d).root
-CaloFilePath   = /sphenix/lustre01/sphnxpro/production/run2pp/physics/ana462_2024p010_v001/DST_CALO/run_00053800_00053900/dst/
+RunNumber      = 53877
+ClusterFileName= DST_TRKR_CLUSTER_run2pp_ana489_2024p020_v001-$INT(RunNumber,%08d)-$INT(TrkrSegment,%05d).root
+ClusterFilePath= /sphenix/lustre01/sphnxpro/production/run2pp/physics/ana489_2024p020_v001/DST_TRKR_CLUSTER/run_00053800_00053900/dst/
+SeedFileName   = DST_TRKR_SEED_run2pp_ana493_2024p021_v001-$INT(RunNumber,%08d)-$INT(TrkrSegment,%05d).root
+SeedFilePath   = /sphenix/lustre01/sphnxpro/production/run2pp/physics/ana493_2024p021_v001/DST_TRKR_SEED/run_00053800_00053900/dst/
+CaloFileName   = DST_CALO_run2pp_ana468_2024p012_v001-$INT(RunNumber,%08d)-$INT(CaloSegment,%05d).root
+CaloFilePath   = /sphenix/lustre01/sphnxpro/production/run2pp/physics/ana468_2024p012_v001/DST_CALO/run_00053800_00053900/dst/
 OutPrefix      = clusters_seeds
 OutPath        = $(Initialdir)
 Index          = 0

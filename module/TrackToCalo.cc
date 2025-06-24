@@ -285,15 +285,12 @@ void TrackToCalo::createBranches_KFP()
   _tree_KFP->Branch("_ep_pz", &_ep_pz);
   _tree_KFP->Branch("_ep_pz_raw", &_ep_pz_raw);
   _tree_KFP->Branch("_ep_pE", &_ep_pE);
-  _tree_KFP->Branch("_ep_pE_unmoved", &_ep_pE_unmoved);
   _tree_KFP->Branch("_ep_pT", &_ep_pT);
   _tree_KFP->Branch("_ep_pTErr", &_ep_pTErr);
   _tree_KFP->Branch("_ep_pT_raw", &_ep_pT_raw);
-  _tree_KFP->Branch("_ep_pT_unmoved", &_ep_pT_unmoved);
   _tree_KFP->Branch("_ep_p", &_ep_p);
   _tree_KFP->Branch("_ep_pErr", &_ep_pErr);
   _tree_KFP->Branch("_ep_p_raw", &_ep_p_raw);
-  _tree_KFP->Branch("_ep_p_unmoved", &_ep_p_unmoved);
   _tree_KFP->Branch("_ep_pseudorapidity", &_ep_pseudorapidity);
   _tree_KFP->Branch("_ep_pseudorapidity_raw", &_ep_pseudorapidity_raw);
   _tree_KFP->Branch("_ep_rapidity", &_ep_rapidity);
@@ -351,15 +348,12 @@ void TrackToCalo::createBranches_KFP()
   _tree_KFP->Branch("_em_pz", &_em_pz);
   _tree_KFP->Branch("_em_pz_raw", &_em_pz_raw);
   _tree_KFP->Branch("_em_pE", &_em_pE);
-  _tree_KFP->Branch("_em_pE_unmoved", &_em_pE_unmoved);
   _tree_KFP->Branch("_em_pT", &_em_pT);
   _tree_KFP->Branch("_em_pTErr", &_em_pTErr);
   _tree_KFP->Branch("_em_pT_raw", &_em_pT_raw);
-  _tree_KFP->Branch("_em_pT_unmoved", &_em_pT_unmoved);
   _tree_KFP->Branch("_em_p", &_em_p);
   _tree_KFP->Branch("_em_pErr", &_em_pErr);
   _tree_KFP->Branch("_em_p_raw", &_em_p_raw);
-  _tree_KFP->Branch("_em_p_unmoved", &_em_p_unmoved);
   _tree_KFP->Branch("_em_pseudorapidity", &_em_pseudorapidity);
   _tree_KFP->Branch("_em_pseudorapidity_raw", &_em_pseudorapidity_raw);
   _tree_KFP->Branch("_em_rapidity", &_em_rapidity);
@@ -470,7 +464,10 @@ int TrackToCalo::process_event(PHCompositeNode *topNode)
     _runNumber = 0;
     _eventNumber = -1;
   }
-  std::cout<<"TrackToCalo::process_event run "<<_runNumber<<" event "<<_eventNumber<<std::endl;
+  if (Verbosity() > 1)
+  {
+    std::cout<<"TrackToCalo::process_event run "<<_runNumber<<" event "<<_eventNumber<<std::endl;
+  }
 
   if(!trackMap)
   {
@@ -1626,35 +1623,60 @@ void TrackToCalo::fillTree_KFP()
     return;
   }
 
+  // the size of KFP_Container is number of candidates * 3
+  // order: track 1, track 2, mother
+  int NparticlePerCandidatesRequired = 3;
   size_t length_kfps = KFP_Container->size();
-  if (static_cast<int>(length_kfps) % 3 != 0)
+  if (static_cast<int>(length_kfps) % NparticlePerCandidatesRequired != 0)
   {
-    std::cout<<"Why KFParticle is not 3*n? Skip!"<<std::endl;
+    std::cout<<"Why KFParticle is not "<<NparticlePerCandidatesRequired<<"*n? Skip!"<<std::endl;
     return;
   }
 
   if (Verbosity() > 2)
   {
+    KFP_Container->identify();
     for (auto &iter : *KFP_Container)
     {
       KFParticle* kfp = iter.second;
-      std::cout<<"KFP ID = "<<kfp->Id()<<" PDGID = "<<kfp->GetPDG()<<" p = "<<kfp->GetP()<<std::endl;
+      std::cout << "KFP ID = " << kfp->Id()
+	        << " PDGID = " << kfp->GetPDG()
+		<< " px = " << kfp->GetPx()
+		<< " py = " << kfp->GetPy()
+		<< " pz = " << kfp->GetPz()
+		<< std::endl;
+        const std::vector<int> daughterIDs = kfp->DaughterIds();
+        for (auto& id : daughterIDs) 
+        {
+          SvtxTrack* kfp_svtxdaughter = KFP_trackMap->get(id);
+          std::cout << "daughter SvtxTrack ID = "
+		    << kfp_svtxdaughter->get_id()
+		    << " px = " << kfp_svtxdaughter->get_px()
+		    << " py = " << kfp_svtxdaughter->get_py()
+		    << " pz = " << kfp_svtxdaughter->get_pz()
+		    << std::endl;
+        }
     }
 
+    KFP_trackMap->identify();
     for (auto &iter : *KFP_trackMap)
     {
-      SvtxTrack* kfp = iter.second;
-      std::cout<<"iter.first = "<<iter.first<<std::endl;
-      std::cout<<"svtxtrack id = "<<kfp->get_id()<<" px = "<<kfp->get_px()<<" py = "<<kfp->get_py()<<" pz = "<<kfp->get_pz()<<std::endl;
+      SvtxTrack* kfp_track = iter.second;
+      std::cout << "svtxtrack id = "
+	        << kfp_track->get_id()
+		<< " px = " << kfp_track->get_px()
+		<< " py = " << kfp_track->get_py()
+		<< " pz = " << kfp_track->get_pz()
+		<< std::endl;
     }
   }
 
-  _numCan = static_cast<int>(length_kfps) / 3;
+  _numCan = static_cast<int>(length_kfps) / NparticlePerCandidatesRequired;
 
   for (int i = 0; i < _numCan; i++)
   {
     auto it_kfp_cont = KFP_Container->begin();
-    std::advance(it_kfp_cont, 3 * i);
+    std::advance(it_kfp_cont, NparticlePerCandidatesRequired * (i + 1) - 1);
     kfp_mother = it_kfp_cont->second;
 
     float mass, massErr;
@@ -1682,33 +1704,17 @@ void TrackToCalo::fillTree_KFP()
 
     int totalcharge = 0;
     // one for e+, one for e-
-    for (int j = 1; j <= 2; j++)
+    for (int j = 0; j <= 1; j++)
     {
-
       it_kfp_cont = KFP_Container->begin();
-      std::advance(it_kfp_cont, 3 * i + j);
+      std::advance(it_kfp_cont, NparticlePerCandidatesRequired * i + j);
       kfp_daughter = it_kfp_cont->second;
-      float p_daughter_unmoved = kfp_daughter->GetP();
-      float e_daughter_unmoved = kfp_daughter->GetE();
-      float pt_daughter_unmoved = kfp_daughter->GetPt();
-
+      svtxtrack = KFP_trackMap->get(kfp_daughter->Id());
       if (Verbosity() > 1)
       {
-        std::cout<<"KFP: before SetProductionVertex kfp_daughter->GetMass() = "<<kfp_daughter->GetMass()<<std::endl;
-        std::cout<<"KFP: before SetProductionVertex sqrt(E^2-p^2) = "<<sqrt(pow(kfp_daughter->GetE(),2) - pow(kfp_daughter->GetPx(),2) - pow(kfp_daughter->GetPy(),2) - pow(kfp_daughter->GetPz(),2))<<std::endl;
+        std::cout << "KFP: kfp_daughter->GetMass() = " << kfp_daughter->GetMass() << std::endl;
+        std::cout << "KFP: sqrt(E^2-p^2) = " << sqrt(pow(kfp_daughter->GetE(),2) - pow(kfp_daughter->GetPx(),2) - pow(kfp_daughter->GetPy(),2) - pow(kfp_daughter->GetPz(),2)) << std::endl;
       }
-
-      kfp_daughter->SetProductionVertex(*kfp_mother);
-
-      if (Verbosity() > 1)
-      {
-        std::cout<<"KFP: after SetProductionVertex kfp_daughter->GetMass() = "<<kfp_daughter->GetMass()<<std::endl;
-        std::cout<<"KFP: after SetProductionVertex sqrt(E^2-p^2) = "<<sqrt(pow(kfp_daughter->GetE(),2) - pow(kfp_daughter->GetPx(),2) - pow(kfp_daughter->GetPy(),2) - pow(kfp_daughter->GetPz(),2))<<std::endl;
-      }
-
-      auto it_kfp_trackmap = KFP_trackMap->begin();
-      std::advance(it_kfp_trackmap, 3 * i + j);
-      svtxtrack = it_kfp_trackmap->second;
 
       bool isParticleValid = false;
       int true_id = 0;
@@ -1744,7 +1750,12 @@ void TrackToCalo::fillTree_KFP()
           true_daughter_vertex_z_method2 = thisVtx->get_z();
 	  if (Verbosity() > 2)
 	  {
-            std::cout<<"g4particle->get_pid() = "<<g4particle->get_pid()<<" , g4particle->get_barcode() = "<<g4particle->get_barcode()<<" , thisVtx->get_x() = "<<thisVtx->get_x()<<std::endl;
+            std::cout << "g4particle pid = " << g4particle->get_pid() << " , "
+		      << "barcode = " << g4particle->get_barcode() << " , "
+		      << "Vtx_x = " << thisVtx->get_x() << " , "
+		      << "Vtx_y = " << thisVtx->get_y() << " , "
+		      << "Vtx_z = " << thisVtx->get_z()
+		      << std::endl;
 	  }
         }
         else
@@ -1762,7 +1773,7 @@ void TrackToCalo::fillTree_KFP()
       int charge = kfp_daughter->Q();
       totalcharge+=charge;
 
-      if ((m_doLikesign==true && j==1) || (m_doLikesign==false && charge == -1))
+      if ((m_doLikesign==true && j==0) || (m_doLikesign==false && charge == -1))
       {
         kfp_em = kfp_daughter;
         _em_mass.push_back(kfp_daughter->GetMass());
@@ -1779,15 +1790,12 @@ void TrackToCalo::fillTree_KFP()
         _em_pz.push_back(kfp_daughter->GetPz());
         _em_pz_raw.push_back(svtxtrack->get_pz());
         _em_pE.push_back(kfp_daughter->GetE());
-        _em_pE_unmoved.push_back(e_daughter_unmoved);
         _em_pT.push_back(kfp_daughter->GetPt());
         _em_pTErr.push_back(kfp_daughter->GetErrPt());
         _em_pT_raw.push_back(svtxtrack->get_pt());
-        _em_pT_unmoved.push_back(pt_daughter_unmoved);
         _em_p.push_back(kfp_daughter->GetP());
         _em_pErr.push_back(kfp_daughter->GetErrP());
         _em_p_raw.push_back(svtxtrack->get_p());
-        _em_p_unmoved.push_back(p_daughter_unmoved);
         _em_pseudorapidity.push_back(kfp_daughter->GetEta());
         _em_pseudorapidity_raw.push_back(svtxtrack->get_eta());
         _em_rapidity.push_back(kfp_daughter->GetRapidity());
@@ -1862,7 +1870,7 @@ void TrackToCalo::fillTree_KFP()
         }
 
       }
-      else if ((m_doLikesign==true && j==2) || (m_doLikesign==false && charge == 1))
+      else if ((m_doLikesign==true && j==1) || (m_doLikesign==false && charge == 1))
       {
         kfp_ep = kfp_daughter;
         _ep_mass.push_back(kfp_daughter->GetMass());
@@ -1879,15 +1887,12 @@ void TrackToCalo::fillTree_KFP()
         _ep_pz.push_back(kfp_daughter->GetPz());
         _ep_pz_raw.push_back(svtxtrack->get_pz());
         _ep_pE.push_back(kfp_daughter->GetE());
-        _ep_pE_unmoved.push_back(e_daughter_unmoved);
         _ep_pT.push_back(kfp_daughter->GetPt());
         _ep_pTErr.push_back(kfp_daughter->GetErrPt());
         _ep_pT_raw.push_back(svtxtrack->get_pt());
-        _ep_pT_unmoved.push_back(pt_daughter_unmoved);
         _ep_p.push_back(kfp_daughter->GetP());
         _ep_pErr.push_back(kfp_daughter->GetErrP());
         _ep_p_raw.push_back(svtxtrack->get_p());
-        _ep_p_unmoved.push_back(p_daughter_unmoved);
         _ep_pseudorapidity.push_back(kfp_daughter->GetEta());
         _ep_pseudorapidity_raw.push_back(svtxtrack->get_eta());
         _ep_rapidity.push_back(kfp_daughter->GetRapidity());
@@ -1972,7 +1977,6 @@ void TrackToCalo::fillTree_KFP()
     motherDecayVertex += *kfp_em;
     _gamma_SV_chi2_per_nDoF.push_back( motherDecayVertex.GetChi2() / motherDecayVertex.GetNDF() );
     _gamma_charge.push_back(totalcharge);
-
   }
 
   RawCluster *cluster = nullptr;
@@ -2005,9 +2009,9 @@ void TrackToCalo::fillTree_KFP()
     {
       Decay decay = iter.second;
 
-      if (decay.size() % 3 != 0)
+      if (decay.size() % NparticlePerCandidatesRequired != 0)
       {
-        std::cout<<"Why Truth Container is not 3*n? Skip!"<<std::endl;
+        std::cout<<"Why Truth Container is not "<<NparticlePerCandidatesRequired<<"*n? Skip!"<<std::endl;
         return;
       }
 
@@ -2356,15 +2360,12 @@ void TrackToCalo::ResetTreeVectors_KFP()
   _ep_pz.clear();
   _ep_pz_raw.clear();
   _ep_pE.clear();
-  _ep_pE_unmoved.clear();
   _ep_pT.clear();
   _ep_pTErr.clear();
   _ep_pT_raw.clear();
-  _ep_pT_unmoved.clear();
   _ep_p.clear();
   _ep_pErr.clear();
   _ep_p_raw.clear();
-  _ep_p_unmoved.clear();
   _ep_pseudorapidity.clear();
   _ep_pseudorapidity_raw.clear();
   _ep_rapidity.clear();
@@ -2406,15 +2407,12 @@ void TrackToCalo::ResetTreeVectors_KFP()
   _em_pz.clear();
   _em_pz_raw.clear();
   _em_pE.clear();
-  _em_pE_unmoved.clear();
   _em_pT.clear();
   _em_pTErr.clear();
   _em_pT_raw.clear();
-  _em_pT_unmoved.clear();
   _em_p.clear();
   _em_pErr.clear();
   _em_p_raw.clear();
-  _em_p_unmoved.clear();
   _em_pseudorapidity.clear();
   _em_pseudorapidity_raw.clear();
   _em_rapidity.clear();

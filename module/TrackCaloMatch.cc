@@ -197,7 +197,7 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
     }
   }
 
-  if(!trkrContainer)
+  if(m_write_evt_display && !trkrContainer)
   {
     trkrContainer = findNode::getClass<TrkrClusterContainer>(topNode, "TRKR_CLUSTER");
     if(!trkrContainer)
@@ -526,7 +526,7 @@ int TrackCaloMatch::process_event(PHCompositeNode* topNode)
 
 	  if (Verbosity() > 1)
           {
-	    std::cout<<"cluster ("<<global[0]<<","<<global[1]<<","<<global[2]<<") , state ("<<state->get_x()<<","<<state->get_y()<<","<<state->get_z()<<")"<<std::endl;
+	    std::cout<<"cluster ("<<global[0]<<","<<global[1]<<","<<global[2]<<") , state ("<<state->get_x()<<","<<state->get_y()<<","<<state->get_z()<<")"<<" , p ("<<state->get_px()<<","<<state->get_py()<<","<<state->get_pz()<<")"<<std::endl;
 	  }
 	  global[0] = state->get_x();
 	  global[1] = state->get_y();
@@ -633,7 +633,7 @@ bool TrackCaloMatch::checkTrack(SvtxTrack* track)
 //____________________________________________________________________________..
 void TrackCaloMatch::event_file_start(std::ofstream &jason_file_header, const std::string& date, int runid, int evtid)
 {
-    jason_file_header << "{\n    \"EVENT\": {\n        \"runid\": " << runid << ", \n        \"evtid\": " << evtid << ", \n        \"time\": 0, \n        \"type\": \"Collision\", \n        \"s_nn\": 0, \n        \"B\": 3.0,\n        \"pv\": [0,0,0],\n        \"runstats\": [\"sPHENIX Internal\",        \n        \"200 GeV pp\",        \n        \"" << date << ", Run " << runid << "\",        \n        \"Event #" << evtid << "\"]  \n    },\n" << std::endl;
+    jason_file_header << "{\n    \"EVENT\": {\n        \"runid\": " << runid << ", \n        \"evtid\": " << evtid << ", \n        \"time\": 0, \n        \"type\": \"Collision\", \n        \"s_nn\": 0, \n        \"B\": 1.4,\n        \"pv\": [0,0,0],\n        \"runstats\": [\"sPHENIX Internal\",        \n        \"200 GeV pp\",        \n        \"" << date << ", Run " << runid << "\",        \n        \"Event #" << evtid << "\"]  \n    },\n" << std::endl;
 
     jason_file_header << "    \"META\": {\n       \"HITS\": {\n          \"INNERTRACKER\": {\n              \"type\": \"3D\",\n              \"options\": {\n              \"size\": 6.0,\n              \"color\": 16711680\n              } \n          },\n" << std::endl;
     jason_file_header << "          \"TRACKHITS\": {\n              \"type\": \"3D\",\n              \"options\": {\n              \"size\": 2.0,\n              \"transparent\": 0.6,\n              \"color\": 16777215\n              } \n          },\n" << std::endl;

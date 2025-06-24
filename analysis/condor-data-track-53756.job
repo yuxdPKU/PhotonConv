@@ -73,7 +73,7 @@ Log            = $(Initialdir)/log/job-Data-$(RunNumber).$(Segment).$(Index).$(C
 on_exit_hold = (ExitBySignal == True) || (ExitCode != 0)
 
 #Limiting the number of running jobs
-concurrency_limits=CONCURRENCY_LIMIT_DEFAULT:1000
+#concurrency_limits=CONCURRENCY_LIMIT_DEFAULT:1000
 
 # This should be the last command and tells condor to queue the
 # job.  If a number is placed after the command (i.e. Queue 15)

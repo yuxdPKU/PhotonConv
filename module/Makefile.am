@@ -14,11 +14,6 @@ libtrack_to_calo_la_LDFLAGS = \
   -L$(OFFLINE_MAIN)/lib
 
 libtrack_to_calo_la_LIBADD = \
-  -lActsCore \
-  -lActsPluginTGeo \
-  -lActsExamplesCommon \
-  -lActsExamplesDetectorTGeo \
-  -lActsExamplesFramework \
   -lSubsysReco \
   -ltrackbase_historic_io \
   -ltpc \
