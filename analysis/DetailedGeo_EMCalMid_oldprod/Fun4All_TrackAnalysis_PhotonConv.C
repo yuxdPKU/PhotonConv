@@ -91,16 +91,14 @@ R__LOAD_LIBRARY(libepd.so)
 R__LOAD_LIBRARY(libzdcinfo.so)
 void Fun4All_TrackAnalysis_PhotonConv(
     const int nEvents = 10,
-    const std::string trkr_trackfilename = "DST_TRKR_TRACKS_run2pp_ana475_2024p018_v001-00053877-00000.root",
-    const std::string trkr_trackdir = "/sphenix/lustre01/sphnxpro/production/run2pp/physics/ana475_2024p018_v001/DST_TRKR_TRACKS/run_00053800_00053900/dst/",
     const std::string trkr_clusterfilename = "DST_TRKR_CLUSTER_run2pp_ana466_2024p012_v001-00053877-00000.root",
     const std::string trkr_clusterdir = "/sphenix/lustre01/sphnxpro/production/run2pp/physics/ana466_2024p012_v001/DST_TRKR_CLUSTER/run_00053800_00053900/dst/",
+    const std::string trkr_trackfilename = "DST_TRKR_TRACKS_run2pp_ana475_2024p018_v001-00053877-00000.root",
+    const std::string trkr_trackdir = "/sphenix/lustre01/sphnxpro/production/run2pp/physics/ana475_2024p018_v001/DST_TRKR_TRACKS/run_00053800_00053900/dst/",
     const std::string calofilename = "DST_CALO_run2pp_ana468_2024p012_v001-00053877-00000.root",
     const std::string calodir = "/sphenix/lustre01/sphnxpro/production/run2pp/physics/ana468_2024p012_v001/DST_CALO/run_00053800_00053900/dst/",
     const std::string outfilename = "clusters_seeds",
     const std::string outdir = "./root",
-    const int runnumber = 53877,
-    const int segment = 0,
     const int index = 0,
     const int stepsize = 10)
 {
@@ -110,8 +108,8 @@ void Fun4All_TrackAnalysis_PhotonConv(
 
   std::pair<int, int>
       runseg = Fun4AllUtils::GetRunSegment(trkr_trackfilename);
-  //int runnumber = runseg.first;
-  //int segment = runseg.second;
+  int runnumber = runseg.first;
+  int segment = runseg.second;
 
   string outDir = outdir + "/inReconstruction/" + to_string(runnumber) + "/";
   string makeDirectory = "mkdir -p " + outDir;
@@ -328,8 +326,8 @@ void KFPReco(std::string module_name = "KFPReco", std::string decaydescriptor = 
   kfparticle->setMaximumTrackPTchi2(FLT_MAX);
   kfparticle->setMinimumTrackIPchi2(-1.);
   kfparticle->setMinimumTrackIP(-1.);
-  //kfparticle->setMaximumTrackchi2nDOF(100.);
-  kfparticle->setMaximumTrackchi2nDOF(FLT_MAX);
+  kfparticle->setMaximumTrackchi2nDOF(100.);
+  //kfparticle->setMaximumTrackchi2nDOF(FLT_MAX);
 
   //Vertex parameters
   //kfparticle->setMaximumVertexchi2nDOF(50);

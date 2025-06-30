@@ -89,29 +89,46 @@ R__LOAD_LIBRARY(libcentrality.so)
 R__LOAD_LIBRARY(libmbd.so)
 R__LOAD_LIBRARY(libepd.so)
 R__LOAD_LIBRARY(libzdcinfo.so)
-void Fun4All_TrackAnalysis_PhotonConv(
+void Fun4All_TrackFitting_PhotonConv(
     const int nEvents = 10,
-    const std::string trkr_trackfilename = "DST_TRKR_TRACKS_run2pp_ana475_2024p018_v001-00053877-00000.root",
-    const std::string trkr_trackdir = "/sphenix/lustre01/sphnxpro/production/run2pp/physics/ana475_2024p018_v001/DST_TRKR_TRACKS/run_00053800_00053900/dst/",
-    const std::string trkr_clusterfilename = "DST_TRKR_CLUSTER_run2pp_ana466_2024p012_v001-00053877-00000.root",
-    const std::string trkr_clusterdir = "/sphenix/lustre01/sphnxpro/production/run2pp/physics/ana466_2024p012_v001/DST_TRKR_CLUSTER/run_00053800_00053900/dst/",
+    const std::string trkr_clusterfilename = "DST_TRKR_CLUSTER_run2pp_ana489_2024p020_v001-00053877-00000.root",
+    const std::string trkr_clusterdir = "/sphenix/lustre01/sphnxpro/production/run2pp/physics/ana489_2024p020_v001/DST_TRKR_CLUSTER/run_00053800_00053900/dst/",
+    const std::string trkr_seedfilename = "DST_TRKR_SEED_run2pp_ana493_2024p021_v001-00053877-00000.root",
+    const std::string trkr_seeddir = "/sphenix/lustre01/sphnxpro/production/run2pp/physics/ana493_2024p021_v001/DST_TRKR_SEED/run_00053800_00053900/dst/",
     const std::string calofilename = "DST_CALO_run2pp_ana468_2024p012_v001-00053877-00000.root",
     const std::string calodir = "/sphenix/lustre01/sphnxpro/production/run2pp/physics/ana468_2024p012_v001/DST_CALO/run_00053800_00053900/dst/",
     const std::string outfilename = "clusters_seeds",
     const std::string outdir = "./root",
-    const int runnumber = 53877,
-    const int segment = 0,
     const int index = 0,
-    const int stepsize = 10)
+    const int stepsize = 10,
+    const bool convertSeeds = false)
 {
-  std::string inputTrkrTrackFile = trkr_trackdir + trkr_trackfilename;
+  std::string inputTrkrSeedFile = trkr_seeddir + trkr_seedfilename;
   std::string inputTrkrClusterFile = trkr_clusterdir + trkr_clusterfilename;
   std::string inputCaloFile = calodir + calofilename;
 
+  G4TRACKING::convert_seeds_to_svtxtracks = convertSeeds;
+  std::cout << "Converting to seeds : " << G4TRACKING::convert_seeds_to_svtxtracks << std::endl;
   std::pair<int, int>
-      runseg = Fun4AllUtils::GetRunSegment(trkr_trackfilename);
-  //int runnumber = runseg.first;
-  //int segment = runseg.second;
+      runseg = Fun4AllUtils::GetRunSegment(trkr_seedfilename);
+  int runnumber = runseg.first;
+  int segment = runseg.second;
+
+  std::cout << " run: " << runnumber
+            << " samples: " << TRACKING::reco_tpc_maxtime_sample
+            << " pre: " << TRACKING::reco_tpc_time_presample
+            << " vdrift: " << G4TPC::tpc_drift_velocity_reco
+            << std::endl;
+
+  // distortion calibration mode
+  /*
+   * set to true to enable residuals in the TPC with
+   * TPC clusters not participating to the ACTS track fit
+   */
+  G4TRACKING::SC_CALIBMODE = false;
+  Enable::MVTX_APPLYMISALIGNMENT = true;
+  ACTSGEOM::mvtx_applymisalignment = Enable::MVTX_APPLYMISALIGNMENT;
+  TRACKING::pp_mode = true;
 
   string outDir = outdir + "/inReconstruction/" + to_string(runnumber) + "/";
   string makeDirectory = "mkdir -p " + outDir;
@@ -120,13 +137,9 @@ void Fun4All_TrackAnalysis_PhotonConv(
   std::cout<<"outfile "<<outfile<<std::endl;
   std::string theOutfile = outfile.Data();
 
-  G4TRACKING::SC_CALIBMODE = false;
-  Enable::MVTX_APPLYMISALIGNMENT = true;
-  ACTSGEOM::mvtx_applymisalignment = Enable::MVTX_APPLYMISALIGNMENT;
-  TRACKING::pp_mode = true;
-
   auto se = Fun4AllServer::instance();
   se->Verbosity(1);
+
   auto rc = recoConsts::instance();
   rc->set_IntFlag("RUNNUMBER", runnumber);
   rc->set_IntFlag("RUNSEGMENT", segment);
@@ -140,12 +153,30 @@ void Fun4All_TrackAnalysis_PhotonConv(
   ingeo->AddFile(geofile);
   se->registerInputManager(ingeo);
 
+  TpcReadoutInit( runnumber );
+  // these lines show how to override the drift velocity and time offset values set in TpcReadoutInit
+  // G4TPC::tpc_drift_velocity_reco = 0.0073844; // cm/ns
+  // TpcClusterZCrossingCorrection::_vdrift = G4TPC::tpc_drift_velocity_reco;
+  // G4TPC::tpc_tzero_reco = -5*50;  // ns
+
+  G4TPC::ENABLE_MODULE_EDGE_CORRECTIONS = true;
+
+  // to turn on the default static corrections, enable the two lines below
+  G4TPC::ENABLE_STATIC_CORRECTIONS = true;
+  G4TPC::USE_PHI_AS_RAD_STATIC_CORRECTIONS = false;
+
+  //to turn on the average corrections, enable the three lines below
+  //note: these are designed to be used only if static corrections are also applied
+  G4TPC::ENABLE_AVERAGE_CORRECTIONS = true;
+  G4TPC::USE_PHI_AS_RAD_AVERAGE_CORRECTIONS = false;
+   // to use a custom file instead of the database file:
+  G4TPC::average_correction_filename = CDBInterface::instance()->getUrl("TPC_LAMINATION_FIT_CORRECTION");
   G4MAGNET::magfield_rescale = 1;
   TrackingInit();
 
-  auto hitsin_track = new Fun4AllDstInputManager("DSTin_track");
-  hitsin_track->fileopen(inputTrkrTrackFile);
-  se->registerInputManager(hitsin_track);
+  auto hitsin_seed = new Fun4AllDstInputManager("DSTin_seed");
+  hitsin_seed->fileopen(inputTrkrSeedFile);
+  se->registerInputManager(hitsin_seed);
 
   auto hitsin_cluster = new Fun4AllDstInputManager("DSTin_cluster");
   hitsin_cluster->fileopen(inputTrkrClusterFile);
@@ -154,12 +185,145 @@ void Fun4All_TrackAnalysis_PhotonConv(
   auto hitsin_calo = new Fun4AllDstInputManager("DSTin_calo");
   hitsin_calo->fileopen(inputCaloFile);
   se->registerInputManager(hitsin_calo);
+  
+  /*
+   * Track Matching between silicon and TPC
+   */
+  // The normal silicon association methods
+  // Match the TPC track stubs from the CA seeder to silicon track stubs from PHSiliconTruthTrackSeeding
+  auto silicon_match = new PHSiliconTpcTrackMatching;
+  silicon_match->Verbosity(0);
+  silicon_match->set_pp_mode(TRACKING::pp_mode);
+  if(G4TPC::ENABLE_AVERAGE_CORRECTIONS)
+  {
+    // for general tracking
+    // Eta/Phi window is determined by 3 sigma window
+    // X/Y/Z window is determined by 4 sigma window
+    silicon_match->window_deta.set_posQoverpT_maxabs({-0.014,0.0331,0.48});
+    silicon_match->window_deta.set_negQoverpT_maxabs({-0.006,0.0235,0.52});
+    silicon_match->set_deltaeta_min(0.03);
+    silicon_match->window_dphi.set_QoverpT_range({-0.15,0,0}, {0.15,0,0});
+    silicon_match->window_dx.set_QoverpT_maxabs({3.0,0,0});
+    silicon_match->window_dy.set_QoverpT_maxabs({3.0,0,0});
+    silicon_match->window_dz.set_posQoverpT_maxabs({1.138,0.3919,0.84});
+    silicon_match->window_dz.set_negQoverpT_maxabs({0.719,0.6485,0.65});
+    silicon_match->set_crossing_deltaz_max(30);
+    silicon_match->set_crossing_deltaz_min(2);
+
+    // for distortion correction using SI-TPOT fit and track pT>0.5
+    if (G4TRACKING::SC_CALIBMODE)
+    {
+      silicon_match->window_deta.set_posQoverpT_maxabs({0.016,0.0060,1.13});
+      silicon_match->window_deta.set_negQoverpT_maxabs({0.022,0.0022,1.44});
+      silicon_match->set_deltaeta_min(0.03);
+      silicon_match->window_dphi.set_QoverpT_range({-0.15,0,0}, {0.09,0,0});
+      silicon_match->window_dx.set_QoverpT_maxabs({2.0,0,0});
+      silicon_match->window_dy.set_QoverpT_maxabs({1.5,0,0});
+      silicon_match->window_dz.set_posQoverpT_maxabs({1.213,0.0211,2.09});
+      silicon_match->window_dz.set_negQoverpT_maxabs({1.307,0.0001,4.52});
+      silicon_match->set_crossing_deltaz_min(1.2);
+    }
+  }
+  se->registerSubsystem(silicon_match);
+
+  // Match TPC track stubs from CA seeder to clusters in the micromegas layers
+  auto mm_match = new PHMicromegasTpcTrackMatching;
+  mm_match->Verbosity(0);
+  mm_match->set_pp_mode(TRACKING::pp_mode);
+  mm_match->set_rphi_search_window_lyr1(3.);
+  mm_match->set_rphi_search_window_lyr2(15.0);
+  mm_match->set_z_search_window_lyr1(30.0);
+  mm_match->set_z_search_window_lyr2(3.);
+
+  mm_match->set_min_tpc_layer(38);             // layer in TPC to start projection fit
+  mm_match->set_test_windows_printout(false);  // used for tuning search windows only
+  se->registerSubsystem(mm_match);
+
+  
+  /*
+   * Either converts seeds to tracks with a straight line/helix fit
+   * or run the full Acts track kalman filter fit
+   */
+  if (G4TRACKING::convert_seeds_to_svtxtracks)
+  {
+    auto converter = new TrackSeedTrackMapConverter;
+    // Default set to full SvtxTrackSeeds. Can be set to
+    // SiliconTrackSeedContainer or TpcTrackSeedContainer
+    converter->setTrackSeedName("SvtxTrackSeedContainer");
+    converter->setFieldMap(G4MAGNET::magfield_tracking);
+    converter->Verbosity(0);
+    se->registerSubsystem(converter);
+  }
+  else
+  {
+    auto deltazcorr = new PHTpcDeltaZCorrection;
+    deltazcorr->Verbosity(0);
+    se->registerSubsystem(deltazcorr);
+
+    // perform final track fit with ACTS
+    auto actsFit = new PHActsTrkFitter;
+    actsFit->Verbosity(0);
+    actsFit->commissioning(G4TRACKING::use_alignment);
+    // in calibration mode, fit only Silicons and Micromegas hits
+    actsFit->fitSiliconMMs(G4TRACKING::SC_CALIBMODE);
+    actsFit->setUseMicromegas(G4TRACKING::SC_USE_MICROMEGAS);
+    actsFit->set_pp_mode(TRACKING::pp_mode);
+    actsFit->set_use_clustermover(true);  // default is true for now
+    actsFit->useActsEvaluator(false);
+    actsFit->useOutlierFinder(false);
+    actsFit->setFieldMap(G4MAGNET::magfield_tracking);
+    se->registerSubsystem(actsFit);
+
+    auto cleaner = new PHTrackCleaner();
+    cleaner->Verbosity(0);
+    cleaner->set_pp_mode(TRACKING::pp_mode);    
+    se->registerSubsystem(cleaner);
+
+    if (G4TRACKING::SC_CALIBMODE)
+    {
+      /*
+       * in calibration mode, calculate residuals between TPC and fitted tracks,
+       * store in dedicated structure for distortion correction
+       */
+      auto residuals = new PHTpcResiduals;
+      const TString tpc_residoutfile = theOutfile + "_PhTpcResiduals.root";
+      residuals->setOutputfile(tpc_residoutfile.Data());
+      residuals->setUseMicromegas(G4TRACKING::SC_USE_MICROMEGAS);
+
+      // matches Tony's analysis
+      residuals->setMinPt(0.2);
+
+      // reconstructed distortion grid size (phi, r, z)
+      residuals->setGridDimensions(36, 48, 80);
+      se->registerSubsystem(residuals);
+    }
+  }
+
+  
+  auto finder = new PHSimpleVertexFinder;
+  finder->Verbosity(0);
+  
+  //new cuts
+  finder->setDcaCut(0.05);
+  finder->setTrackPtCut(0.1);
+  finder->setBeamLineCut(1);
+  finder->setTrackQualityCut(300);
+  finder->setNmvtxRequired(3);
+  finder->setOutlierPairCut(0.10);
+  
+  se->registerSubsystem(finder);
+
+  // Propagate track positions to the vertex position
+  auto vtxProp = new PHActsVertexPropagator;
+  vtxProp->Verbosity(0);
+  vtxProp->fieldMap(G4MAGNET::magfield_tracking);
+  se->registerSubsystem(vtxProp);
 
   Global_Reco();
 
   bool doEMcalRadiusCorr = true;
   auto projection = new PHActsTrackProjection("CaloProjection");
-  float new_cemc_rad = 104.8; // Virgile recommendation according to DetailedCalorimeterGeometry
+  float new_cemc_rad = 98; // Virgile recommendation according to DetailedCalorimeterGeometry
   //float new_cemc_rad = 100.70;//(1-(-0.077))*93.5 recommended cemc radius at shower max
   //float new_cemc_rad = 99.1;//(1-(-0.060))*93.5
   //float new_cemc_rad = 97.6;//(1-(-0.044))*93.5, (0.041+0.047)/2=0.044
@@ -328,8 +492,8 @@ void KFPReco(std::string module_name = "KFPReco", std::string decaydescriptor = 
   kfparticle->setMaximumTrackPTchi2(FLT_MAX);
   kfparticle->setMinimumTrackIPchi2(-1.);
   kfparticle->setMinimumTrackIP(-1.);
-  //kfparticle->setMaximumTrackchi2nDOF(100.);
-  kfparticle->setMaximumTrackchi2nDOF(FLT_MAX);
+  kfparticle->setMaximumTrackchi2nDOF(100.);
+  //kfparticle->setMaximumTrackchi2nDOF(FLT_MAX);
 
   //Vertex parameters
   //kfparticle->setMaximumVertexchi2nDOF(50);
