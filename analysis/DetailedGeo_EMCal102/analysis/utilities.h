@@ -26,7 +26,7 @@ float min_Track_Pt = 0.5;
 float min_EMCal_E = 0.2;
 float min_HCal_E = 0.2;
 
-float emcal_radius = 99;
+float emcal_radius = 102;
 //float emcal_radius = 100.70;//(1-(-0.077))*93.5
 //float emcal_radius = 99.1;//(1-(-0.060))*93.5
 float hcal_radius = 177.423;
@@ -950,4 +950,19 @@ void buildSV(float ep_pcax, float ep_pcay, float ep_pcaz, float ep_px, float ep_
     ep_phi_new = ep_phi + dphi / 2.;
     em_phi_new = em_phi - dphi / 2.;
   }
+}
+
+float cal_tanAlpha(float px, float py, float pz, float phi)
+{
+  float trackPPhi = -px * std::sin(phi) + py * std::cos(phi);
+  float trackPR = px * std::cos(phi) + py * std::sin(phi);
+  float tanAlpha = -trackPPhi / trackPR;
+  return tanAlpha;
+}
+
+float cal_tanBeta(float px, float py, float pz, float phi)
+{
+  float trackPR = px * std::cos(phi) + py * std::sin(phi);
+  float tanBeta = -pz / trackPR;
+  return tanBeta;
 }

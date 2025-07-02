@@ -4,13 +4,14 @@ void fit_dz()
   gStyle->SetOptStat(0);
   TGaxis::SetMaxDigits(3);
 
-  double Radius[10] = {94, 95, 96, 97, 98, 99, 100, 101, 102, 103};
-  double err_Radius[10] = {0};
-  double mean_ep[10], mean_em[10];
-  double err_mean_ep[10], err_mean_em[10];
-  double sigma_ep[10], sigma_em[10];
-  double err_sigma_ep[10], err_sigma_em[10];
-  for (int i=0; i<10; i++)
+  const int n=15;
+  double Radius[n] = {94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108};
+  double err_Radius[n] = {0};
+  double mean_ep[n], mean_em[n];
+  double err_mean_ep[n], err_mean_em[n];
+  double sigma_ep[n], sigma_em[n];
+  double err_sigma_ep[n], err_sigma_em[n];
+  for (int i=0; i<n; i++)
   {
     TFile* infile = new TFile(Form("../DetailedGeo_EMCal%d/analysis/loose_matching/eop_kfp_unlikesign.root",(int)Radius[i]),"");
     TTree* intree = (TTree*) infile->Get("tree");
@@ -68,11 +69,11 @@ void fit_dz()
     err_sigma_em[i] = gausFit_em->GetParError(2);
   }
 
-  TGraphErrors* gr_mean_ep = new TGraphErrors(10, Radius, mean_ep, err_Radius, err_mean_ep);
-  TGraphErrors* gr_mean_em = new TGraphErrors(10, Radius, mean_em, err_Radius, err_mean_em);
+  TGraphErrors* gr_mean_ep = new TGraphErrors(n, Radius, mean_ep, err_Radius, err_mean_ep);
+  TGraphErrors* gr_mean_em = new TGraphErrors(n, Radius, mean_em, err_Radius, err_mean_em);
 
-  TGraphErrors* gr_sigma_ep = new TGraphErrors(10, Radius, sigma_ep, err_Radius, err_sigma_ep);
-  TGraphErrors* gr_sigma_em = new TGraphErrors(10, Radius, sigma_em, err_Radius, err_sigma_em);
+  TGraphErrors* gr_sigma_ep = new TGraphErrors(n, Radius, sigma_ep, err_Radius, err_sigma_ep);
+  TGraphErrors* gr_sigma_em = new TGraphErrors(n, Radius, sigma_em, err_Radius, err_sigma_em);
 
   TCanvas *c1 = new TCanvas("c1", "Canvas", 800, 600);
   c1->SetTopMargin(0.12);

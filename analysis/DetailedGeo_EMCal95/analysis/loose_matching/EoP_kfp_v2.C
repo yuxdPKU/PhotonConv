@@ -70,6 +70,8 @@ void EoP_kfp_v2(bool do_unlikesign_likesign=0)
   float teop_epemc_dphi, teop_epemc_dz;
   float teop_ememc_dphi, teop_ememc_dz;
   float teop_track12_dca_2d, teop_track12_dca_3d;
+  float teop_ep_px_emc, teop_ep_py_emc, teop_ep_pz_emc, teop_ep_tanAlpha_emc, teop_ep_tanBeta_emc;
+  float teop_em_px_emc, teop_em_py_emc, teop_em_pz_emc, teop_em_tanAlpha_emc, teop_em_tanBeta_emc;
   std::vector<float> teop_ep_clus_x, teop_ep_clus_y, teop_ep_clus_z;
   std::vector<float> teop_em_clus_x, teop_em_clus_y, teop_em_clus_z;
   std::vector<float> teop_true_gamma_mass, teop_true_gamma_pE, teop_true_gamma_eta;
@@ -216,6 +218,16 @@ void EoP_kfp_v2(bool do_unlikesign_likesign=0)
   outputtree->Branch("_ememc_dz",&teop_ememc_dz,"_ememc_dz/F");
   outputtree->Branch("_track12_dca_2d",&teop_track12_dca_2d,"_track12_dca_2d/F");
   outputtree->Branch("_track12_dca_3d",&teop_track12_dca_3d,"_track12_dca_3d/F");
+  outputtree->Branch("_ep_px_emc",&teop_ep_px_emc,"_ep_px_emc/F");
+  outputtree->Branch("_ep_py_emc",&teop_ep_py_emc,"_ep_py_emc/F");
+  outputtree->Branch("_ep_pz_emc",&teop_ep_pz_emc,"_ep_pz_emc/F");
+  outputtree->Branch("_ep_tanAlpha_emc",&teop_ep_tanAlpha_emc,"_ep_tanAlpha_emc/F");
+  outputtree->Branch("_ep_tanBeta_emc",&teop_ep_tanBeta_emc,"_ep_tanBeta_emc/F");
+  outputtree->Branch("_em_px_emc",&teop_em_px_emc,"_em_px_emc/F");
+  outputtree->Branch("_em_py_emc",&teop_em_py_emc,"_em_py_emc/F");
+  outputtree->Branch("_em_pz_emc",&teop_em_pz_emc,"_em_pz_emc/F");
+  outputtree->Branch("_em_tanAlpha_emc",&teop_em_tanAlpha_emc,"_em_tanAlpha_emc/F");
+  outputtree->Branch("_em_tanBeta_emc",&teop_em_tanBeta_emc,"_em_tanBeta_emc/F");
   outputtree->Branch("_ep_clus_x",&teop_ep_clus_x);
   outputtree->Branch("_em_clus_x",&teop_em_clus_x);
   outputtree->Branch("_ep_clus_y",&teop_ep_clus_y);
@@ -752,6 +764,18 @@ void EoP_kfp_v2(bool do_unlikesign_likesign=0)
       teop_ememc_dz = vec_em_emcal_residual_z.at(em_index);
       teop_track12_dca_2d = _epem_DCA_2d->at(ican);
       teop_track12_dca_3d = _epem_DCA_3d->at(ican);
+
+      teop_ep_px_emc = _ep_px_emc->at(ican);
+      teop_ep_py_emc = _ep_py_emc->at(ican);
+      teop_ep_pz_emc = _ep_pz_emc->at(ican);
+      teop_ep_tanAlpha_emc = cal_tanAlpha(_ep_px_emc->at(ican),_ep_py_emc->at(ican),_ep_pz_emc->at(ican),cal_phi(_ep_x_emc->at(ican), _ep_y_emc->at(ican)));
+      teop_ep_tanBeta_emc = cal_tanBeta(_ep_px_emc->at(ican),_ep_py_emc->at(ican),_ep_pz_emc->at(ican),cal_phi(_ep_x_emc->at(ican), _ep_y_emc->at(ican)));
+
+      teop_em_px_emc = _em_px_emc->at(ican);
+      teop_em_py_emc = _em_py_emc->at(ican);
+      teop_em_pz_emc = _em_pz_emc->at(ican);
+      teop_em_tanAlpha_emc = cal_tanAlpha(_em_px_emc->at(ican),_em_py_emc->at(ican),_em_pz_emc->at(ican),cal_phi(_em_x_emc->at(ican), _em_y_emc->at(ican)));
+      teop_em_tanBeta_emc = cal_tanBeta(_em_px_emc->at(ican),_em_py_emc->at(ican),_em_pz_emc->at(ican),cal_phi(_em_x_emc->at(ican), _em_y_emc->at(ican)));
 
       if (doTruthMatching)
       {
