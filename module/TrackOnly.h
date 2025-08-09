@@ -94,6 +94,9 @@ class TrackOnly : public SubsysReco
    std::vector<int> _track_nc_mvtx;
    std::vector<int> _track_nc_intt;
    std::vector<int> _track_nc_tpc;
+   std::vector<int> _track_ns_mvtx;
+   std::vector<int> _track_ns_intt;
+   std::vector<int> _track_ns_tpc;
    std::vector<float> _track_ptq;
    std::vector<float> _track_px;
    std::vector<float> _track_py;
@@ -112,10 +115,10 @@ class TrackOnly : public SubsysReco
    TrkrClusterCrossingAssocv1 *trkrContainerCrossing = nullptr;
 
    SvtxTrack *track = nullptr;
+   SvtxVertex *vertex = nullptr;
    TrackSeed *seed = nullptr;
    TrackSeed *tpc_seed = nullptr;
    TrkrCluster *trkrCluster = nullptr;
-
 
    float m_track_pt_low_cut = 0.5;
    float m_vx = 0, m_vy = 0, m_vz = 0;

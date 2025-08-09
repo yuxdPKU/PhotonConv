@@ -54,6 +54,49 @@
 #include <TH1F.h>
 #include <TH2F.h>
 
+namespace
+{
+
+  //! get cluster keys from a given track
+  std::vector<TrkrDefs::cluskey> get_cluster_keys(SvtxTrack* track)
+  {
+    std::vector<TrkrDefs::cluskey> out;
+    for (const auto& seed : {track->get_silicon_seed(), track->get_tpc_seed()})
+    {
+      if (seed)
+      {
+        std::copy(seed->begin_cluster_keys(), seed->end_cluster_keys(), std::back_inserter(out));
+      }
+    }
+    return out;
+  }
+
+  std::vector<TrkrDefs::cluskey> get_state_keys(SvtxTrack* track)
+  {
+    std::vector<TrkrDefs::cluskey> out;
+    for (auto state_iter = track->begin_states();
+         state_iter != track->end_states();
+         ++state_iter)
+    {
+      SvtxTrackState* tstate = state_iter->second;
+      auto stateckey = tstate->get_cluskey();
+      out.push_back(stateckey);
+    }
+    return out;
+  }
+
+  /// return number of clusters of a given type that belong to a tracks
+  template <int type>
+  int count_clusters(const std::vector<TrkrDefs::cluskey>& keys)
+  {
+    return std::count_if(keys.begin(), keys.end(),
+                         [](const TrkrDefs::cluskey& key)
+                         { return TrkrDefs::getTrkrId(key) == type; });
+  }
+
+}  // namespace
+
+
 //____________________________________________________________________________..
 TrackOnly::TrackOnly(const std::string &name, const std::string &file):
  SubsysReco(name),
@@ -119,6 +162,9 @@ void TrackOnly::createBranches()
   _tree->Branch("_track_nc_mvtx", &_track_nc_mvtx);
   _tree->Branch("_track_nc_intt", &_track_nc_intt);
   _tree->Branch("_track_nc_tpc", &_track_nc_tpc);
+  _tree->Branch("_track_ns_mvtx", &_track_ns_mvtx);
+  _tree->Branch("_track_ns_intt", &_track_ns_intt);
+  _tree->Branch("_track_ns_tpc", &_track_ns_tpc);
   _tree->Branch("_track_ptq", &_track_ptq);
   _tree->Branch("_track_px", &_track_px);
   _tree->Branch("_track_py", &_track_py);
@@ -213,7 +259,19 @@ void TrackOnly::fillTree()
     return;
   }
 
-  CLHEP::Hep3Vector vertex(0., 0., 0.);
+  //CLHEP::Hep3Vector vertex(0., 0., 0.);
+
+  for (auto &iter : *vertexMap)
+  {
+    vertex = iter.second;
+
+    _vertex_id.push_back(vertex->get_id());
+    _vertex_crossing.push_back(vertex->get_beam_crossing());
+    _vertex_ntracks.push_back(vertex->size_tracks());
+    _vertex_x.push_back(vertex->get_x());
+    _vertex_y.push_back(vertex->get_y());
+    _vertex_z.push_back(vertex->get_z());
+  }
 
   for (auto &iter : *trackMap)
   {
@@ -229,6 +287,7 @@ void TrackOnly::fillTree()
     int n_intt_clusters = 0;
     int n_tpc_clusters = 0;
     short int bunch_crossing_number = -1;
+    bunch_crossing_number = track->get_crossing();
 
     if(!seed)
     {
@@ -301,9 +360,55 @@ void TrackOnly::fillTree()
         _trClus_y.push_back(global[1]);
         _trClus_z.push_back(global[2]);
       }
-//std::cout<<"Track id "<<track->get_id()<<" , charge = "<<track->get_charge()<<" , quality = "<<track->get_quality()<<" , ntpc = "<<n_tpc_clusters<<" , track px = "<<track->get_px()<<" , py = "<<track->get_py()<<" , pz = "<<track->get_pz()<<" , tpc seed px = "<<tpc_seed->get_px()<<" , py = "<<tpc_seed->get_py()<<" , pz = "<<tpc_seed->get_pz()<<std::endl;
     }
 
+    int n_mvtx_states = 0;
+    int n_intt_states = 0;
+    int n_tpc_states = 0;
+    int n_tpot_states = 0;
+    for(auto state_iter = track->begin_states(); state_iter != track->end_states(); ++state_iter)
+    {
+
+      SvtxTrackState* tstate = state_iter->second;
+      if (tstate->get_pathlength() != 0) //The first track state is an extrapolation so has no cluster
+      {
+        auto stateckey = tstate->get_cluskey();
+        uint8_t id = TrkrDefs::getTrkrId(stateckey);
+
+        switch (id)
+        {
+          case TrkrDefs::mvtxId:
+            ++n_mvtx_states;
+            break;
+          case TrkrDefs::inttId:
+            ++n_intt_states;
+            break;
+          case TrkrDefs::tpcId:
+            ++n_tpc_states;
+            break;
+          case TrkrDefs::micromegasId:
+            ++n_tpot_states;
+            break;
+          default:
+            //std::cout << "Cluster key doesnt match a tracking system, could be related with projected track state to calorimeter system" << std::endl;
+            break;
+        }
+      }
+    }
+
+    /*
+    const auto state_keys(get_state_keys(track));
+    int nmvtx_state = count_clusters<TrkrDefs::mvtxId>(state_keys);
+    int nintt_state = count_clusters<TrkrDefs::inttId>(state_keys);
+    int ntpc_state = count_clusters<TrkrDefs::tpcId>(state_keys);
+    int ntpot_state = count_clusters<TrkrDefs::micromegasId>(state_keys);
+
+    std::cout<<" id "<<track->get_id()<<std::endl;
+    std::cout<<" nmvtxstate, method1 "<<n_mvtx_states<<" method2 "<<nmvtx_state<<std::endl;
+    std::cout<<" ninttstate, method1 "<<n_intt_states<<" method2 "<<nintt_state<<std::endl;
+    std::cout<<" ntpcstate, method1 "<<n_tpc_states<<" method2 "<<ntpc_state<<std::endl;
+    std::cout<<" ntpotstate, method1 "<<n_tpot_states<<" method2 "<<ntpot_state<<std::endl;
+    */
 
     unsigned int m_vertexid = track->get_vertex_id();
     bool track_have_vertex = false;
@@ -341,6 +446,9 @@ void TrackOnly::fillTree()
     _track_dcaxy.push_back(dcapair.first.first);
     _track_dcaz.push_back(dcapair.second.first);
     _track_nc_tpc.push_back(n_tpc_clusters);
+    _track_ns_mvtx.push_back(n_mvtx_states);
+    _track_ns_intt.push_back(n_intt_states);
+    _track_ns_tpc.push_back(n_tpc_states);
     _track_bc.push_back(bunch_crossing_number);
     _track_ptq.push_back(track->get_charge()*track->get_pt());
     _track_px.push_back(track->get_px());
@@ -396,6 +504,9 @@ void TrackOnly::ResetTreeVectors()
   _track_nc_mvtx.clear();
   _track_nc_intt.clear();
   _track_nc_tpc.clear();
+  _track_ns_mvtx.clear();
+  _track_ns_intt.clear();
+  _track_ns_tpc.clear();
   _track_ptq.clear();
   _track_px.clear();
   _track_py.clear();

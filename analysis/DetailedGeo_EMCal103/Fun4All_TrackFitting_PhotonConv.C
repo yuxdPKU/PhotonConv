@@ -145,7 +145,7 @@ void Fun4All_TrackFitting_PhotonConv(
   rc->set_IntFlag("RUNSEGMENT", segment);
 
   Enable::CDB = true;
-  rc->set_StringFlag("CDB_GLOBALTAG", "ProdA_2024");
+  rc->set_StringFlag("CDB_GLOBALTAG", "newcdbtag");
   rc->set_uint64Flag("TIMESTAMP", runnumber);
   std::string geofile = CDBInterface::instance()->getUrl("Tracking_Geometry");
 
@@ -276,7 +276,7 @@ void Fun4All_TrackFitting_PhotonConv(
 
     auto cleaner = new PHTrackCleaner();
     cleaner->Verbosity(0);
-    cleaner->set_pp_mode(TRACKING::pp_mode);    
+    cleaner->set_pp_mode(TRACKING::pp_mode);
     se->registerSubsystem(cleaner);
 
     if (G4TRACKING::SC_CALIBMODE)
@@ -399,6 +399,7 @@ void Fun4All_TrackFitting_PhotonConv(
   ttc->Verbosity(0);
   ttc->EMcalRadiusUser(doEMcalRadiusCorr);
   ttc->setEMcalRadius(new_cemc_rad);
+  ttc->doLikesign(false);
   ttc->setKFPtrackMapName("PhotonConv_unlikesign_SvtxTrackMap");
   ttc->setKFPContName("PhotonConv_unlikesign_KFParticle_Container");
   ttc->anaTrkrInfo(false); // general track QA
@@ -473,7 +474,6 @@ void KFPReco(std::string module_name = "KFPReco", std::string decaydescriptor = 
   kfparticle->getAllPVInfo(false);
   kfparticle->allowZeroMassTracks(true);
   kfparticle->getDetectorInfo(true);
-  //kfparticle->getDetectorInfo(false);
   kfparticle->useFakePrimaryVertex(false);
   kfparticle->saveDST();
 

@@ -530,7 +530,8 @@ void EoP_kfp_v2(bool do_unlikesign_likesign=0)
         //matching
         //if (dphi>-0.2 && dphi<0.2) // no cut in all
         //if (isInRange(-0.15,dphi,0.15) && isInRange(-10,dz,10))
-        if (isInRange(-0.02,dphi,0.05) && isInRange(-5,dz,5))
+        //if (isInRange(-0.02,dphi,0.05) && isInRange(-5,dz,5))
+        if (isInRange(-0.00,dphi,0.07) && isInRange(-5,dz,5))
         {
           vec_em_emcal_matched_index.push_back(iem);
           vec_em_emcal_matched_e.push_back(_emcal_e->at(iem));
